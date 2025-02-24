@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details</title>
+    <!-- Bootstrap 4 CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS for extra styling -->
+    <style>
+        body {
+            background-color: #f4f8fb;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: #6c757d;
+            color: #fff;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .pdf-link {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .pdf-link:hover {
+            background-color: #218838;
+        }
+
+        .pdf-link:active {
+            background-color: #1e7e34;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Card to display user details and PDF link -->
+        <div class="card">
+            <div class="card-header">
+                           <h2 class="text-center">{{user.name}}</h2>
+            </div>
+            <div class="card-body">
+   
+                <p class="lead text-center">{{user.content}}</p>
+                <div class="text-center">
+                    <a href="/pdf/{{user.id}}.pdf" target="_blank" class="pdf-link">Download/View PDF</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 4 JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

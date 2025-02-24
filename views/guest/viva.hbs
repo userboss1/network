@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take the Quiz</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #eef2f7;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .quiz-container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            font-size: 26px;
+            margin-bottom: 20px;
+        }
+        .input-container {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            font-size: 18px;
+            background: #f9f9f9;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #007BFF;
+            background: #fff;
+        }
+        select {
+            cursor: pointer;
+        }
+        .quiz {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .quiz p {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            border: 2px solid #ddd;
+            background: #f9f9f9;
+            transition: 0.3s;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .options li:hover {
+            background: #e0eaff;
+        }
+        .options li.selected {
+            background: #007BFF;
+            color: white;
+            border-color: #0056b3;
+        }
+        /* Modern Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.3);
+        }
+        .submit-btn:hover {
+            background: #0056b3;
+            box-shadow: 0px 6px 12px rgba(0, 123, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h2>Quiz</h2>
+        <form id="quizForm" action="Admin/result" method="post">
+
+            <!-- User Details Section -->
+            <div class="input-container">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="user[name]" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="input-container">
+                <label for="roll">Roll Number:</label>
+                <input type="text" id="roll" name="user[roll]" placeholder="Enter your roll number" required>
+            </div>
+
+            <div class="input-container">
+                <label for="department">Department:</label>
+                <select id="department" name="user[department]" required>
+                    <option value="">Select Department</option>
+                    <option value="CSE">Computer Science</option>
+                    <option value="ECE">Electronics</option>
+                    <option value="ME">Mechanical</option>
+                    <option value="EE">Electrical</option>
+                </select>
+            </div>
+
+            <!-- Quiz Questions -->
+            {{#each response}}
+                {{#each this.questions}}
+                    <div class="quiz" data-question-index="{{@index}}">
+                        <p><strong>{{this.question}}</strong></p>
+                        <ul class="options">
+                            {{#each this.options}}
+                                <li data-value="{{this}}">
+                                    <span></span> <!-- Option label (A, B, C, D) set by JS -->
+                                    {{this}}
+                                </li>
+                            {{/each}}
+                        </ul>
+                        <input type="hidden" name="answers[{{@index}}]" value="">
+                    </div>
+                {{/each}}
+            {{/each}}
+
+            <button type="submit" class="submit-btn">Submit Quiz</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Add question numbers and option labels (A, B, C, D)
+            document.querySelectorAll(".quiz").forEach((quiz, qIndex) => {
+                // Add question number
+                let questionText = quiz.querySelector("p strong").textContent;
+                quiz.querySelector("p strong").textContent = `Q${qIndex + 1}. ` + questionText;
+
+                let options = quiz.querySelectorAll(".options li");
+                options.forEach((option, oIndex) => {
+                    let labels = ["A.", "B.", "C.", "D."]; 
+                    option.querySelector("span").textContent = labels[oIndex] + " ";
+
+                    // Click event to select an option
+                    option.addEventListener("click", () => {
+                        options.forEach(opt => opt.classList.remove("selected"));
+                        option.classList.add("selected");
+                        quiz.querySelector("input[type='hidden']").value = option.getAttribute("data-value");
+                    });
+                });
+            });
+
+            // Prevent submission if no options are selected
+            document.getElementById("quizForm").addEventListener("submit", function(event) {
+                let allAnswered = true;
+                document.querySelectorAll(".quiz").forEach((quiz) => {
+                    if (!quiz.querySelector("input[type='hidden']").value) {
+                        allAnswered = false;
+                    }
+                });
+
+                if (!allAnswered) {
+                    event.preventDefault();
+                    alert("Please answer all questions before submitting!");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

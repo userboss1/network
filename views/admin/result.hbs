@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        .result-card {
+            background: #ffffff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+        .result-card strong {
+            color: #007BFF;
+        }
+        .result-card span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Quiz Results</h2>
+
+        {{#each info}}
+            <div class="result-card">
+                <p><strong>Name:</strong> {{this.name}}</p>
+                <p><strong>Roll Number:</strong> {{this.rollNumb}}</p>
+                <p><strong>Score:</strong> {{this.result.score}}</p>
+            </div>
+        {{/each}}
+
+    </div>
+
+</body>
+</html>
