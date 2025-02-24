@@ -1,1 +1,6 @@
 node_modules/
+# Ignore all PDF files inside public/pdf/
+public/pdf/*.pdf
+
+# Keep the public/pdf/ folder itself
+!public/pdf/.gitkeep
