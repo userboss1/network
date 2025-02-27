@@ -140,20 +140,20 @@ JDT Tool Hub
   
         <form action="/Admin/posting" enctype="multipart/form-data" method="post"  >
             <div class="form-group">
-                <label for="network-name">Network Name</label>
-                <input name="name" type="text" id="network-name"  placeholder="Enter network name" required>
+               
+    <label for="network-name">Network Name:</label>
+    <input type="text" id="network-name" value="{{user}}" readonly>
+    <input type="hidden" name="username" value="{{user}}">
+
             </div>
             <div class="form-group">
                 <label for="admin-name">content</label>
                 <input name="content" type="text" id="admin-name" name="adminname" placeholder="Enter administrator name" required>
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input name="password" type="password" id="password" placeholder="Enter password" required>
-            </div>
+          
             <div class="form-group">
                 <label for="file-upload">Attach File (PDF, Image, etc.)</label>
-                <input fi name="pdf" type="file" id="file-upload"  accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx">
+                <input name="pdf" type="file" id="file-upload"  accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx">
             </div>
             <button type="submit" class="submit-btn">Submit</button>
         </form>

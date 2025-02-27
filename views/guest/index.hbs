@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enter Network</title>
+    <title>Attend Viva</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -30,33 +30,11 @@
             transform: scale(1.05);
         }
 
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-            outline: none;
-            transition: box-shadow 0.3s;
-        }
-
-        input:focus {
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
         button {
-            margin-top: 15px;
-            padding: 10px;
+            padding: 12px 20px;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 18px;
             cursor: pointer;
             background: linear-gradient(135deg, #007bff, #0056b3);
             color: white;
@@ -71,15 +49,9 @@
     </style>
 </head>
 <body>
-   
     <div class="container">
-        <a href="/viva">Viva</a>
-        <form action="/login" method="post">
-            <label for="network">Network Name</label>
-            <input name="name" type="text" id="network" placeholder="Enter Network Name" required>
-            <label for="password">Password</label>
-            <input name="password" type="password" id="password" placeholder="Enter Password" required>
-            <button type="submit">Submit</button>
+        <form action="/attendviva" method="get">
+            <button type="submit">Attend Viva</button>
         </form>
     </div>
 </body>

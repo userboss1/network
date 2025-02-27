@@ -2,7 +2,7 @@
 var db=require('../config/connection')
 var collection =require('../config/ccollection')
 
-
+var bcrypt=require('bcrypt')
 module.exports={
 
     check:(userData)=>{
@@ -32,17 +32,21 @@ return new Promise(async(resolve,reject)=>{
                 
             })
     },
-    newAdmin:(user1)=>{
-       const list={
-        username:user1.username,
-        password:user1.password,
-       }
-       
-        
-        return new Promise((resolve,reject)=>{
-            db.get().collection(collection.ADMIN_COLLLECTION).insertOne(list).then((resp)=>{
-                resolve()
-            })
-        })
-    }
+   
+
+    newAdmin: async (user1) => {
+        try {
+            const hashedPassword = await bcrypt.hash(user1.password, 10); // Hash password with salt rounds = 10
+            const list = {
+                username: user1.username,
+                password: hashedPassword,
+            };
+    
+            await db.get().collection(collection.ADMIN_COLLLECTION).insertOne(list);
+            return { status: true, message: "Admin created successfully" };
+        } catch (error) {
+            console.error("Error creating admin:", error);
+            return { status: false, message: "Error creating admin" };
+        }
+    }    
 }

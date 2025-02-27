@@ -1,61 +1,74 @@
 var db=require('../config/connection')
 var collection=require('../config/ccollection');
 const bcrypt=require("bcrypt");
-const { use, response } = require('../app');
-const { resolve } = require('promise');
+
 const  ObjectId  = require('mongodb').ObjectId
 
 module.exports={
  
+    
+
+   
     LoginNet: (userData) => {
         console.log(userData);
         
         let response = {};
         return new Promise(async (resolve, reject) => {
-            let user = await db.get().collection('admin').findOne({ 
-                network: userData.network, 
-                password: userData.password // Direct comparison (Not recommended for security reasons)
-            });
+            try {
+                let user = await db.get().collection('admin').findOne({ 
+                    username: userData.username // Correct field name
+                });
     
-            if (user) {
-                console.log('Login successful');
-                response.user = { name: user.name, id: user._id, content: user.content };
-                response.status = true;
-                resolve(response);
-            } else {
-                console.log("Login failed");
-                resolve({ status: false });
+                if (user) {
+                    const match = await bcrypt.compare(userData.password, user.password);
+                    
+                    if (match) {
+                        console.log('Login successful');
+                        response.user = { name: user.username, id: user._id };
+                        response.status = true;
+                        resolve(response);
+                    } else {
+                        console.log("Incorrect password");
+                        resolve({ status: false });
+                    }
+                } else {
+                    console.log("User not found");
+                    resolve({ status: false });
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+                reject(error);
             }
-        });
+        })
     },
-    
-    doSignup: (userData) => {
         
+    
+    dofile: (userData) => {
+       
         
         return new Promise(async (resolve, reject) => {
-            userData.password = await bcrypt.hash(userData.password, 10);
-
+          
             db.get().collection('files').insertOne(userData).then((data) => {
                 resolve(data.insertedId );
             });
 
         })},
-        vivaSumbit: async (userData) => {
+        vivaSubmit: async (userData) => {
             try {
                 console.log("Raw userData:", userData);
-                
-                const { network_name, network_password } = userData;
+        
+                const { network_name, viva_name, viva_password } = userData;
         
                 // Ensure questions are stored as an array
-                const questions = Array.isArray(userData["questions[]"]) 
-                    ? userData["questions[]"] 
+                const questions = Array.isArray(userData["questions[]"])
+                    ? userData["questions[]"]
                     : [userData["questions[]"]];
         
                 const options = {};
                 Object.keys(userData).forEach((key) => {
                     if (key.startsWith("options[")) {
                         const index = key.match(/\d+/)[0]; // Extract question index
-                        options[index] = userData[key];
+                        options[index] = Array.isArray(userData[key]) ? userData[key] : [userData[key]];
                     }
                 });
         
@@ -63,7 +76,7 @@ module.exports={
                 Object.keys(userData).forEach((key) => {
                     if (key.startsWith("correct_answer[")) {
                         const index = key.match(/\d+/)[0];
-                        correct_answer[index] = userData[key];
+                        correct_answer[index] = Number(userData[key]); // Ensure numeric value
                     }
                 });
         
@@ -71,13 +84,14 @@ module.exports={
                 const formattedQuestions = questions.map((q, index) => ({
                     question: q,
                     options: options[index] || [],
-                    correct_answer: Number(correct_answer[index])
+                    correct_answer: correct_answer[index]
                 }));
         
-                // Insert into MongoDB and return the result
+                // Insert into MongoDB
                 const response = await db.get().collection('qbank').insertOne({
                     network_name,
-                    network_password,
+                    viva_name,
+                    viva_password,
                     questions: formattedQuestions
                 });
         
@@ -85,10 +99,9 @@ module.exports={
                 return response; // Return the result as a Promise
             } catch (error) {
                 console.error("Error inserting quiz data:", error);
-                throw error; // Ensure  errors are caught in the calling function
+                throw error; // Ensure errors are caught in the calling function
             }
-        }
-        
+        }        
         ,
         compare: async (userAnswers) => {
             console.log(userAnswers);
@@ -134,6 +147,21 @@ return new Promise((resolve,reject)=>{
         returnResult:async()=>{
           const  info=await db.get().collection('results').find().toArray()
             return info
-        }
+        },
+        getVivadetails: async (networkName) => {
+            try {
+               
+                // Find Viva where `network_name` matches session user name, return only required fields
+                const viva = await db.get().collection('qbank').findOne(
+                    { network_name: networkName },
+                    { projection: { viva_name: 1, viva_password: 1, _id: 1 } } // Only retrieve viva_name and viva_password
+                );
+    
+                return viva || null; // Return viva details or null if not found
+            } catch (error) {
+                console.error("Database error:", error);
+                return null;
+            }
+        },
     }
 //https://chatgpt.com/share/67bb5e4f-02c0-8004-8062-ccbf9c90dbbd

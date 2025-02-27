@@ -5,62 +5,59 @@ const bcrypt=require("bcrypt");
 module.exports={
 
 
-    doLogin: (userData) => {
-        console.log(userData);
-        
-        let loginStatus = false;
-        let response = {};
-    return new Promise(async (resolve, reject) => {
-        let user = await db.get().collection('files').findOne({ name: userData.name });
-        if (user) {
-            bcrypt.compare(userData.password, user.password).then((status) => {
-                if (status) {
-                    console.log('login successful');
-                    response.user = { name: user.name, id: user._id,content:user.content };
-
-                    response.status = true;
-                    resolve(response);
-                } else {
-                    console.log("login failed");
-                    resolve({ status: false });
-                }
-                
-            });
-        } else {
-            console.log('login failed netwokr');
-            resolve({ status: false });
-        }
-        
-    });
-},
-LoginNet: (userData) => {
-    console.log(userData);
+    doResource: (userData) => {
+        console.log("Received userData:", userData);
     
-    let loginStatus = false;
-    let response = {};
-return new Promise(async (resolve, reject) => {
-    let user = await db.get().collection(collection.ADMIN_COLLLECTION).findOne({ name: userData.name });
-    if (user) {
-        bcrypt.compare(userData.password, user.password).then((status) => {
-            if (status) {
-                console.log('login successful');
-                response.user = { name: user.name, id: user._id,content:user.content };
-
-                response.status = true;
-                resolve(response);
-            } else {
-                console.log("login failed");
-                resolve({ status: false });
+        return new Promise(async (resolve, reject) => {
+            try {
+                // Ensure correct types for query fields
+                let query = {
+                    name: String(userData.name),
+                    roll: parseInt(userData.roll, 10),  // Convert to integer
+                    registernumber: parseInt(userData.registernumber, 10) // Convert to integer
+                };
+    
+                // Check if conversion resulted in NaN (invalid number)
+                if (isNaN(query.roll) || isNaN(query.registernumber)) {
+                    return resolve({
+                        status: false,
+                        message: "Invalid roll number or register number. Must be integers."
+                    });
+                }
+                const originalLog = console.log;
+                console.log = (...args) => {
+                    const err = new Error();
+                    const stackLine = err.stack.split("\n")[2]; // Get the caller info
+                    originalLog("Logged from:", stackLine.trim(), "\nMessage:", ...args);
+                };
+                
+                // Fetch user based on all criteria
+                let user = await db.get().collection('logIn').findOne(query);
+    
+                console.log("Fetched User:", user); // Debugging output
+    
+                if (user) {
+                    resolve({
+                        status: true,
+                        user: user, // Send the found user object
+                    });
+                } else {
+                    resolve({
+                        status: false,
+                        message: "No user found with the provided details",
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching user:", err);
+                reject(err);
             }
-            
         });
-    } else {
-        console.log('login failed netwokr');
-        resolve({ status: false });
     }
     
-});
-},
+    
+    
+,    
+
 getQ:()=>{
 
  return new Promise((resolve,reject)=>{
