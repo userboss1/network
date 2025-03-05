@@ -163,5 +163,19 @@ return new Promise((resolve,reject)=>{
                 return null;
             }
         },
+        getClasses: () => {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    let classes = await db.get().collection('students').find({}, { projection: { className: 1, _id: 0 } }).toArray();
+                    let classNames = classes.map(cls => cls.className); // Extract only class names
+                    console.log("The list of classes:", classNames); // Debugging log
+                    resolve(classNames);
+                } catch (error) {
+                    console.error("Error fetching class names:", error);
+                    reject(error);
+                }
+            });
+        }
+        
     }
 //https://chatgpt.com/share/67bb5e4f-02c0-8004-8062-ccbf9c90dbbd

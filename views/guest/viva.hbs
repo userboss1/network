@@ -50,9 +50,6 @@
             border-color: #007BFF;
             background: #fff;
         }
-        select {
-            cursor: pointer;
-        }
         .quiz {
             background: #fff;
             border-radius: 10px;
@@ -112,37 +109,39 @@
     </style>
 </head>
 <body>
+
     <div class="quiz-container">
-        <h2>Quiz</h2>
-        <form id="quizForm" action="Admin/result" method="post">
+        <!-- ✅ ADDED FORM TAG -->
+        <form id="quizForm" action="/admin/result" method="POST">
+            <h2>Quiz</h2>
 
-         <div class="input-container">
-    <label for="name">Name</label>
-    <input type="text" id="name" name="user[name]" value="{{student.name}}" readonly>
-</div>
-
-<div class="input-container">
-    <label for="roll">Roll Number</label>
-    <input type="text" id="roll" name="user[roll]" value="{{student.roll}}" readonly>
-</div>
-
-<div class="input-container">
-    <label for="registernumber">Register Number</label>
-    <input type="text" id="registernumber" name="user[registernumber]" value="{{student.registernumber}}" readonly>
-</div>
-
+            <!-- ✅ Student Details (Pre-filled) -->
             <div class="input-container">
-                <label for="department">Department:</label>
-                <select id="department" name="user[department]" required>
-                    <option value="">Select Department</option>
-                    <option value="CSE">Computer Science</option>
-                    <option value="ECE">Electronics</option>
-                    <option value="ME">Mechanical</option>
-                    <option value="EE">Electrical</option>
-                </select>
+                <label for="name">Name</label>
+                <input type="text" id="name" name="user[name]" value="{{student.name}}" readonly>
             </div>
 
-            <!-- Quiz Questions -->
+            <div class="input-container">
+                <label for="roll">Roll Number</label>
+                <input type="text" id="roll" name="user[roll]" value="{{student.roll}}" readonly>
+            </div>
+
+            <div class="input-container">
+                <label for="registernumber">Register Number</label>
+                <input type="text" id="registernumber" name="user[registernumber]" value="{{student.register}}" readonly>
+            </div>
+
+            <div class="input-container">
+                <label for="department">Department</label>
+                <input type="text" id="department" name="user[department]" value="{{student.className}}" readonly>
+            </div>
+
+            <div class="input-container">
+                <label for="vivaname">Viva Name</label>
+                <input type="text" id="vivaname" name="user[vivaname]" value="{{student.vivaname}}" readonly>
+            </div>
+
+            <!-- ✅ Quiz Questions -->
             {{#each response}}
                 {{#each this.questions}}
                     <div class="quiz" data-question-index="{{@index}}">
@@ -150,8 +149,7 @@
                         <ul class="options">
                             {{#each this.options}}
                                 <li data-value="{{this}}">
-                                    <span></span> <!-- Option label (A, B, C, D) set by JS -->
-                                    {{this}}
+                                    <span></span> {{this}}
                                 </li>
                             {{/each}}
                         </ul>
@@ -160,15 +158,15 @@
                 {{/each}}
             {{/each}}
 
+            <!-- ✅ Submit Button -->
             <button type="submit" class="submit-btn">Submit Quiz</button>
         </form>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Add question numbers and option labels (A, B, C, D)
+            // ✅ Add question numbers and option labels (A, B, C, D)
             document.querySelectorAll(".quiz").forEach((quiz, qIndex) => {
-                // Add question number
                 let questionText = quiz.querySelector("p strong").textContent;
                 quiz.querySelector("p strong").textContent = `Q${qIndex + 1}. ` + questionText;
 
@@ -177,7 +175,7 @@
                     let labels = ["A.", "B.", "C.", "D."]; 
                     option.querySelector("span").textContent = labels[oIndex] + " ";
 
-                    // Click event to select an option
+                    // ✅ Click event to select an option
                     option.addEventListener("click", () => {
                         options.forEach(opt => opt.classList.remove("selected"));
                         option.classList.add("selected");
@@ -186,7 +184,7 @@
                 });
             });
 
-            // Prevent submission if no options are selected
+            // ✅ Prevent submission if no options are selected
             document.getElementById("quizForm").addEventListener("submit", function(event) {
                 let allAnswered = true;
                 document.querySelectorAll(".quiz").forEach((quiz) => {
@@ -197,10 +195,11 @@
 
                 if (!allAnswered) {
                     event.preventDefault();
-                    alert("Please answer all questions before submitting!");
+                    alert("⚠ Please answer all questions before submitting!");
                 }
             });
         });
     </script>
+
 </body>
 </html>

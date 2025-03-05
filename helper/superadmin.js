@@ -48,5 +48,22 @@ return new Promise(async(resolve,reject)=>{
             console.error("Error creating admin:", error);
             return { status: false, message: "Error creating admin" };
         }
-    }    
+    } ,
+addStudents :async (classData) => {
+    console.log(classData);
+    
+        try {
+            const result = await db.get().collection("students").insertOne({
+                className: classData.className,
+                students: classData.students,
+                createdAt: new Date(),
+            });
+            console.log("Students inserted successfully:", result.insertedId);
+            return result.insertedId;
+        } catch (error) {
+            console.error("Error inserting students:", error);
+            throw error;
+        }
+    }
+       
 }

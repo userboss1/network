@@ -40,5 +40,20 @@ router.post('/addAdmin',(req,res)=>{
       res.redirect('/superadmin')
    })
 })
+router.get('/addStudent',(req,res)=>{
+   res.render('superadmin/addStudent')
+})
+router.post("/addstudent", async (req, res) => {
+   console.log(req.body);
+   try {
+       const insertedId = await superhelper.addStudents(req.body);
+       res.json({ success: true, message: "Students added successfully!", insertedId });
+     
+   } catch (error) {
+       console.error("Error adding students:", error);
+       res.status(500).json({ success: false, message: "Internal Server Error" });
+   }
+});
 
+ 
 module.exports=router

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Class Registration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .registration-container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 650px;
+            padding: 40px;
+            border: 1px solid #e9ecef;
+        }
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-header h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .form-header p {
+            color: #7f8c8d;
+            font-size: 15px;
+        }
+        .class-name-group {
+            margin-bottom: 25px;
+        }
+        .class-name-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #34495e;
+            font-weight: 500;
+        }
+        .class-name-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e4e8;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #f9fafb;
+        }
+        .class-name-group input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        .students-section {
+            margin-bottom: 25px;
+        }
+        .students-section h3 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .students-container {
+            display: grid;
+            gap: 15px;
+        }
+        .student-row {
+            display: grid;
+            grid-template-columns: 3fr 1fr 2fr 0.5fr;
+            gap: 12px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .student-row input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d8e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .student-row input[readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+            color: #6c757d;
+        }
+        .remove-student-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 20px;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+        .remove-student-btn:hover {
+            color: #c0392b;
+        }
+        .form-actions {
+            display: flex;
+            gap: 15px;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-add-student {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .btn-add-student:hover {
+            background-color: #27ae60;
+        }
+        .btn-submit {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-submit:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="registration-container">
+        <div class="form-header">
+            <h2>Class Registration</h2>
+            <p>Create a new class and add students effortlessly</p>
+        </div>
+
+        <form id="classForm" action="/superadmin/addstudent" method="post">
+            <div class="class-name-group">
+                <label for="className">Class Name</label>
+                <input 
+                    type="text" 
+                    id="className" 
+                    name="className" 
+                    placeholder="Enter class name (e.g., 10th Science)" 
+                    required
+                >
+            </div>
+
+            <div class="students-section">
+                <h3>Student Details</h3>
+                <div id="studentsContainer" class="students-container"></div>
+            </div>
+
+            <div class="form-actions">
+                <button 
+                    type="button" 
+                    class="btn btn-add-student" 
+                    onclick="addStudent()"
+                >
+                    + Add Student
+                </button>
+                <button 
+                    type="submit" 
+                    class="btn btn-submit"
+                >
+                    Submit Class
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        
+        let studentCount = 0;
+
+        function addStudent() {
+            studentCount++;
+            const studentRow = document.createElement("div");
+            studentRow.classList.add("student-row");
+            studentRow.innerHTML = `
+                <input 
+                    type="text" 
+                    name="students[${studentCount}][name]" 
+                    placeholder="Student Name" 
+                    required
+                >
+                <input 
+                    type="text" 
+                    name="students[${studentCount}][roll]" 
+                    value="${studentCount}" 
+                    readonly
+                >
+                <input 
+                    type="text" 
+                    name="students[${studentCount}][register]" 
+                    placeholder="Reg No" 
+                    required
+                >
+                <button 
+                    type="button" 
+                    class="remove-student-btn" 
+                    onclick="removeStudent(this)"
+                >
+                    ✖
+                </button>
+            `;
+            document.getElementById("studentsContainer").appendChild(studentRow);
+        }
+
+        function removeStudent(element) {
+            const studentsContainer = document.getElementById("studentsContainer");
+            if (studentsContainer.children.length > 1) {
+                element.closest('.student-row').remove();
+            }
+        }
+
+       document.getElementById("classForm").addEventListener("submit", async function(event) {
+    event.preventDefault(); // Prevent default form submission
+
+    const formData = new FormData(event.target);
+    const className = formData.get("className");
+    const students = [];
+
+    document.querySelectorAll(".student-row").forEach((studentRow) => {
+        const inputs = studentRow.querySelectorAll("input");
+        students.push({
+            name: inputs[0].value,
+            roll: inputs[1].value,
+            register: inputs[2].value
+        });
+    });
+
+    const payload = { className, students };
+
+    try {
+        const response = await fetch("/superadmin/addstudent", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            alert("Students added successfully!");
+            window.location.href = "/superadmin"; // Redirect manually after success
+        } else {
+            alert("Failed to add students.");
+        }
+
+    } catch (error) {
+        console.error("Error submitting form:", error);
+        alert("Failed to add students.");
+    }
+});
+
+    </script>
+</body>
+</html>

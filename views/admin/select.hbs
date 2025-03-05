@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Class</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            text-align: center;
+            padding: 50px;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 300px;
+            margin: auto;
+        }
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Select Your Class</h2>
+    <form action="/admin/logIn" method="POST">
+        <label for="class">Choose a class:</label>
+        <select name="className" id="class">
+            {{#each classNames}}
+                <option value="{{this}}">{{this}}</option>
+            {{/each}}
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

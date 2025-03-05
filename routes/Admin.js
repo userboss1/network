@@ -3,8 +3,10 @@
   const AdminHelper = require("../helper/networkCreation");
   const path = require("path");
   const fs = require("fs");
+  const db=require('../config/connection')
   const { log } = require("console");
 const { Admin } = require("mongodb");
+const { route } = require("./superadmin");
 
   // Ensure express-session is set up in your main file
   // Example: app.use(session({ secret: 'your-secret', resave: false, saveUninitialized: true }));
@@ -31,6 +33,7 @@ const { Admin } = require("mongodb");
 let user2=req.session.user
 let vivaDetails = await AdminHelper.getVivadetails(user2.name);
 console.log(vivaDetails);
+req.session.vivaDetails=vivaDetails
 
     res.render("admin/home",{viva:vivaDetails}); // Render home page if logged in
   });
@@ -130,7 +133,9 @@ console.log(vivaDetails);
           const user = {
             name: userAnswers["user[name]"],
             roll: userAnswers["user[roll]"],
-            department: userAnswers["user[department]"]
+            department: userAnswers["user[department]"],
+
+          vivaname:userAnswers["user[vivaname]"]
           };
   console.log(user);
 
@@ -142,6 +147,7 @@ console.log(vivaDetails);
             name:user.name,
             rollNumb:user.roll,
             department:user.department,
+            vivaname:user.vivaname,
             result:result
 
           }
@@ -185,5 +191,52 @@ console.log(vivaDetails);
     }
 });
 
+router.get('/asign',(req,res)=>{
+  AdminHelper.getClasses().then((response)=>{
+    console.log("the resposne"+response);
+    let classNames=response
+    res.render('admin/select',{classNames})
+  })
+})
+
+//ake sure this points to your MongoDB connection
+
+router.post('/logIn', async (req, res) => {
+    try {
+        console.log(req.body);
+        console.log(req.session.user);
+
+        const { className } = req.body;
+        const userName = req.session.user?.name; // Get user name from session
+
+        if (!className || !userName) {
+            return res.status(400).json({ success: false, message: "Missing required fields" });
+        }
+
+        // Find the student details with the given className
+        const studentData = await db.get().collection('students').findOne({ className });
+
+        if (!studentData) {
+            return res.status(404).json({ success: false, message: "Class not found" });
+        }
+
+        // Prepare the data to insert into logIN collection
+        const logEntry = {
+          vivaname:req.session.vivaDetails.viva_name,
+            className: studentData.className,
+            networkName: userName, // Add the session user (Kabeer)
+            students: studentData.students, // Existing students
+            loginTime: new Date(),
+        };
+
+        // Insert into logIN collection
+        await db.get().collection('logIn').insertOne(logEntry);
+
+        res.redirect('/admin/home')
+    } catch (error) {
+        console.error("Error during login:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+});
 
   module.exports = router;
