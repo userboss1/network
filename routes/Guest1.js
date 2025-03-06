@@ -84,7 +84,9 @@ router.get('/viva', isLoggedIn, (req, res) => {
     res.render('guest/index', { user: req.session.studentDetails });
 });
 
-/* GET Attend Viva - Requires login */
+ /* GET Attend Viva - Requires login
+ 
+ ngnog*/
 router.get('/attendviva', isLoggedIn, (req, res) => {
     if (!req.session.vivaActive) { // Check if viva is active
         return res.send("Viva is not active. Please wait for the admin to start it.");

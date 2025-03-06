@@ -8,7 +8,7 @@
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            background: #f5f8fa;
             color: #333;
             display: flex;
             flex-direction: column;
@@ -17,64 +17,130 @@
         }
 
         header {
-            background: linear-gradient(135deg, #0066cc, #004d99);
+            background: linear-gradient(135deg, #006400, #008000);
             color: white;
             text-align: center;
-            padding: 20px;
-            font-size: 26px;
+            padding: 25px;
+            font-size: 28px;
             font-weight: bold;
             width: 100%;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="rgba(255,255,255,0.05)" width="50" height="50" x="0" y="0"/><rect fill="rgba(255,255,255,0.05)" width="50" height="50" x="50" y="50"/></svg>');
+            opacity: 0.3;
+        }
+
+        .logo {
+            height: 40px;
+            margin-right: 10px;
+            vertical-align: middle;
         }
 
         .btn {
-            padding: 12px 20px;
+            padding: 14px 24px;
             border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
             text-decoration: none;
             color: white;
-            background: #007bff;
+            background: #006400;
             transition: 0.3s;
             display: inline-block;
             text-align: center;
-            margin: 20px 0;
-            box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 25px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
         .btn:hover {
-            background: #0056b3;
+            background: #004d00;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
 
         .container {
             width: 90%;
-            max-width: 900px;
+            max-width: 1000px;
             background: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
 
-        .item {
+        .container h2 {
+            color: #006400;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .viva-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 25px;
+        }
+
+        .viva-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            overflow: hidden;
+            transition: transform 0.3s;
+            border: 1px solid #e0e0e0;
+        }
+
+        .viva-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .viva-header {
+            background: linear-gradient(135deg, #006400, #008000);
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .viva-content {
+            padding: 20px;
+        }
+
+        .viva-info {
             padding: 15px;
-            margin-bottom: 12px;
             background: #f9f9f9;
             border-radius: 8px;
-            flex-wrap: wrap;
-            border-left: 5px solid #007bff;
-            box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border-left: 4px solid #006400;
+        }
+
+        .viva-info p {
+            margin: 8px 0;
         }
 
         .actions {
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
         .actions a, .actions button {
-            padding: 10px 16px;
+            padding: 12px 16px;
             font-size: 14px;
             border-radius: 6px;
             text-decoration: none;
@@ -83,72 +149,217 @@
             border: none;
             cursor: pointer;
             transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .toggle { background: #ffc107; color: black; }
         .delete { background: #dc3545; color: white; }
         .results { background: #28a745; color: white; }
-        .assign { background: #17a2b8; color: white; }
+        .assign { background: #006400; color: white; }
+        .view-assigned { background: #17a2b8; color: white; }
+        .remove { background: #ff6b6b; color: white; }
 
-        .toggle:hover { background: #e0a800; }
-        .delete:hover { background: #c82333; }
-        .results:hover { background: #218838; }
-        .assign:hover { background: #138496; }
+        .delete:hover { background: #c82333; transform: translateY(-2px); }
+        .results:hover { background: #218838; transform: translateY(-2px); }
+        .assign:hover { background: #004d00; transform: translateY(-2px); }
+        .view-assigned:hover { background: #138496; transform: translateY(-2px); }
+        .remove:hover { background: #ff5252; transform: translateY(-2px); }
 
-        @media (max-width: 600px) {
-            .item {
+        .action-icon {
+            margin-right: 8px;
+        }
+
+        .collapsible {
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            padding: 12px 15px;
+            background: #f0f8ff;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+            border-left: 4px solid #006400;
+        }
+
+        .collapsible:hover {
+            background: #e1f1ff;
+        }
+
+        .assigned-list {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .assigned-item {
+            background: #f5f5f5;
+            padding: 15px;
+            margin: 8px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid #006400;
+            transition: 0.3s;
+        }
+
+        .assigned-item:hover {
+            background: #e9f5e9;
+        }
+
+        .assigned-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .badge.active { background: #006400; }
+        .badge.completed { background: #6c757d; }
+
+        .small-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .viva-cards {
+                grid-template-columns: 1fr;
+            }
+            .actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .assigned-item {
                 flex-direction: column;
                 align-items: flex-start;
             }
-            .actions {
+            .assigned-actions {
                 margin-top: 10px;
-                flex-direction: column;
                 width: 100%;
+                justify-content: space-between;
             }
-            .actions a, .actions button {
-                width: 100%;
-                text-align: center;
+            .container {
+                padding: 15px;
             }
         }
     </style>
 </head>
 <body>
-    <header>JDT ToolHub - Admin Dashboard</header>
+    <header>
+        <span>JDT ToolHub - Admin Dashboard</span>
+    </header>
 
-    <a href="/Admin/viva" class="btn">Create Viva</a>
+    <a href="/Admin/viva" class="btn">
+        <span class="action-icon">+</span>
+        Create New Viva
+    </a>
 
     <div class="container">
-        <h2>Viva List</h2>
-        <div class="item">
-            <div>
-                <p><strong>Viva Name:</strong> {{viva.viva_name}}</p>
-                <p><strong>Viva Password:</strong> {{viva.viva_password}}</p>
+        <h2>Viva Management</h2>
+        
+        <div class="viva-cards">
+          {{#each viva}}  <!-- Viva Card 1 -->
+            <div class="viva-card">
+                <div class="viva-header">
+                  
+                </div>
+                <div class="viva-content">
+                    <div class="viva-info">
+              
+                        <p><strong>Viva Name:</strong> {{this.vivaName}}</p>
+                       
+                    </div>
+                    
+                    <div class="actions">
+                       <a href="/Admin/assign?viva={{this.vivaName}}" class="assign">
+    <span class="action-icon">📋</span>
+    Assign Class
+</a>
+
+                        <a href="/Admin/view-assignments/1" class="view-assigned">
+                            <span class="action-icon">👥</span>
+                            View Assigned
+                        </a>
+                        <a href="/Admin/results/1" class="results">
+                            <span class="action-icon">📊</span>
+                            Check Results
+                        </a>
+                        <a href="/Admin/delete-viva/1" class="delete">
+                            <span class="action-icon">🗑️</span>
+                            Delete Viva
+                        </a>
+                    </div>
+                    
+                 <button class="collapsible">
+    Assigned Classes 
+    {{#if this.logs.length}}
+        <span class="badge active">{{this.logs.length}}</span>
+    {{else}}
+        <span class="badge">0</span>
+    {{/if}}
+    <span class="toggle-icon">▼</span>
+</button>
+<div class="assigned-list" style="display: none;">
+    {{#if this.logs.length}}
+        {{#each this.logs}}
+            <div class="assigned-item">
+                <div>
+                    <strong>Class:</strong> {{this.className}}
+                    <span class="badge active">{{this.rollRange}}</span>
+                </div>
+                <div class="assigned-actions">
+                    <a href="/Admin/view-class-results/1" class="results small-btn">Results</a>
+                    <a href="/Admin/remove-class/1/1" class="remove small-btn">Remove</a>
+                </div>
             </div>
-            <div class="actions">
-                <button class="toggle" onclick="toggleViva(this, 1)">Start</button>
-                <a href="/Admin/delete-viva/1" class="delete">Delete</a>
-                <a href="/Admin/asign" class="assign">Assign</a> <!-- New Assign Button -->
-                <a href="/Admin/results" class="results">Check Results</a>
+        {{/each}}
+    {{else}}
+        <p style="padding: 10px; text-align: center; color: gray;">No assigned classes.</p>
+    {{/if}}
+</div>
+
+                        </div>
+                    </div>
+                </div>
             </div>
+            {{/each}}
+            <!-- Viva Card 2 -->
+        
         </div>
     </div>
 
     <script>
-        function toggleViva(button, vivaId) {
-            let isActive = button.textContent === "Stop";
-            fetch(`/Admin/toggle-viva/${vivaId}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ active: !isActive })
-            })
-            .then(res => res.json())
-            .then(data => {
-                button.textContent = data.active ? "Stop" : "Start";
-                button.style.background = data.active ? "#dc3545" : "#ffc107";
-                button.style.color = data.active ? "white" : "black";
-            })
-            .catch(err => console.error("Error toggling Viva:", err));
-        }
+        // Collapsible functionality for assigned classes
+        document.querySelectorAll('.collapsible').forEach(function(collapsible) {
+            collapsible.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                const toggleIcon = this.querySelector('.toggle-icon');
+                
+                if (content.style.display === 'none') {
+                    content.style.display = 'block';
+                    toggleIcon.textContent = '▼';
+                } else {
+                    content.style.display = 'none';
+                    toggleIcon.textContent = '►';
+                }
+            });
+        });
     </script>
 </body>
 </html>

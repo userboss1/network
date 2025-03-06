@@ -49,15 +49,23 @@ return new Promise(async(resolve,reject)=>{
             return { status: false, message: "Error creating admin" };
         }
     } ,
-addStudents :async (classData) => {
-    console.log(classData);
+    addStudents: async (classData) => {
+        console.log(classData);
     
         try {
+            // Convert roll and registerNumber to integers, ensure name is a string
+            const studentsWithIntegerData = classData.students.map(student => ({
+                name: String(student.name).trim(), // Ensure name is a string
+                roll: parseInt(student.roll, 10), // Convert roll to an integer
+                register: parseInt(student.register, 10), // Convert registerNumber to an integer
+            }));
+    
             const result = await db.get().collection("students").insertOne({
-                className: classData.className,
-                students: classData.students,
+                className: String(classData.className).trim(), // Ensure class name is a string
+                students: studentsWithIntegerData,
                 createdAt: new Date(),
             });
+    
             console.log("Students inserted successfully:", result.insertedId);
             return result.insertedId;
         } catch (error) {
@@ -65,5 +73,6 @@ addStudents :async (classData) => {
             throw error;
         }
     }
+    
        
 }

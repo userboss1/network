@@ -31,9 +31,12 @@ const { route } = require("./superadmin");
   });
   router.get("/home",isAuthenticated,async (req, res) => {
 let user2=req.session.user
-let vivaDetails = await AdminHelper.getVivadetails(user2.name);
-console.log(vivaDetails);
+let vivaDetails = await AdminHelper.getVivaDetailsAndLogs(user2.name);
+
+
+console.log("recieved details",vivaDetails);
 req.session.vivaDetails=vivaDetails
+
 
     res.render("admin/home",{viva:vivaDetails}); // Render home page if logged in
   });
@@ -190,53 +193,87 @@ req.session.vivaDetails=vivaDetails
         res.status(500).json({ message: "Error toggling viva", error });
     }
 });
+router.get('/assign', (req, res) => {
+  const vivaName = req.query.viva; // Get viva name from query parameters
 
-router.get('/asign',(req,res)=>{
-  AdminHelper.getClasses().then((response)=>{
-    console.log("the resposne"+response);
-    let classNames=response
-    res.render('admin/select',{classNames})
-  })
-})
+  if (!vivaName) {
+    return res.status(400).send("Viva name is missing");
+  }
+
+  // Store in session
+  req.session.vivaSpecificname = { viva_name: vivaName };
+
+  // Fetch class data
+  AdminHelper.getClasses().then((response) => {
+    console.log("Class Data:", response);
+    res.render('admin/select', { classData: response, vivaName });
+  });
+});
+
+
 
 //ake sure this points to your MongoDB connection
 
 router.post('/logIn', async (req, res) => {
-    try {
-        console.log(req.body);
-        console.log(req.session.user);
+  console.log("Session Viva Details:", req.session.vivaDetails);
 
-        const { className } = req.body;
-        const userName = req.session.user?.name; // Get user name from session
+  try {
+      const { className, rollStart, rollEnd } = req.body;
+      const userName = req.session.user?.name;
+      const vivaName = req.session.vivaSpecificname?.viva_name; // Retrieve viva name from session
 
-        if (!className || !userName) {
-            return res.status(400).json({ success: false, message: "Missing required fields" });
-        }
+      if (!vivaName) {
+          return res.status(400).json({ success: false, message: "Viva name is missing in session" });
+      }
 
-        // Find the student details with the given className
-        const studentData = await db.get().collection('students').findOne({ className });
+      if (!className || !userName || !rollStart || !rollEnd) {
+          return res.status(400).json({ success: false, message: "Missing required fields" });
+      }
 
-        if (!studentData) {
-            return res.status(404).json({ success: false, message: "Class not found" });
-        }
+      const minRoll = parseInt(rollStart, 10);
+      const maxRoll = parseInt(rollEnd, 10);
 
-        // Prepare the data to insert into logIN collection
-        const logEntry = {
-          vivaname:req.session.vivaDetails.viva_name,
-            className: studentData.className,
-            networkName: userName, // Add the session user (Kabeer)
-            students: studentData.students, // Existing students
-            loginTime: new Date(),
-        };
+      if (isNaN(minRoll) || isNaN(maxRoll) || minRoll > maxRoll || minRoll < 1) {
+          return res.status(400).json({ success: false, message: "Invalid roll number range" });
+      }
 
-        // Insert into logIN collection
-        await db.get().collection('logIn').insertOne(logEntry);
+      const studentData = await db.get().collection('students').findOne({ className });
 
-        res.redirect('/admin/home')
-    } catch (error) {
-        console.error("Error during login:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
-    }
+      if (!studentData || !studentData.students) {
+          return res.status(404).json({ success: false, message: "Class not found or no students available" });
+      }
+
+      const selectedStudents = studentData.students.filter(student => {
+          return student.roll >= minRoll && student.roll <= maxRoll;
+      });
+
+      if (selectedStudents.length === 0) {
+          return res.status(400).json({ success: false, message: "No students found in the selected range" });
+      }
+
+      const logEntry = {
+          vivaname: vivaName,  // Store viva name from session
+          className: studentData.className,
+          networkName: userName,
+          students: selectedStudents,
+          loginTime: new Date(),
+      };
+
+      await db.get().collection('logIn').insertOne(logEntry);
+
+      res.redirect('/admin/home');
+
+  } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
 });
+
+ 
+
+// Example usage
+
+
+
 
   module.exports = router;

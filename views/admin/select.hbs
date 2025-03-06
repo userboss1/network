@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Select Class</title>
+    <title>Select Class & Roll Number</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,26 +16,114 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            width: 300px;
+            width: 350px;
             margin: auto;
+            padding: 30px;
         }
-        select, button {
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+        select, input, button {
             width: 100%;
             padding: 10px;
-            margin-top: 10px;
+            margin-top: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .range-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .range-container input {
+            width: 40%;
+        }
+        .range-info {
+            font-size: 14px;
+            color: #555;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h2>Select Your Class</h2>
+    <h2>Select Your Class & Roll Number Range</h2>
     <form action="/admin/logIn" method="POST">
         <label for="class">Choose a class:</label>
-        <select name="className" id="class">
-            {{#each classNames}}
-                <option value="{{this}}">{{this}}</option>
+        <select name="className" id="class" onchange="updateRollNumbers()">
+            {{#each classData}}
+                <option value="{{className}}" data-max-roll="{{maxRollNumber}}">{{className}}</option>
             {{/each}}
         </select>
+
+        <label for="roll-range">Choose roll number range:</label>
+        <div class="range-container">
+            <input type="number" name="rollStart" id="rollStart" placeholder="Min" min="1" max="1">
+            <span class="range-info">to</span>
+            <input type="number" name="rollEnd" id="rollEnd" placeholder="Max" min="1" max="1">
+        </div>
+
         <button type="submit">Submit</button>
     </form>
+
+    <script>
+    function updateRollNumbers() {
+        let classSelect = document.getElementById("class");
+        let rollStart = document.getElementById("rollStart");
+        let rollEnd = document.getElementById("rollEnd");
+
+        let maxRoll = parseInt(classSelect.options[classSelect.selectedIndex].getAttribute("data-max-roll"), 10);
+
+        rollStart.value = 1; 
+        rollStart.min = 1;
+        rollStart.max = maxRoll;
+        
+        rollEnd.value = maxRoll;
+        rollEnd.min = 1;
+        rollEnd.max = maxRoll;
+    }
+
+    document.getElementById("rollStart").addEventListener("input", function() {
+        let rollEnd = document.getElementById("rollEnd");
+        let startValue = parseInt(this.value, 10);
+        let maxRoll = parseInt(document.getElementById("class").options[document.getElementById("class").selectedIndex].getAttribute("data-max-roll"), 10);
+
+        if (isNaN(startValue) || startValue < 1) {
+            this.value = 1;
+        }
+        if (startValue > rollEnd.value) {
+            rollEnd.value = startValue; // Ensure rollEnd is never less than rollStart
+        }
+        this.max = maxRoll;
+    });
+
+    document.getElementById("rollEnd").addEventListener("input", function() {
+        let rollStart = document.getElementById("rollStart");
+        let endValue = parseInt(this.value, 10);
+        let maxRoll = parseInt(document.getElementById("class").options[document.getElementById("class").selectedIndex].getAttribute("data-max-roll"), 10);
+
+        if (isNaN(endValue) || endValue < rollStart.value) {
+            this.value = rollStart.value; // Ensure rollEnd is never less than rollStart
+        }
+        if (endValue > maxRoll) {
+            this.value = maxRoll; // Prevent exceeding max roll
+        }
+    });
+
+    // Ensure values are set correctly on page load
+    window.onload = updateRollNumbers;
+</script>
+
 </body>
 </html>

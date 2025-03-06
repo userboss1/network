@@ -148,34 +148,72 @@ return new Promise((resolve,reject)=>{
           const  info=await db.get().collection('results').find().toArray()
             return info
         },
-        getVivadetails: async (networkName) => {
+        getVivaDetailsAndLogs: async () => {
             try {
-               
-                // Find Viva where `network_name` matches session user name, return only required fields
-                const viva = await db.get().collection('qbank').findOne(
-                    { network_name: networkName },
-                    { projection: { viva_name: 1, viva_password: 1, _id: 1 } } // Only retrieve viva_name and viva_password
-                );
-    
-                return viva || null; // Return viva details or null if not found
+                // Step 1: Get All Viva Names from `qbank`
+                const vivaDetailsList = await db.get().collection('qbank').find({}, { projection: { viva_name: 1, _id: 0 } }).toArray();
+                
+                if (!vivaDetailsList.length) {
+                    console.log("No viva records found.");
+                    return [];
+                }
+        
+                // Step 2: Fetch Logs for Each Viva Name
+                const results = await Promise.all(vivaDetailsList.map(async (viva) => {
+                    const vivaName = viva.viva_name;
+        
+                    // Fetch logs from `logIn` matching this vivaName
+                    const logEntries = await db.get().collection('logIn').find({ vivaname: vivaName }).toArray();
+        
+                    if (!logEntries.length) return { vivaName, logs: [] };
+        
+                    // Process Each Log Entry to Extract Class Name & Roll Number Range
+                    const formattedLogs = logEntries.map(log => {
+                        const rollNumbers = log.students.map(student => student.roll);
+                        const minRoll = Math.min(...rollNumbers);
+                        const maxRoll = Math.max(...rollNumbers);
+                        return {
+                            className: log.className,
+                            rollRange: `${minRoll}-${maxRoll}`
+                        };
+                    });
+        
+                    return {
+                        vivaName,
+                        logs: formattedLogs
+                    };
+                }));
+        
+                return results;
+        
             } catch (error) {
                 console.error("Database error:", error);
-                return null;
+                return [];
             }
         },
+        
+        
+       
         getClasses: () => {
             return new Promise(async (resolve, reject) => {
                 try {
-                    let classes = await db.get().collection('students').find({}, { projection: { className: 1, _id: 0 } }).toArray();
-                    let classNames = classes.map(cls => cls.className); // Extract only class names
-                    console.log("The list of classes:", classNames); // Debugging log
-                    resolve(classNames);
+                    let classes = await db.get().collection('students').find({}, { projection: { className: 1, students: 1, _id: 0 } }).toArray();
+        
+                    let classData = classes.map(cls => ({
+                        className: cls.className,
+                        maxRollNumber: cls.students.length // Get total students as the max roll number
+                    }));
+        
+                    console.log("Class Data:", classData); // Debugging log
+                    resolve(classData);
                 } catch (error) {
-                    console.error("Error fetching class names:", error);
+                    console.error("Error fetching class data:", error);
                     reject(error);
                 }
             });
-        }
+        },
+       
         
     }
+    
 //https://chatgpt.com/share/67bb5e4f-02c0-8004-8062-ccbf9c90dbbd
