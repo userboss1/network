@@ -38,7 +38,7 @@ console.log("recieved details",vivaDetails);
 req.session.vivaDetails=vivaDetails
 
 
-    res.render("admin/home",{viva:vivaDetails}); // Render home page if logged in
+    res.render("admin/home",{viva:vivaDetails,adminName:req.session.user.name}); // Render home page if logged in
   });
 
 
@@ -272,6 +272,14 @@ router.post('/logIn', async (req, res) => {
  
 
 // Example usage
+router.get('/remove-class', async (req, res) => {
+  const { admin, class: className, range } = req.query;
+  console.log(`Removing: ${admin}, ${className}, ${range}`);
+
+  await AdminHelper.RemoveFromLogin({ className, range, networkName: admin });
+
+  res.redirect('/Admin/home'); // Redirect back to the dashboard
+});
 
 
 

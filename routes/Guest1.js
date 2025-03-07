@@ -36,8 +36,9 @@ router.post('/login', async (req, res) => {
         const query = {
             students: {
                 $elemMatch: {
-                    roll: roll,  // No parseInt() - check actual stored type
-                    register: register
+                    roll: Number(roll),
+                    register: Number(register)
+                    
                 }
             }
         };
@@ -88,9 +89,7 @@ router.get('/viva', isLoggedIn, (req, res) => {
  
  ngnog*/
 router.get('/attendviva', isLoggedIn, (req, res) => {
-    if (!req.session.vivaActive) { // Check if viva is active
-        return res.send("Viva is not active. Please wait for the admin to start it.");
-    }
+  
 
     guestHelper.getQ(req.session.studentDetails.networkName).then((response) => {
         console.log(response);

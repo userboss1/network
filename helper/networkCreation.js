@@ -213,7 +213,44 @@ return new Promise((resolve,reject)=>{
             });
         },
        
+        RemoveFromLogin: async ({ className, range, networkName }) => {
+            try {
+                const [startRoll, endRoll] = range.split('-').map(Number);
         
+                // Find documents that match className and networkName
+                const documents = await db.get().collection('logIn').find({
+                    className: className,
+                    networkName: networkName
+                }).toArray();
+        
+                let deletedDocs = 0;
+                let modifiedDocs = 0;
+        
+                for (let doc of documents) {
+                    // Remove students within the roll number range
+                    doc.students = doc.students.filter(student => student.roll < startRoll || student.roll > endRoll);
+        
+                    if (doc.students.length === 0) {
+                        // If no students are left, delete the entire document
+                        await db.get().collection('logIn').deleteOne({ _id: doc._id });
+                        deletedDocs++;
+                    } else {
+                        // Otherwise, update the document with the remaining students
+                        await db.get().collection('logIn').updateOne(
+                            { _id: doc._id },
+                            { $set: { students: doc.students } }
+                        );
+                        modifiedDocs++;
+                    }
+                }
+        
+                console.log(`Modified ${modifiedDocs} document(s), Deleted ${deletedDocs} document(s).`);
+            } catch (error) {
+                console.error("Error processing login records:", error);
+            }
+        }
+        
+
     }
     
 //https://chatgpt.com/share/67bb5e4f-02c0-8004-8062-ccbf9c90dbbd
