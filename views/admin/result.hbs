@@ -3,54 +3,398 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Results</title>
+    <title>Academic Results Dashboard</title>
+    <!-- SheetJS library for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 2rem;
+        }
+        
+        .departments-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .department-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+        }
+        
+        .department-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .department-header {
+            background: linear-gradient(to right, #74ebd5, #acb6e5);
+            color: #2d3748;
+            padding: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .department-stats {
+            padding: 1.5rem;
             text-align: center;
         }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
+        
+        .student-count {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+        
+        .student-label {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+        
+        .view-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #4299e1;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .view-btn:hover {
+            background-color: #3182ce;
+        }
+        
+        .students-list {
+            display: none;
             background: white;
-            padding: 20px;
             border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
         }
-        h2 {
-            color: #333;
+        
+        .students-list.active {
+            display: block;
         }
-        .result-card {
-            background: #ffffff;
-            padding: 15px;
-            margin: 10px 0;
+        
+        .department-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.75rem;
+        }
+        
+        .student-card {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            padding: 1rem;
             border-radius: 8px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: left;
+            margin-bottom: 1rem;
+            background-color: #f8fafc;
+            transition: all 0.2s;
         }
-        .result-card strong {
-            color: #007BFF;
+        
+        .student-card:hover {
+            background-color: #edf2f7;
+            transform: translateX(5px);
         }
-        .result-card span {
-            font-weight: bold;
+        
+        .student-card p {
+            margin: 0;
+        }
+        
+        .student-name {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .viva-name {
+            color: #718096;
+        }
+        
+        .score {
+            text-align: center;
+            font-weight: 700;
+            background: #ebf8ff;
+            border-radius: 20px;
+            padding: 0.25rem 0.5rem;
+            color: #3182ce;
+            width: fit-content;
+            margin-left: auto;
+        }
+        
+        .back-btn {
+            background-color: #edf2f7;
+            color: #4a5568;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        .back-btn:hover {
+            background-color: #e2e8f0;
+        }
+        
+        .back-icon {
+            margin-right: 0.5rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .download-excel-btn {
+            background-color: #48bb78;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .download-excel-btn:hover {
+            background-color: #38a169;
+        }
+        
+        .download-icon {
+            margin-right: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .departments-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .student-card {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+            
+            .score {
+                margin-left: 0;
+            }
         }
     </style>
 </head>
 <body>
-
+    <header>
+        <h1>Academic Results Dashboard</h1>
+    </header>
+    
     <div class="container">
-        <h2>Quiz Results</h2>
-
-        {{#each info}}
-            <div class="result-card">
-                <p><strong>Name:</strong> {{this.name}}</p>
-                <p><strong>Roll Number:</strong> {{this.rollNumb}}</p>
-                <p><strong>Score:</strong> {{this.result.score}}</p>
+        <!-- Departments Grid -->
+        <div class="departments-container" id="departmentsContainer">
+            <!-- Department cards will be generated here -->
+        </div>
+        
+        <!-- Students List (Hidden initially) -->
+        <div class="students-list" id="studentsList">
+            <div class="action-buttons">
+                <button class="back-btn" id="backBtn">
+                    <span class="back-icon">←</span> Back to Departments
+                </button>
+                <button class="download-excel-btn" id="downloadExcelBtn">
+                    <span class="download-icon">⬇️</span> Download as Excel
+                </button>
             </div>
-        {{/each}}
-
+            <h2 class="department-title" id="departmentTitle">Department Name</h2>
+            <div id="studentsContainer">
+                <!-- Student cards will be generated here -->
+            </div>
+        </div>
     </div>
-
+    
+    <script>
+        // Get the data directly from the HBS context
+        // Client-side: Parse the JSON string
+        const studentsData = JSON.parse('{{{info}}}');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Group students by department
+            const departments = {};
+            studentsData.forEach(student => {
+                // Normalize department name (lowercase for consistency)
+                const deptName = student.department ? student.department.toString() : "Other";
+                
+                if (!departments[deptName]) {
+                    departments[deptName] = [];
+                }
+                departments[deptName].push(student);
+            });
+            
+            // Generate department cards
+            const departmentsContainer = document.getElementById('departmentsContainer');
+            
+            Object.keys(departments).forEach(dept => {
+                const students = departments[dept];
+                const departmentCard = document.createElement('div');
+                departmentCard.className = 'department-card';
+                departmentCard.innerHTML = `
+                    <div class="department-header">${dept}</div>
+                    <div class="department-stats">
+                        <div class="student-count">${students.length}</div>
+                        <div class="student-label">Students</div>
+                    </div>
+                    <button class="view-btn" data-department="${dept}">View Results</button>
+                `;
+                
+                departmentsContainer.appendChild(departmentCard);
+            });
+            
+            // Handle view department button clicks
+            const viewButtons = document.querySelectorAll('.view-btn');
+            const studentsList = document.getElementById('studentsList');
+            const departmentTitle = document.getElementById('departmentTitle');
+            const studentsContainer = document.getElementById('studentsContainer');
+            const backBtn = document.getElementById('backBtn');
+            const departmentsGrid = document.getElementById('departmentsContainer');
+            const downloadExcelBtn = document.getElementById('downloadExcelBtn');
+            
+            let currentDepartment = '';
+            
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const department = this.getAttribute('data-department');
+                    currentDepartment = department;
+                    
+                    // Update department title
+                    departmentTitle.textContent = department + ' Department';
+                    
+                    // Clear previous students
+                    studentsContainer.innerHTML = '';
+                    
+                    // Add student cards
+                    departments[department].forEach(student => {
+                        const studentCard = document.createElement('div');
+                        studentCard.className = 'student-card';
+                        
+                        const rollNumber = student.rollNumb || student.roll || '';
+                        const score = student.result && student.result.score !== undefined ? 
+                                      student.result.score : 'N/A';
+                        
+                        studentCard.innerHTML = `
+                            <p class="student-name">${student.name || 'Unknown'} <span style="color: #a0aec0; font-weight: normal;">(${rollNumber})</span></p>
+                            <p class="viva-name">${student.vivaname || 'Unknown'}</p>
+                            <p class="score">${score}</p>
+                        `;
+                        
+                        studentsContainer.appendChild(studentCard);
+                    });
+                    
+                    // Show students list, hide departments grid
+                    departmentsGrid.style.display = 'none';
+                    studentsList.classList.add('active');
+                });
+            });
+            
+            // Handle back button click
+            backBtn.addEventListener('click', function() {
+                studentsList.classList.remove('active');
+                departmentsGrid.style.display = 'grid';
+            });
+            
+            // Handle download Excel button click
+            downloadExcelBtn.addEventListener('click', function() {
+                if (!currentDepartment) return;
+                
+                exportToExcel(departments[currentDepartment], currentDepartment);
+            });
+            
+            // Function to export data to Excel
+            function exportToExcel(students, departmentName) {
+                // Prepare data for Excel
+                const excelData = students.map(student => {
+                    return {
+                        'Name': student.name || 'Unknown',
+                        'Roll Number': student.rollNumb || student.roll || '',
+                        'Viva Name': student.vivaname || 'Unknown',
+                        'Score': student.result && student.result.score !== undefined ? 
+                                student.result.score : 'N/A'
+                    };
+                });
+                
+                // Create worksheet
+                const worksheet = XLSX.utils.json_to_sheet(excelData);
+                
+                // Create workbook
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, departmentName);
+                
+                // Generate Excel file
+                const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+                
+                // Save file
+                saveExcelFile(excelBuffer, `${departmentName}_Department_Results.xlsx`);
+            }
+            
+            // Function to save Excel file
+            function saveExcelFile(buffer, fileName) {
+                const blob = new Blob([buffer], { type: 'application/octet-stream' });
+                
+                // Create download link
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }, 0);
+            }
+        });
+    </script>
 </body>
 </html>

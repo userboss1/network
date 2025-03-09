@@ -55,5 +55,15 @@ router.post("/addstudent", async (req, res) => {
    }
 });
 
- 
+router.delete('/delete/:id', verifyLogin, async (req, res) => {
+   try {
+       const userId = req.params.id;
+       await superhelper.deleteUser(userId);
+       res.json({ success: true, message: "User deleted successfully" });
+   } catch (error) {
+       console.error("Error deleting user:", error);
+       res.status(500).json({ success: false, message: "Internal Server Error" });
+   }
+});
+
 module.exports=router

@@ -64,7 +64,9 @@ getQ: (userData) => {
     return new Promise((resolve, reject) => {
         console.log("Received userData:", userData);
 
-        db.get().collection('qbank').find({ network_name: userData }).toArray()
+        db.get().collection('qbank')
+            .find({ network_name: userData.network_name, viva_name: userData.viva_name })
+            .toArray()
             .then((response) => {
                 console.log("Fetched Questions:", response);
                 resolve(response);

@@ -34,6 +34,7 @@ router.post('/login', async (req, res) => {
 
         // Query without type conversion
         const query = {
+            vivaname:name,
             students: {
                 $elemMatch: {
                     roll: Number(roll),
@@ -89,12 +90,17 @@ router.get('/viva', isLoggedIn, (req, res) => {
  
  ngnog*/
 router.get('/attendviva', isLoggedIn, (req, res) => {
-  
+   
 
-    guestHelper.getQ(req.session.studentDetails.networkName).then((response) => {
+    guestHelper.getQ({
+        network_name: req.session.studentDetails.networkName,
+        viva_name: req.session.studentDetails.vivaname
+    })
+    .then((response) => {
         console.log(response);
         res.render('guest/viva', { response, student: req.session.studentDetails });
-    }).catch((err) => {
+    })
+    .catch((err) => {
         console.error("Error fetching questions:", err);
         res.status(500).send("Error fetching viva questions.");
     });

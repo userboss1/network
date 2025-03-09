@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            font-weight: bold;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .question-block {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f9f9f9;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+        .option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .option input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .option input[type="radio"] {
+            accent-color: #007BFF;
+            cursor: pointer;
+        }
+        .submit-btn, .add-btn {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+            display: block;
+            margin: 20px auto 0;
+        }
+        .submit-btn:hover, .add-btn:hover {
+            background: #0056b3;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .preview-container {
+            margin-top: 10px;
+        }
+        .image-preview, .current-image {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 5px;
+            display: block;
+            margin-top: 10px;
+        }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Edit Quiz</h2>
+        <form id="quizForm" action="/Admin/updateViva" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="viva_id" value="{{viva._id}}">
+            <div class="input-group">
+                <label for="network-name">Network Name:</label>
+                <input type="text" id="network-name" value="{{user}}" readonly>
+                <input type="hidden" name="network_name" value="{{user}}">
+            </div>
+            <div class="input-group">
+                <label for="viva-name">Viva Name:</label>
+                <input type="text" id="viva-name" name="viva_name" value="{{viva.viva_name}}" required>
+            </div>
+            <div class="input-group">
+                <label for="viva-pass">Viva Password:</label>
+                <input type="password" id="viva-pass" name="viva_password" value="{{viva.viva_password}}" required>
+            </div>
+            <div id="questions-container">
+                <!-- Questions will be loaded here by JavaScript -->
+            </div>
+            <button type="button" class="add-btn" onclick="addQuestion()">+ Add Question</button>
+            <button type="submit" class="submit-btn">Update Quiz</button>
+        </form>
+    </div>
+
+    <script>
+        let questionIndex = 0;
+        let existingQuestions = [];
+        
+        try {
+            // Parse the existing questions data
+            existingQuestions = {{{vivaDataJSON}}}.questions || [];
+            console.log("Loaded questions:", existingQuestions);
+        } catch (error) {
+            console.error("Error parsing questions:", error);
+            existingQuestions = [];
+        }
+        
+        // Load existing questions when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadExistingQuestions();
+        });
+        
+        function loadExistingQuestions() {
+            const container = document.getElementById("questions-container");
+            container.innerHTML = ''; // Clear container
+            
+            if (existingQuestions && existingQuestions.length > 0) {
+                existingQuestions.forEach((question, index) => {
+                    addExistingQuestion(question, index);
+                });
+                questionIndex = existingQuestions.length;
+            } else {
+                // If no questions, add an empty one
+                addQuestion();
+            }
+            
+            // Update question numbers
+            updateQuestionNumbers();
+        }
+        
+        function addExistingQuestion(questionData, index) {
+            const container = document.getElementById("questions-container");
+            const questionBlock = document.createElement("div");
+            questionBlock.classList.add("question-block");
+            questionBlock.dataset.index = index;
+            
+            // Ensure options array exists and has 4 elements
+            const options = questionData.options || ['', '', '', ''];
+            while (options.length < 4) options.push('');
+            
+            let optionsHTML = '';
+            for (let i = 0; i < 4; i++) {
+                const optionValue = options[i] || '';
+                optionsHTML += `
+                    <div class="option">
+                        <input type="text" name="options[${index}][${i}]" value="${escapeHtml(optionValue)}" required placeholder="Option ${i + 1}">
+                        <input type="radio" name="correct_answer[${index}]" value="${i}" ${i === (questionData.correct_answer || 0) ? 'checked' : ''} required>
+                    </div>
+                `;
+            }
+            
+            let imageHTML = '';
+            if (questionData.image) {
+                imageHTML = `
+                    <div class="image-upload" style="margin-top: 10px;">
+                        <label>Current Image:</label>
+                        <img src="${questionData.image}" class="current-image" onerror="this.style.display='none'; document.getElementById('img-error-${index}').style.display='block';">
+                        <div id="img-error-${index}" class="error-message">Image could not be loaded. You may want to upload a new one.</div>
+                        <input type="hidden" name="existing_image[${index}]" value="${questionData.image}">
+                        <br>
+                        <label for="image-${index}">Change Image (Optional):</label>
+                        <input type="file" id="image-${index}" name="question_image[${index}]" 
+                               accept="image/*" onchange="previewImage(this, ${index})">
+                        <div class="preview-container">
+                            <img id="preview-${index}" class="image-preview" style="display: none;">
+                        </div>
+                    </div>
+                `;
+            } else {
+                imageHTML = `
+                    <div class="image-upload" style="margin-top: 10px;">
+                        <label for="image-${index}">Add Image (Optional):</label>
+                        <input type="file" id="image-${index}" name="question_image[${index}]" 
+                               accept="image/*" onchange="previewImage(this, ${index})">
+                        <div class="preview-container">
+                            <img id="preview-${index}" class="image-preview" style="display: none;">
+                        </div>
+                    </div>
+                `;
+            }
+            
+            questionBlock.innerHTML = `
+                <button type="button" class="remove-btn" onclick="removeQuestion(this, ${index})">X</button>
+                <h3>Question ${index + 1}</h3>
+                <input type="text" name="questions[${index}]" value="${escapeHtml(questionData.question || '')}" placeholder="Enter your question" required>
+                
+                ${imageHTML}
+                
+                <h4>Options:</h4>
+                <div class="options-container">
+                    ${optionsHTML}
+                </div>
+            `;
+            
+            container.appendChild(questionBlock);
+        }
+        
+        function addQuestion() {
+            const container = document.getElementById("questions-container");
+            const questionBlock = document.createElement("div");
+            questionBlock.classList.add("question-block");
+            questionBlock.dataset.index = questionIndex;
+            
+            questionBlock.innerHTML = `
+                <button type="button" class="remove-btn" onclick="removeQuestion(this, ${questionIndex})">X</button>
+                <h3>Question ${questionIndex + 1}</h3>
+                <input type="text" name="questions[${questionIndex}]" placeholder="Enter your question" required>
+                
+                <div class="image-upload" style="margin-top: 10px;">
+                    <label for="image-${questionIndex}">Add Image (Optional):</label>
+                    <input type="file" id="image-${questionIndex}" name="question_image[${questionIndex}]" 
+                           accept="image/*" onchange="previewImage(this, ${questionIndex})">
+                    <div class="preview-container">
+                        <img id="preview-${questionIndex}" class="image-preview" style="display: none;">
+                    </div>
+                </div>
+                
+                <h4>Options:</h4>
+                <div class="options-container">
+                    ${[0, 1, 2, 3].map(i => `
+                        <div class="option">
+                            <input type="text" name="options[${questionIndex}][${i}]" required placeholder="Option ${i + 1}">
+                            <input type="radio" name="correct_answer[${questionIndex}]" value="${i}" required ${i === 0 ? 'checked' : ''}>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.appendChild(questionBlock);
+            questionIndex++;
+            
+            // Update all question numbers
+            updateQuestionNumbers();
+        }
+        
+        function removeQuestion(button, index) {
+            const container = document.getElementById("questions-container");
+            const questionBlocks = container.querySelectorAll('.question-block');
+            
+            // Don't remove if it's the last question
+            if (questionBlocks.length <= 1) {
+                alert("You must have at least one question.");
+                return;
+            }
+            
+            button.parentElement.remove();
+            
+            // Update all question numbers
+            updateQuestionNumbers();
+        }
+        
+        function updateQuestionNumbers() {
+            const questionBlocks = document.querySelectorAll('.question-block');
+            questionBlocks.forEach((block, index) => {
+                const heading = block.querySelector('h3');
+                heading.textContent = `Question ${index + 1}`;
+            });
+        }
+        
+        function previewImage(input, index) {
+            const preview = document.getElementById(`preview-${index}`);
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+        
+        // Helper function to escape HTML special characters
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // Validate form before submission
+        document.getElementById('quizForm').addEventListener('submit', function(event) {
+            const questionBlocks = document.querySelectorAll('.question-block');
+            
+            if (questionBlocks.length === 0) {
+                alert('Please add at least one question to the quiz.');
+                event.preventDefault();
+                return false;
+            }
+            
+            // Ensure all required fields are filled
+            let isValid = true;
+            questionBlocks.forEach((block) => {
+                const index = block.dataset.index;
+                const questionInput = block.querySelector(`input[name="questions[${index}]"]`);
+                const options = block.querySelectorAll(`.option input[type="text"]`);
+                
+                if (!questionInput.value.trim()) {
+                    questionInput.focus();
+                    isValid = false;
+                }
+                
+                options.forEach(option => {
+                    if (!option.value.trim()) {
+                        option.focus();
+                        isValid = false;
+                    }
+                });
+            });
+            
+            if (!isValid) {
+                alert('Please fill in all required fields.');
+                event.preventDefault();
+                return false;
+            }
+        });
+        // Add this to the script section of your editViva.html
+function validateAndSubmitForm() {
+    const form = document.getElementById('quizForm');
+    
+    // Before submitting, ensure all existing images are properly included
+    const questionBlocks = document.querySelectorAll('.question-block');
+    
+    questionBlocks.forEach((block, index) => {
+        const currentImageElement = block.querySelector('.current-image');
+        const existingImageInput = block.querySelector(`input[name="existing_image[${index}]"]`);
+        const fileInput = block.querySelector(`input[name="question_image[${index}]"]`);
+        
+        // If there's an image and no new file is selected, ensure the hidden input has the path
+        if (currentImageElement && currentImageElement.src && 
+            (!fileInput.files || fileInput.files.length === 0)) {
+            
+            // If the hidden input doesn't exist, create one
+            if (!existingImageInput) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `existing_image[${index}]`;
+                input.value = currentImageElement.src;
+                block.appendChild(input);
+            }
+        }
+    });
+    
+    // Now submit the form
+    return true;
+}
+
+// Modify your form to use this function
+document.getElementById('quizForm').onsubmit = validateAndSubmitForm;
+    </script>
+</body>
+</html>

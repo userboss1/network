@@ -1,6 +1,7 @@
 
 var db=require('../config/connection')
 var collection =require('../config/ccollection')
+const { ObjectId } = require('mongodb');
 
 var bcrypt=require('bcrypt')
 module.exports={
@@ -74,5 +75,17 @@ return new Promise(async(resolve,reject)=>{
         }
     }
     
-       
+  ,
+  
+  deleteUser: async (userId) => {
+    try {
+        const result = await db.get().collection(collection.ADMIN_COLLLECTION).deleteOne({ _id: new ObjectId(userId) });
+        return result.deletedCount > 0;
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        throw error;
+    }
+}
+
+
 }

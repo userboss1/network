@@ -1,6 +1,8 @@
 var db=require('../config/connection')
 var collection=require('../config/ccollection');
 const bcrypt=require("bcrypt");
+const { promise } = require('bcrypt/promises');
+const { resolve, reject } = require('promise');
 
 const  ObjectId  = require('mongodb').ObjectId
 
@@ -56,52 +58,26 @@ module.exports={
         vivaSubmit: async (userData) => {
             try {
                 console.log("Raw userData:", userData);
-        
-                const { network_name, viva_name, viva_password } = userData;
-        
-                // Ensure questions are stored as an array
-                const questions = Array.isArray(userData["questions[]"])
-                    ? userData["questions[]"]
-                    : [userData["questions[]"]];
-        
-                const options = {};
-                Object.keys(userData).forEach((key) => {
-                    if (key.startsWith("options[")) {
-                        const index = key.match(/\d+/)[0]; // Extract question index
-                        options[index] = Array.isArray(userData[key]) ? userData[key] : [userData[key]];
-                    }
-                });
-        
-                const correct_answer = {};
-                Object.keys(userData).forEach((key) => {
-                    if (key.startsWith("correct_answer[")) {
-                        const index = key.match(/\d+/)[0];
-                        correct_answer[index] = Number(userData[key]); // Ensure numeric value
-                    }
-                });
-        
-                // Format structured data
-                const formattedQuestions = questions.map((q, index) => ({
-                    question: q,
-                    options: options[index] || [],
-                    correct_answer: correct_answer[index]
-                }));
-        
+                
+                const { network_name, viva_name, viva_password, questions } = userData;
+                
+                // The questions array is already formatted correctly, no need to reprocess
+                
                 // Insert into MongoDB
                 const response = await db.get().collection('qbank').insertOne({
                     network_name,
                     viva_name,
                     viva_password,
-                    questions: formattedQuestions
+                    questions // Use the pre-formatted questions array directly
                 });
-        
+                
                 console.log("DB Insert Response:", response);
-                return response; // Return the result as a Promise
+                return response;
             } catch (error) {
                 console.error("Error inserting quiz data:", error);
-                throw error; // Ensure errors are caught in the calling function
+                throw error;
             }
-        }        
+        }      
         ,
         compare: async (userAnswers) => {
             console.log(userAnswers);
@@ -144,10 +120,22 @@ return new Promise((resolve,reject)=>{
      })
 })
         },
-        returnResult:async()=>{
-          const  info=await db.get().collection('results').find().toArray()
-            return info
+      
+
+        returnResult: async (viva, admin) => {
+            try {
+                const results = await db.get().collection('results').find({
+                    vivaname: viva,
+                    networkName: admin
+                }).toArray();
+        
+                return results; // Returns an empty array if no matching documents are found
+            } catch (error) {
+                console.error("Error fetching results:", error);
+                return [];
+            }
         },
+        
         getVivaDetailsAndLogs: async () => {
             try {
                 // Step 1: Get All Viva Names from `qbank`
@@ -249,8 +237,21 @@ return new Promise((resolve,reject)=>{
                 console.error("Error processing login records:", error);
             }
         }
-        
-
+        ,
+         DeletViva: (networkName, vivaName) => {
+            return new Promise((resolve, reject) => {
+                db.get().collection('qbank').deleteOne({ network_name: networkName, viva_name: vivaName })
+                    .then(result => {
+                        if (result.deletedCount > 0) {
+                            resolve("Viva deleted successfully");
+                        } else {
+                            reject("No matching viva found");
+                        }
+                    })
+                    .catch(error => reject(error));
+            });
+        },
+               
     }
     
 //https://chatgpt.com/share/67bb5e4f-02c0-8004-8062-ccbf9c90dbbd

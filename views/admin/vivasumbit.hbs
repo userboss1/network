@@ -1,137 +1,255 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Form</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 800px;
-            overflow-y: auto;
-            max-height: 90vh;
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        .input-group label {
-            font-weight: bold;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .question-block {
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            background: #f9f9f9;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
-        }
-        .option {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .option input[type="text"] {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-right: 10px;
-        }
-        .option input[type="radio"] {
-            accent-color: #007BFF;
-            cursor: pointer;
-        }
-        .submit-btn {
-            background: #007BFF;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            cursor: pointer;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            transition: 0.3s;
-            display: block;
-            margin: 20px auto 0;
-        }
-        .submit-btn:hover {
-            background: #0056b3;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Quiz Form</h2>
-        <form action="/Admin/qsumbit" method="POST">
-        
-           <div class="input-group">
-    <label for="network-name">Network Name:</label>
-    <input type="text" id="network-name" value="{{user}}" readonly>
-    <input type="hidden" name="network_name" value="{{user}}">
-</div>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Quiz Form</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                margin: 0;
+                padding: 20px;
+            }
+            .container {
+                background: white;
+                padding: 20px;
+                border-radius: 15px;
+                box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+                width: 90%;
+                max-width: 800px;
+                overflow-y: auto;
+                max-height: 90vh;
+            }
+            h2 {
+                text-align: center;
+                color: #333;
+            }
+            .input-group {
+                margin-bottom: 20px;
+            }
+            .input-group label {
+                font-weight: bold;
+            }
+            .input-group input {
+                width: 100%;
+                padding: 10px;
+                margin-top: 5px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+            .question-block {
+                margin-bottom: 20px;
+                padding: 15px;
+                border-radius: 10px;
+                background: #f9f9f9;
+                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
+                position: relative;
+            }
+            .option {
+                display: flex;
+                align-items: center;
+                margin-bottom: 8px;
+            }
+            .option input[type="text"] {
+                flex: 1;
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                margin-right: 10px;
+            }
+            .option input[type="radio"] {
+                accent-color: #007BFF;
+                cursor: pointer;
+            }
+            .submit-btn, .add-btn {
+                background: #007BFF;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                cursor: pointer;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                transition: 0.3s;
+                display: block;
+                margin: 20px auto 0;
+            }
+            .submit-btn:hover, .add-btn:hover {
+                background: #0056b3;
+            }
+            .remove-btn {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: red;
+                color: white;
+                border: none;
+                padding: 5px 10px;
+                cursor: pointer;
+                border-radius: 5px;
+                font-size: 14px;
+            }
+            .preview-container {
+                margin-top: 10px;
+            }
+            .image-preview {
+                max-width: 200px;
+                max-height: 150px;
+                border-radius: 5px;
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Quiz Form</h2>
+            <form id="quizForm" action="/Admin/qsumbit" method="POST" enctype="multipart/form-data">
+                <div class="input-group">
+                    <label for="network-name">Network Name:</label>
+                    <input type="text" id="network-name" value="{{user}}" readonly>
+                    <input type="hidden" name="network_name" value="{{user}}">
+                </div>
+                <div class="input-group">
+                    <label for="viva-name">Viva Name:</label>
+                    <input type="text" id="viva-name" name="viva_name" required>
+                </div>
+                <div class="input-group">
+                    <label for="viva-pass">Viva Password:</label>
+                    <input type="password" id="viva-pass" name="viva_password" required>
+                </div>
+                <div id="questions-container"></div>
+                <button type="button" class="add-btn" onclick="addQuestion()">+ Add Question</button>
+                <button type="submit" class="submit-btn">Submit</button>
+            </form>
+        </div>
 
-            <div class="input-group">
-                <label for="viva-name">Viva Name:</label>
-                <input type="text" id="viva-name" name="viva_name" required>
-            </div>
-            <div class="input-group">
-                <label for="viva-pass">Viva Password:</label>
-                <input type="password" id="viva-pass" name="viva_password" required>
-            </div>
+        <script>
+            let questionIndex = 0;
             
-            <!-- Questions Start Here -->
+            // Add a question when the page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                addQuestion();
+            });
             
-            <!-- Restore original hardcoded questions -->
-            <div class="question-block">
-                <h3>Question 1</h3>
-                <input type="text" name="questions[]" placeholder="Enter your question" required>
-                <h4>Options:</h4>
-                <div class="option">
-                    <input type="text" name="options[0][]" required placeholder="Option 1">
-                    <input type="radio" name="correct_answer[0]" value="0" required>
-                </div>
-                <div class="option">
-                    <input type="text" name="options[0][]" required placeholder="Option 2">
-                    <input type="radio" name="correct_answer[0]" value="1">
-                </div>
-                <div class="option">
-                    <input type="text" name="options[0][]" required placeholder="Option 3">
-                    <input type="radio" name="correct_answer[0]" value="2">
-                </div>
-                <div class="option">
-                    <input type="text" name="options[0][]" required placeholder="Option 4">
-                    <input type="radio" name="correct_answer[0]" value="3">
-                </div>
-            </div>
+            function addQuestion() {
+                const container = document.getElementById("questions-container");
+                const questionBlock = document.createElement("div");
+                questionBlock.classList.add("question-block");
+                questionBlock.dataset.index = questionIndex;
+                
+                questionBlock.innerHTML = `
+                    <button type="button" class="remove-btn" onclick="removeQuestion(this, ${questionIndex})">X</button>
+                    <h3>Question ${questionIndex + 1}</h3>
+                    <input type="text" name="questions[${questionIndex}]" placeholder="Enter your question" required>
+                    
+                    <div class="image-upload" style="margin-top: 10px;">
+                        <label for="image-${questionIndex}">Add Image (Optional):</label>
+                        <input type="file" id="image-${questionIndex}" name="question_image[${questionIndex}]" 
+                            accept="image/*" onchange="previewImage(this, ${questionIndex})">
+                        <div class="preview-container">
+                            <img id="preview-${questionIndex}" class="image-preview">
+                        </div>
+                    </div>
+                    
+                    <h4>Options:</h4>
+                    <div class="options-container">
+                        ${[0, 1, 2, 3].map(i => `
+                            <div class="option">
+                                <input type="text" name="options[${questionIndex}][${i}]" required placeholder="Option ${i + 1}">
+                                <input type="radio" name="correct_answer[${questionIndex}]" value="${i}" required ${i === 0 ? 'checked' : ''}>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                container.appendChild(questionBlock);
+                questionIndex++;
+                
+                // Update all question numbers
+                updateQuestionNumbers();
+            }
             
-            <!-- Keep remaining hardcoded questions unchanged -->
+            function removeQuestion(button, index) {
+                const container = document.getElementById("questions-container");
+                const questionBlocks = container.querySelectorAll('.question-block');
+                
+                // Don't remove if it's the last question
+                if (questionBlocks.length <= 1) {
+                    alert("You must have at least one question.");
+                    return;
+                }
+                
+                button.parentElement.remove();
+                
+                // Update all question numbers
+                updateQuestionNumbers();
+            }
             
-            <button type="submit" class="submit-btn">Submit</button>
-        </form>
-    </div>
-</body>
-</html>
+            function updateQuestionNumbers() {
+                const questionBlocks = document.querySelectorAll('.question-block');
+                questionBlocks.forEach((block, index) => {
+                    const heading = block.querySelector('h3');
+                    heading.textContent = `Question ${index + 1}`;
+                });
+            }
+            
+            function previewImage(input, index) {
+                const preview = document.getElementById(`preview-${index}`);
+                
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    }
+                    
+                    reader.readAsDataURL(input.files[0]);
+                } else {
+                    preview.style.display = 'none';
+                }
+            }
+            
+            // Validate form before submission
+            document.getElementById('quizForm').addEventListener('submit', function(event) {
+                const questionBlocks = document.querySelectorAll('.question-block');
+                
+                if (questionBlocks.length === 0) {
+                    alert('Please add at least one question to the quiz.');
+                    event.preventDefault();
+                    return false;
+                }
+                
+                // Ensure all required fields are filled
+                let isValid = true;
+                questionBlocks.forEach((block, index) => {
+                    const questionInput = block.querySelector(`input[name="questions[${block.dataset.index}]"]`);
+                    const options = block.querySelectorAll(`.option input[type="text"]`);
+                    
+                    if (!questionInput.value.trim()) {
+                        questionInput.focus();
+                        isValid = false;
+                    }
+                    
+                    options.forEach(option => {
+                        if (!option.value.trim()) {
+                            option.focus();
+                            isValid = false;
+                        }
+                    });
+                });
+                
+                if (!isValid) {
+                    alert('Please fill in all required fields.');
+                    event.preventDefault();
+                    return false;
+                }
+            });
+        </script>
+    </body>
+    </html>
