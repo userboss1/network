@@ -34,7 +34,7 @@ let user2=req.session.user
 let vivaDetails = await AdminHelper.getVivaDetailsAndLogs(user2.name);
 
 
-console.log("recieved details",vivaDetails);
+console.log("recieved details",JSON.stringify(vivaDetails));
 req.session.vivaDetails=vivaDetails
 
 
@@ -314,7 +314,7 @@ router.post('/logIn', async (req, res) => {
   console.log("Session Viva Details:", req.session.vivaDetails);
 
   try {
-      const { className, rollStart, rollEnd } = req.body;
+      const { className, rollStart, rollEnd,uniqueId } = req.body;
       const userName = req.session.user?.name;
       const vivaName = req.session.vivaSpecificname?.viva_name; // Retrieve viva name from session
 
@@ -348,6 +348,7 @@ router.post('/logIn', async (req, res) => {
       }
 
       const logEntry = {
+        uniqueId:Number(uniqueId),
           vivaname: vivaName,  // Store viva name from session
           className: studentData.className,
           networkName: userName,
@@ -369,10 +370,11 @@ router.post('/logIn', async (req, res) => {
 
 // Example usage
 router.get('/remove-class', async (req, res) => {
-  const { admin, class: className, range } = req.query;
-  console.log(`Removing: ${admin}, ${className}, ${range}`);
+  const { admin, class: className, range,uniqueId } = req.query;
+  console.log(`Removing: ${admin}, ${className}, ${range},${uniqueId}`);
 
-  await AdminHelper.RemoveFromLogin({ className, range, networkName: admin });
+  let something=await AdminHelper.RemoveFromLogin({ className, range,uniqueId:uniqueId, networkName: admin });
+console.log("failed to remove "+JSON.stringify(something));
 
   res.redirect('/Admin/home'); // Redirect back to the dashboard
 });

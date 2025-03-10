@@ -504,12 +504,16 @@
                                 {{#each this.logs}}
                                 <div class="assigned-item">
                                     <div>
+                                       
                                         <strong>Class:</strong> {{this.className}}
+                                        <br>
+
+                                         <strong>Unique Id for Login:</strong> {{this.uniqueId}}
                                         <span class="badge active">{{this.rollRange}}</span>
                                     </div>
                                     <div class="assigned-actions">
 
-                                        <a href="/Admin/remove-class?admin={{../../adminName}}&class={{this.className}}&range={{this.rollRange}}"
+                                        <a href="/Admin/remove-class?admin={{../../adminName}}&class={{this.className}}&range={{this.rollRange}}&uniqueId={{this.uniqueId}}"
                                             class="remove small-btn">
                                             Remove
                                         </a>

@@ -22,9 +22,9 @@ router.post('/login', async (req, res) => {
     try {
         console.log("Received Login Request:", req.body);
 
-        const { name, roll, register } = req.body;
+        const { uniqueId, roll, register } = req.body;
 
-        if (!name || !roll || !register) {
+        if (!uniqueId|| !roll || !register) {
             return res.status(400).send("All fields are required.");
         }
 
@@ -34,7 +34,7 @@ router.post('/login', async (req, res) => {
 
         // Query without type conversion
         const query = {
-            vivaname:name,
+            uniqueId:Number(uniqueId),
             students: {
                 $elemMatch: {
                     roll: Number(roll),
@@ -43,6 +43,7 @@ router.post('/login', async (req, res) => {
                 }
             }
         };
+console.log("this is querruy"+JSON.stringify(query));
 
         const logEntry = await db.get().collection('logIn').findOne(query);
 
