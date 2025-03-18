@@ -207,7 +207,7 @@ input[readonly] {
 }
 
 img {
-    max-width: 100%;
+    max-width: 50%;
     border-radius: 12px;
     margin: 15px 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -265,10 +265,11 @@ img {
                 <label for="name">Name</label>
                 <input type="text" id="name" name="user[name]" value="{{student.name}}" readonly>
             </div>
-<div class="input-container">
-    <label for="teacher">Teacher Name</label>
-    <input type="text" id="teacher" name="user[networkName]" value="{{student.networkName}}" readonly>
-</div>
+            
+            <div class="input-container">
+                <label for="teacher">Teacher Name</label>
+                <input type="text" id="teacher" name="user[networkName]" value="{{student.networkName}}" readonly>
+            </div>
 
             <div class="input-container">
                 <label for="roll">Roll Number</label>
@@ -290,26 +291,9 @@ img {
                 <input type="text" id="vivaname" name="user[vivaname]" value="{{student.vivaname}}" readonly>
             </div>
 
-            {{#each response}}
-                {{#each this.questions}}
-                    <div class="quiz" data-question-index="{{@index}}">
-                        <p><strong>{{this.question}}</strong></p>
-
-                        {{#if this.image}}
-                            <img src="{{this.image}}" alt="Question Image">
-                        {{/if}}
-
-                        <ul class="options">
-                            {{#each this.options}}
-                                <li data-value="{{this}}">
-                                    <span></span> {{this}}
-                                </li>
-                            {{/each}}
-                        </ul>
-                        <input type="hidden" name="answers[{{@index}}]" value="">
-                    </div>
-                {{/each}}
-            {{/each}}
+            <div id="questionsContainer">
+                <!-- Questions will be inserted here by JavaScript -->
+            </div>
 
             <button type="submit" class="submit-btn">Submit Quiz</button>
         </form>
@@ -317,37 +301,112 @@ img {
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".quiz").forEach((quiz, qIndex) => {
-                let questionText = quiz.querySelector("p strong").textContent;
-                quiz.querySelector("p strong").textContent = `Q${qIndex + 1}. ` + questionText;
-
-                let options = quiz.querySelectorAll(".options li");
-                options.forEach((option, oIndex) => {
-                    let labels = ["A.", "B.", "C.", "D."];
-                    option.querySelector("span").textContent = labels[oIndex] + " ";
-
-                    option.addEventListener("click", () => {
-                        options.forEach(opt => opt.classList.remove("selected"));
-                        option.classList.add("selected");
-                        quiz.querySelector("input[type='hidden']").value = option.getAttribute("data-value");
-                    });
-                });
+    // Extract questions from the template
+    const originalQuestions = [];
+    
+    {{#each response}}
+        {{#each this.questions}}
+            originalQuestions.push({
+                question: "{{this.question}}",
+                options: [{{#each this.options}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}],
+                image: "{{this.image}}",
+                originalIndex: {{@index}}
             });
-
-            document.getElementById("quizForm").addEventListener("submit", function(event) {
-                let allAnswered = true;
-                document.querySelectorAll(".quiz").forEach((quiz) => {
-                    if (!quiz.querySelector("input[type='hidden']").value) {
-                        allAnswered = false;
-                    }
-                });
-
-                if (!allAnswered) {
-                    event.preventDefault();
-                    alert("⚠ Please answer all questions before submitting!");
-                }
+        {{/each}}
+    {{/each}}
+    
+    // Shuffle the questions
+    const shuffledQuestions = shuffleArray([...originalQuestions]);
+    
+    // Generate HTML for shuffled questions
+    const questionsContainer = document.getElementById("questionsContainer");
+    
+    shuffledQuestions.forEach((questionData, displayIndex) => {
+        const questionDiv = document.createElement("div");
+        questionDiv.className = "quiz";
+        questionDiv.dataset.questionIndex = displayIndex;
+        
+        // Create question text
+        const questionP = document.createElement("p");
+        questionP.innerHTML = `<strong>Q${displayIndex + 1}. ${questionData.question}</strong>`;
+        questionDiv.appendChild(questionP);
+        
+        // Add image if exists
+        if (questionData.image) {
+            const img = document.createElement("img");
+            img.src = questionData.image;
+            img.alt = "Question Image";
+            questionDiv.appendChild(img);
+        }
+        
+        // Create options
+        const optionsList = document.createElement("ul");
+        optionsList.className = "options";
+        
+        // Shuffle options
+        const shuffledOptions = shuffleArray([...questionData.options]);
+        
+        // Create a mapping to track original option values
+        const optionMapping = {};
+        shuffledOptions.forEach((option, index) => {
+            optionMapping[index] = option;
+        });
+        
+        shuffledOptions.forEach((option, optionIndex) => {
+            const optionLi = document.createElement("li");
+            optionLi.dataset.value = option;
+            
+            const optionSpan = document.createElement("span");
+            optionSpan.textContent = ["A.", "B.", "C.", "D."][optionIndex] + " ";
+            
+            optionLi.appendChild(optionSpan);
+            optionLi.appendChild(document.createTextNode(option));
+            optionsList.appendChild(optionLi);
+            
+            // Add click event to options
+            optionLi.addEventListener("click", () => {
+                optionsList.querySelectorAll("li").forEach(li => li.classList.remove("selected"));
+                optionLi.classList.add("selected");
+                hiddenInput.value = option;
             });
         });
+        
+        questionDiv.appendChild(optionsList);
+        
+        // Create hidden input for the answer (with original index)
+        const hiddenInput = document.createElement("input");
+        hiddenInput.type = "hidden";
+        hiddenInput.name = `answers[${questionData.originalIndex}]`;
+        hiddenInput.value = "";
+        questionDiv.appendChild(hiddenInput);
+        
+        questionsContainer.appendChild(questionDiv);
+    });
+    
+    // Handle form submission
+    document.getElementById("quizForm").addEventListener("submit", function(event) {
+        let allAnswered = true;
+        document.querySelectorAll(".quiz").forEach((quiz) => {
+            if (!quiz.querySelector("input[type='hidden']").value) {
+                allAnswered = false;
+            }
+        });
+
+        if (!allAnswered) {
+            event.preventDefault();
+            alert("⚠ Please answer all questions before submitting!");
+        }
+    });
+    
+    // Function to shuffle an array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+});
     </script>
 
 </body>

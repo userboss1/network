@@ -240,7 +240,7 @@ router.post("/result", async (req, res) => {
       // Store the final result
       AdminHelper.final(final).then((result) => {
           if (result.result1) {
-              res.json({ success: true, message: "Quiz submitted!" });
+              res.render('admin/vivasuccess')
           } else {
               res.json({ success: false, message: "Couldn't upload the result to database" });
           }
@@ -423,7 +423,7 @@ router.get('/editViva', async (req, res) => {
     console.error("Error fetching viva for edit:", error);
     res.status(500).send("Error retrieving viva: " + error.message);
   }
-});
+});+
 
 
 

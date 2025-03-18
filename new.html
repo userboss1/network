@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 10 Polytechnic Colleges in Kozhikode</title>
+  
+    <button id="theme-toggle">🌙 Dark Mode</button>
+
+    <style>
+        #theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4a6bff, #6a45e5);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(74, 107, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+    
+        #theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(74, 107, 255, 0.5);
+        }
+    
+        .light-mode #theme-toggle {
+            background: linear-gradient(135deg, #ff6b6b, #ff8b8b);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+    
+        .light-mode #theme-toggle:hover {
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.5);
+        }
+    </style>
+    
+    <script>
+        const toggleButton = document.getElementById('theme-toggle');
+        const root = document.documentElement;
+    
+        toggleButton.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+    
+            if (document.body.classList.contains('light-mode')) {
+                root.style.setProperty('--bg-color', '#ffffff');
+                root.style.setProperty('--text-color', '#212529');
+                toggleButton.innerHTML = '☀️ Light Mode';
+            } else {
+                root.style.setProperty('--bg-color', '#212529');
+                root.style.setProperty('--text-color', '#f8f9fa');
+                toggleButton.innerHTML = '🌙 Dark Mode';
+            }
+        });
+    
+        // Apply initial styles
+        document.body.style.background = 'var(--bg-color)';
+        document.body.style.color = 'var(--text-color)';
+    </script>
+    
+</head>
+<body>
+    <div class="background">
+        <div class="circle" style="width: 300px; height: 300px; background: #4a6bff; top: 10%; left: 10%;"></div>
+        <div class="circle" style="width: 400px; height: 400px; background: #6a45e5; bottom: 10%; right: 10%; animation-delay: -5s;"></div>
+        <div class="circle" style="width: 200px; height: 200px; background: #ff6b6b; top: 40%; right: 30%; animation-delay: -10s;"></div>
+        <div class="circle" style="width: 350px; height: 350px; background: #4a6bff; bottom: 30%; left: 20%; animation-delay: -15s;"></div>
+    </div>
+    
+    <header class="header">
+        <h1 class="title">Top 10 Polytechnic Colleges in Kozhikode</h1>
+        <p class="subtitle">Discover the best polytechnic institutions in Kozhikode for your technical education journey with our comprehensive guide and rankings</p>
+    </header>
+    
+    <div class="container">
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="Search colleges by name, type, or location...">
+            <button class="clear-search">×</button>
+            <button class="search-btn">Search</button>
+        </div>
+        
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="Government">Government</button>
+            <button class="filter-btn" data-filter="Private">Private</button>
+            <button class="filter-btn" data-filter="Aided">Aided</button>
+            <button class="filter-btn" data-filter="AICTE">AICTE Approved</button>
+        </div>
+        
+        <div class="active-filters"></div>
+        
+        <div class="results-count"></div>
+        
+        <div class="no-results">
+            <h3>No matching colleges found</h3>
+            <p>Try adjusting your search criteria</p>
+        </div>
+        
+        <div class="college-grid">
+            <!-- College 1 -->
+            <div class="college-card" data-type="Government AICTE" data-name="Government Polytechnic College, Kozhikode" data-location="West Hill, Kozhikode">
+                <div class="college-image">
+                    <div class="college-rank">1</div>
+                    <div class="img-placeholder">GP</div>
+                </div>
+                <div class="college-content">
+                    <h3 class="college-name">Government Polytechnic College, Kozhikode</h3>
+                    <p class="college-location">
+                        <span class="location-icon">📍</span>
+                        West Hill, Kozhikode
+                    </p>
+                    <div class="college-features">
+                        <span class="feature-badge">Government</span>
+                        <span class="feature-badge">AICTE Approved</span>
+                        <span class="feature-badge">Established 1957</span>
+                    </div>
+                    <p>A premier government polytechnic institution offering diploma programs in various engineering disciplines with state-of-the-art facilities.</p>
+                    <button class="explore-btn" data-college="1">Explore College</button>
+                </div>
+            </div>
+            
+            <!-- College 2 -->
+            <div class="college-card" data-type="Private AICTE" data-name="Kerala College of Technology" data-location="Chathamangalam, Kozhikode">
+                <div class="college-image">
+                    <div class="college-rank">2</div>
+                    <div class="img-placeholder">KCT</div>
+                </div>
+                <div class="college-content">
+                    <h3 class="college-name">Kerala College of Technology</h3>
+                    <p class="college-location">
+                        <span class="location-icon">📍</span>
+                        Chathamangalam, Kozhikode
+                    </p>
+                    <div class="college-features">
+                        <span class="feature-badge">Private</span>
+                        <span class="feature-badge">AICTE Approved</span>
+                        <span class="feature-badge">Established 1992</span>
+                    </div>
+                    <p>Known for industry-focused technical education with excellent placement opportunities and modern infrastructure.</p>
+                    <button class="explore-btn" data-college="2">Explore College</button>
+                </div>
+            </div>
+            
+            <!-- College 3 -->
+            <div class="college-card" data-type="Aided AICTE" data-name="Malabar Polytechnic College" data-location="Kuttippuram, Kozhikode">
+                <div class="college-image">
+                    <div class="college-rank">3</div>
+                    <div class="img-placeholder">MPTC</div>
+                </div>
+                <div class="college-content">
+                    <h3 class="college-name">Malabar Polytechnic College</h3>
+                    <p class="college-location">
+                        <span class="location-icon">📍</span>
+                        Kuttippuram, Kozhikode
+                    </p>
+                    <div class="college-features">
+                        <span class="feature-badge">Aided</span>
+                        <span class="feature-badge">AICTE Approved</span>
+                        <span class="feature-badge">Established 1981</span>
+                    </div>
+                    <p>A well-established aided institution known for quality technical education and strong industry connections.</p>
+                    <button class="explore-btn" data-college="3">Explore College</button>
+                </div>
+            </div>
+            
+            <!-- College 4 -->
+            <div class="college-card" data-type="Private AICTE" data-name="Kozhikode Polytechnic Training College" data-location="Calicut, Kozhikode">
+                <div class="college-image">
+                    <div class="college-rank">4</div>
+                    <div class="img-placeholder">KPTC</div>
+                </div>
+                <div class="college-content">
+                    <h3 class="college-name">Kozhikode Polytechnic Training College</h3>
+                    <p class="college-location">
+                        <span class="location-icon">📍</span>
+                        Calicut, Kozhikode
+                    </p>
+                    <div class="college-features">
+                        <span class="feature-badge">Private</span>
+                        <span class="feature-badge">AICTE Approved</span>
+                        <span class="feature-badge">Established 1995</span>
+                    </div>
+                    <p>Offers specialized technical training with excellent lab facilities and practical exposure to students.</p>
+                    <button class="explore-btn" data-college="4">Explore College</button>
+                </div>
+            </div>
+            
+            <!-- College 5 -->
+            <div class="college-card" data-type="Private AICTE" data-name="MEA Engineering College Polytechnic" data-location="Perinthalmanna, Kozhikode">
+                <div class="college-image">
+                    <div class="college-rank">5</div>
+                    <div class="img-placeholder">MEAEC</div>
+                </div>
+                <div class="college-content">
+                    <h3 class="college-name">MEA Engineering College Polytechnic</h3>
+                    <p class="college-location">
+                        <span class="location-icon">📍</span>
+                        Perinthalmanna, Kozhikode
+                    </p>
+                    <div class="college-features">
+                        <span class="feature-badge">Private</span>
+                        <span class="feature-badge">AICTE Approved</span>
+                        <span class="feature-badge">Established 2001</span>
+                    </div>
+                    <p>A modern technical institution with advanced infrastructure and focus on industry-relevant skills development.</p>
+                    <button class="explore-btn" data-college="5">Explore College</button>
+                </div>
+            </div>
+            
+            <!-- College 6 -->
+            <div class="college-card" data-type="Private AICTE" data-name="Calicut Polytechnic" data-location="Malappuram Road, Kozhikode">
+                <div class="college-image">
+                    <div class="college-rank">6</div>
+                    <div class="img-placeholder">CPOLYTC</div>
+                </div>
+                <div class="college-content">
+                    <h3 class="college-name">Calicut Polytechnic</h3>
+                    <p class="college-location">
+                        <span class="location-icon">📍</span>
+                        Malappuram Road, Kozhikode
+                    </p>
+                    <div class="college-features">
+                        <span class="feature-badge">Private</span>
+                        <span class="feature-badge">AICTE Approved</span>
+                        <span class="feature-badge">Established 1998</span>
+                    </div>
+                    <p>Known for diverse diploma programs and strong emphasis on practical training with good placement record.</p>
+                    <button class="explore-btn" data-college="6">Explore College</button>
+                </div>
+            </div>
+            
+            <!-- College 7 -->
+            <div class="college-card" data-type="Private AICTE" data-name="AWH Polytechnic College" data-location="Kuttikkatoor, Kozhikode">
+                <div class="college-image">
+                    <div class="college-rank">7</div>
+                    <div class="img-placeholder">AWPC</div>
+                </div>
+                <div class="college-content">
+                    <h3 class="college-name">AWH Polytechnic College</h3>
+                    <p class="college-location">
+                        <span class="location-icon">📍</span>
+                        Kuttikkatoor, Kozhikode
+                    </p>
+                    <div class="college-features">
+                        <span class="feature-badge">Private</span>
+                        <span class="feature-badge">AICTE Approved</span>
+                        <span class="feature-badge">Established 2007</span>
+                    </div>
+                    <p>Provides quality technical education with modern facilities and excellent faculty support for students.</p>
+                   <button class="explore-btn" data-college="7">Explore College</button>
+                </div>
+            </div>
+            
+            <!-- College 8 -->
+            <div class="college-card" data-type="Government AICTE" data-name="Government Women's Polytechnic College" data-location="Calicut, Kozhikode">
+                <div class="college-image">
+                    <div class="college-rank">8</div>
+                    <div class="img-placeholder">GWPC</div>
+                </div>
+                <div class="college-content">
+                    <h3 class="college-name">Government Women's Polytechnic College</h3>
+                    <p class="college-location">
+                        <span class="location-icon">📍</span>
+                        Calicut, Kozhikode
+                    </p>
+                    <div class="college-features">
+                        <span class="feature-badge">Government</span>
+                        <span class="feature-badge">AICTE Approved</span>
+                        <span class="feature-badge">Established 1999</span>
+                    </div>
+                    <p>A premier government polytechnic exclusively for women offering various technical diploma programs.</p>
+                    <button class="explore-btn" data-college="8">Explore College</button>
+                </div>
+            </div>
+            
+            <!-- College 9 -->
+            <div class="college-card" data-type="Aided AICTE" data-name="KMCT Polytechnic College" data-location="Kallanthode, Kozhikode">
+                <div class="college-image">
+                    <div class="college-rank">9</div>
+                    <div class="img-placeholder">KMCT</div>
+                </div>
+                <div class="college-content">
+                    <h3 class="college-name">KMCT Polytechnic College</h3>
+                    <p class="college-location">
+                        <span class="location-icon">📍</span>
+                        Kallanthode, Kozhikode
+                    </p>
+                    <div class="college-features">
+                        <span class="feature-badge">Aided</span>
+                        <span class="feature-badge">AICTE Approved</span>
+                        <span class="feature-badge">Established 2002</span>
+                    </div>
+                    <p>Known for its academic excellence and comprehensive technical education with modern infrastructure.</p>
+                    <button class="explore-btn" data-college="9">Explore College</button>
+                </div>
+            </div>
+            
+            <!-- College 10 -->
+            <div class="college-card" data-type="Private AICTE" data-name="Al-Ameen Polytechnic College" data-location="Edavanna, Kozhikode">
+                <div class="college-image">
+                    <div class="college-rank">10</div>
+                    <div class="img-placeholder">AAPC</div>
+                </div>
+                <div class="college-content">
+                    <h3 class="college-name">Al-Ameen Polytechnic College</h3>
+                    <p class="college-location">
+                        <span class="location-icon">📍</span>
+                        Edavanna, Kozhikode
+                    </p>
+                    <div class="college-features">
+                        <span class="feature-badge">Private</span>
+                        <span class="feature-badge">AICTE Approved</span>
+                        <span class="feature-badge">Established 2005</span>
+                    </div>
+                    <p>Offers quality technical education with emphasis on practical skills and industry exposure.</p>
+                    <button class="explore-btn" data-college="10">Explore College</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for College Details -->
+    <div class="modal-overlay">
+        <div class="modal-container">
+            <button class="modal-close">×</button>
+            <div class="modal-header">
+                <h2 class="modal-title">College Name</h2>
+                <p class="modal-subtitle"><span class="location-icon">📍</span> <span class="modal-location">Location</span></p>
+            </div>
+            <div class="modal-body">
+                <div class="modal-grid">
+                    <div class="modal-image fade-in delay-1">
+                        <div class="modal-placeholder">GPK</div>
+                    </div>
+                    <div class="modal-info">
+                        <div class="info-block fade-in delay-2">
+                            <span class="highlight-badge">Ranked <span class="modal-rank">#1</span></span>
+                            <h3 class="info-title">About</h3>
+                            <p class="info-content modal-about">College description will appear here.</p>
+                            
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-value modal-year">1957</div>
+                                    <div class="stat-label">Established</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value modal-students">1200+</div>
+                                    <div class="stat-label">Students</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value modal-placement">85%</div>
+                                    <div class="stat-label">Placement</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-block fade-in delay-3">
+                            <h3 class="info-title">Courses Offered</h3>
+                            <div class="course-list modal-courses">
+                                <!-- Courses will be added dynamically -->
+                            </div>
+                        </div>
+                        
+                        <div class="info-block fade-in delay-4">
+                            <h3 class="info-title">Facilities</h3>
+                            <div class="facilities-list modal-facilities">
+                                <!-- Facilities will be added dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-block fade-in delay-5">
+                    <h3 class="info-title">Why Choose This College</h3>
+                    <p class="info-content modal-why">Reasons to choose this college will appear here.</p>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="modal-btn primary-btn">Apply Now</button>
+                    <button class="modal-btn secondary-btn">Download Brochure</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <p>© 2025 Top Polytechnic Colleges in Kozhikode | Disclaimer: Rankings are based on various factors including infrastructure, placement records, and student feedback.</p>
+    </footer>
+    
+    <script>
+        // College data
+        const collegeData = [
+            {
+                id: 1,
+                name: "Government Polytechnic College, Kozhikode",
+                location: "West Hill, Kozhikode",
+                about: "Government Polytechnic College, Kozhikode is one of the oldest and most prestigious polytechnic institutions in Kerala. Established in 1957, it has been consistently delivering quality technical education for over six decades. The college is known for its excellent faculty, state-of-the-art infrastructure, and strong alumni network.",
+                year: 1957,
+                students: "1500+",
+                placement: "90%",
+                courses: ["Civil Engineering", "Mechanical Engineering", "Electrical Engineering", "Electronics Engineering", "Computer Engineering", "Information Technology"],
+                facilities: ["Advanced Laboratories", "Central Library", "Hostel Facilities", "Sports Complex", "Training & Placement Cell", "Canteen", "Auditorium", "Wi-Fi Campus"],
+                why: "Government Polytechnic College, Kozhikode stands out for its rich heritage, excellent academic records, and industry connections. The college provides hands-on practical training with modern equipment and has a dedicated placement cell with an impressive placement record. The institution is known for producing industry-ready diploma holders who excel in their respective fields."
+            },
+            {
+                id: 2,
+                name: "Kerala College of Technology",
+                location: "Chathamangalam, Kozhikode",
+                about: "Kerala College of Technology is a leading private polytechnic college offering industry-focused technical education. The college emphasizes practical learning and skill development to prepare students for the demands of the modern technical workplace.",
+                year: 1992,
+                students: "1200+",
+                placement: "85%",
+                courses: ["Civil Engineering", "Mechanical Engineering", "Electrical & Electronics Engineering", "Computer Engineering", "Automobile Engineering", "Production Engineering"],
+                facilities: ["Modern Laboratories", "Digital Library", "Hostel Facilities", "Indoor & Outdoor Sports", "Industry Interaction Cell", "Cafeteria", "Seminar Halls", "Transportation"],
+                why: "Kerala College of Technology is renowned for its industry partnerships and focus on employability skills. The college maintains a low student-teacher ratio ensuring personalized attention. Regular industrial visits, workshops, and internships provide students with practical exposure and industry connections, leading to excellent placement opportunities."
+            },
+            {
+                id: 3,
+                name: "Malabar Polytechnic College",
+                location: "Kuttippuram, Kozhikode",
+                about: "Malabar Polytechnic College is an aided institution known for providing quality technical education at affordable costs. The college has built a strong reputation for academic excellence and student support since its establishment in 1981.",
+                year: 1981,
+                students: "1100+",
+                placement: "80%",
+                courses: ["Civil Engineering", "Mechanical Engineering", "Electrical Engineering", "Electronics & Communication", "Computer Engineering", "Architecture"],
+                facilities: ["Well-Equipped Labs", "Extensive Library", "Boys & Girls Hostel", "Sports Facilities", "Career Guidance Cell", "Food Court", "Auditorium", "Health Center"],
+                why: "Malabar Polytechnic College offers the advantage of an aided institution with affordable fees while maintaining high educational standards. The college is known for its strong alumni network and industry connections. Special focus is given to personality development and soft skills training alongside technical education, ensuring holistic development of students."
+            },
+            {
+                id: 4,
+                name: "Kozhikode Polytechnic Training College",
+                location: "Calicut, Kozhikode",
+                about: "Kozhikode Polytechnic Training College specializes in providing technical training with a strong focus on practical skills development. The college is known for its specialized labs and industry collaborations.",
+                year: 1995,
+                students: "900+",
+                placement: "82%",
+                courses: ["Mechanical Engineering", "Electrical Engineering", "Electronics Engineering", "Computer Hardware Maintenance", "Tool & Die Making", "Refrigeration & Air Conditioning"],
+                facilities: ["Specialized Training Labs", "Technical Library", "Hostel", "Sports Facilities", "Placement Cell", "Canteen", "Seminar Hall", "Workshop"],
+                why: "Kozhikode Polytechnic Training College stands out for its specialized training programs designed in consultation with industry experts. The college focuses on developing practical skills through extensive lab work and workshops. Students benefit from the college's strong ties with local industries, resulting in good internship and placement opportunities."
+            },
+            {
+                id: 5,
+                name: "MEA Engineering College Polytechnic",
+                location: "Perinthalmanna, Kozhikode",
+                about: "MEA Engineering College Polytechnic is a modern technical institution that offers diploma programs in various engineering disciplines. The college boasts advanced infrastructure and experienced faculty members.",
+                year: 2001,
+                students: "1000+",
+                placement: "78%",
+                courses: ["Civil Engineering", "Mechanical Engineering", "Electrical & Electronics", "Computer Science", "Electronics & Communication", "Automobile Engineering"],
+                facilities: ["Modern Labs", "Digital Library", "Residential Facilities", "Sports Complex", "Training & Placement", "Food Court", "Conference Hall", "Transportation"],
+                why: "MEA Engineering College Polytechnic offers a modern campus with state-of-the-art facilities and equipment. The college focuses on project-based learning and encourages innovation through various technical clubs and competitions. The institution maintains good industry connections, providing students with internship opportunities and guest lectures from industry professionals."
+            },
+            {
+                id: 6,
+                name: "Calicut Polytechnic",
+                location: "Malappuram Road, Kozhikode",
+                about: "Calicut Polytechnic is a well-established institution offering diverse diploma programs in engineering and technology. The college emphasizes both theoretical knowledge and practical training.",
+                year: 1998,
+                students: "950+",
+                placement: "75%",
+                courses: ["Civil Engineering", "Mechanical Engineering", "Electrical Engineering", "Electronics Engineering", "Computer Engineering", "Information Technology"],
+                facilities: ["Engineering Labs", "Library Resources", "Hostel Facility", "Sports Ground", "Placement Division", "Canteen Services", "Auditorium", "Medical Facility"],
+                why: "Calicut Polytechnic has built a reputation for balanced technical education with equal emphasis on theory and practical training. The college organizes regular industrial visits and technical seminars to expose students to real-world applications. The institution also provides comprehensive career guidance and soft skills training to enhance employability."
+            },
+            {
+                id: 7,
+                name: "AWH Polytechnic College",
+                location: "Kuttikkatoor, Kozhikode",
+                about: "AWH Polytechnic College is a private institution known for its quality technical education and student-centric approach. The college provides a supportive learning environment with modern facilities.",
+                year: 2007,
+                students: "800+",
+                placement: "72%",
+                courses: ["Civil Engineering", "Mechanical Engineering", "Electrical & Electronics", "Computer Engineering", "Electronics & Communication", "Architectural Assistantship"],
+                facilities: ["Technical Labs", "Library", "Hostel", "Sports Amenities", "Career Development Cell", "Cafeteria", "Conference Room", "Transportation"],
+                why: "AWH Polytechnic College is known for its student-centric approach and personalized attention. The college maintains small batch sizes to ensure effective learning. Regular assessment and feedback help students improve continuously. The institution also focuses on developing entrepreneurial skills alongside technical education."
+            },
+            {
+                id: 8,
+                name: "Government Women's Polytechnic College",
+                location: "Calicut, Kozhikode",
+                about: "Government Women's Polytechnic College is a premier institution exclusively for women offering diploma programs in various engineering disciplines. The college provides a safe and supportive environment for female students pursuing technical education.",
+                year: 1999,
+                students: "700+",
+                placement: "82%",
+                courses: ["Civil Engineering", "Computer Engineering", "Electronics & Communication", "Architecture", "Costume Design & Garment Technology", "Commercial Practice"],
+                facilities: ["Modern Laboratories", "Library", "Hostel", "Sports Facilities", "Placement Cell", "Canteen", "Auditorium", "Women's Development Cell"],
+                why: "Government Women's Polytechnic College offers a supportive environment for women to pursue technical education. The college focuses on empowering women through quality technical training and skill development. Special programs for personality development and leadership training are organized regularly. The institution has a good track record of placements and encouraging entrepreneurship among female students."
+            },
+            {
+                id: 9,
+                name: "KMCT Polytechnic College",
+                location: "Kallanthode, Kozhikode",
+                about: "KMCT Polytechnic College is an aided institution offering diploma programs in engineering with a focus on academic excellence and practical training. The college has established itself as a reliable center for technical education.",
+                year: 2002,
+                students: "850+",
+                placement: "76%",
+                courses: ["Civil Engineering", "Mechanical Engineering", "Electrical & Electronics", "Computer Engineering", "Electronics & Communication", "Information Technology"],
+                facilities: ["Technical Laboratories", "Digital Library", "Hostel Facilities", "Sports Ground", "Placement Division", "Food Court", "Seminar Hall", "Transportation"],
+                why: "KMCT Polytechnic College offers the benefit of an aided institution with reasonable fee structure. The college focuses on holistic development through technical education, soft skills training, and extracurricular activities. Regular industry interactions and technical workshops enhance practical knowledge and employability of students."
+            },
+            {
+                id: 10,
+                name: "Al-Ameen Polytechnic College",
+                location: "Edavanna, Kozhikode",
+                about: "Al-Ameen Polytechnic College is a private institution offering diploma programs in various engineering streams. The college emphasizes quality education, practical training, and industry exposure.",
+                year: 2005,
+                students: "750+",
+                placement: "70%",
+                courses: ["Civil Engineering", "Mechanical Engineering", "Electrical & Electronics", "Computer Engineering", "Electronics & Communication", "Automobile Engineering"],
+                facilities: ["Engineering Labs", "Library", "Hostel", "Sports Facilities", "Career Guidance Cell", "Canteen", "Conference Hall", "Transportation"],
+                why: "Al-Ameen Polytechnic College provides quality technical education with a focus on practical skills and industry requirements. The college organizes regular workshops, seminars, and technical competitions to enhance students' knowledge and skills. Personality development programs and communication skills training are integral parts of the curriculum, ensuring overall development of students."
+            }
+        ];
+        
+        // DOM Elements
+        const collegeCards = document.querySelectorAll('.college-card');
+        const modalOverlay = document.querySelector('.modal-overlay');
+        const modalClose = document.querySelector('.modal-close');
+        const modalTitle = document.querySelector('.modal-title');
+        const modalLocation = document.querySelector('.modal-location');
+        const modalRank = document.querySelector('.modal-rank');
+        const modalAbout = document.querySelector('.modal-about');
+        const modalYear = document.querySelector('.modal-year');
+        const modalStudents = document.querySelector('.modal-students');
+        const modalPlacement = document.querySelector('.modal-placement');
+        const modalCourses = document.querySelector('.modal-courses');
+        const modalFacilities = document.querySelector('.modal-facilities');
+        const modalWhy = document.querySelector('.modal-why');
+        const modalPlaceholder = document.querySelector('.modal-placeholder');
+        const searchInput = document.querySelector('.search-input');
+        const searchBtn = document.querySelector('.search-btn');
+        const clearSearch = document.querySelector('.clear-search');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const resultsCount = document.querySelector('.results-count');
+        const noResults = document.querySelector('.no-results');
+        const activeFilters = document.querySelector('.active-filters');
+        
+        // Initialize
+        updateResultsCount();
+        
+        // Event Listeners
+        collegeCards.forEach(card => {
+            const exploreBtn = card.querySelector('.explore-btn');
+            exploreBtn.addEventListener('click', () => {
+                const collegeId = parseInt(exploreBtn.getAttribute('data-college'));
+                const college = collegeData.find(c => c.id === collegeId);
+                openModal(college);
+            });
+        });
+        
+        modalClose.addEventListener('click', closeModal);
+        
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+        
+        searchBtn.addEventListener('click', () => {
+            performSearch(searchInput.value.trim());
+        });
+        
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                performSearch(searchInput.value.trim());
+            }
+            
+            if (searchInput.value.trim() !== '') {
+                clearSearch.classList.add('visible');
+            } else {
+                clearSearch.classList.remove('visible');
+            }
+        });
+        
+        clearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            clearSearch.classList.remove('visible');
+            resetFilters();
+        });
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // If 'All' button is clicked, reset filters
+                if (btn.getAttribute('data-filter') === 'all') {
+                    resetFilters();
+                    return;
+                }
+                
+                // Toggle active class
+                btn.classList.toggle('active');
+                
+                // Update filter tags
+                updateFilterTags();
+                
+                // Apply filters
+                applyFilters();
+            });
+        });
+        
+        // Functions
+        function openModal(college) {
+            modalTitle.textContent = college.name;
+            modalLocation.textContent = college.location;
+            modalRank.textContent = `#${college.id}`;
+            modalAbout.textContent = college.about;
+            modalYear.textContent = college.year;
+            modalStudents.textContent = college.students;
+            modalPlacement.textContent = college.placement;
+            modalPlaceholder.textContent = college.name.split(' ').map(word => word[0]).join('').substring(0, 3);
+            
+            // Add courses
+            modalCourses.innerHTML = '';
+            college.courses.forEach(course => {
+                const courseTag = document.createElement('span');
+                courseTag.className = 'course-tag';
+                courseTag.textContent = course;
+                modalCourses.appendChild(courseTag);
+            });
+            
+            // Add facilities
+            modalFacilities.innerHTML = '';
+            college.facilities.forEach(facility => {
+                const facilityItem = document.createElement('div');
+                facilityItem.className = 'facility-item';
+                facilityItem.innerHTML = `<span class="facility-icon">✓</span> ${facility}`;
+                modalFacilities.appendChild(facilityItem);
+            });
+            
+            modalWhy.textContent = college.why;
+            
+            // Show modal
+            modalOverlay.classList.add('active');
+            
+            // Prevent body scrolling
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function performSearch(query) {
+            if (query === '') {
+                resetFilters();
+                return;
+            }
+            
+            query = query.toLowerCase();
+            
+            collegeCards.forEach(card => {
+                const name = card.getAttribute('data-name').toLowerCase();
+                const type = card.getAttribute('data-type').toLowerCase();
+                const location = card.getAttribute('data-location').toLowerCase();
+                
+                if (name.includes(query) || type.includes(query) || location.includes(query)) {
+                    card.classList.remove('hidden');
+                    
+                    // Highlight matching text
+                    highlightText(card, query);
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+            
+            updateResultsCount();
+        }
+        
+        function highlightText(card, query) {
+            const name = card.querySelector('.college-name');
+            const location = card.querySelector('.college-location');
+            
+            // Remove existing highlights
+            removeHighlights(card);
+            
+            // Highlight in name
+            if (name.textContent.toLowerCase().includes(query)) {
+                name.innerHTML = name.textContent.replace(
+                    new RegExp(query, 'gi'),
+                    match => `<span class="highlight">${match}</span>`
+                );
+            }
+            
+            // Highlight in location text (excluding the icon)
+            const locationText = location.childNodes[1];
+            if (locationText && locationText.textContent.toLowerCase().includes(query)) {
+                locationText.textContent = locationText.textContent.replace(
+                    new RegExp(query, 'gi'),
+                    match => `<span class="highlight">${match}</span>`
+                );
+            }
+        }
+        
+        function removeHighlights(card) {
+            const name = card.querySelector('.college-name');
+            const location = card.querySelector('.college-location');
+            
+            name.innerHTML = name.textContent;
+            
+            // Preserve location icon
+            const icon = location.querySelector('.location-icon');
+            location.innerHTML = '';
+            location.appendChild(icon);
+            location.appendChild(document.createTextNode(
+                card.getAttribute('data-location')
+            ));
+        }
+        
+        function resetFilters() {
+            // Reset filter buttons
+            filterBtns.forEach(btn => {
+                if (btn.getAttribute('data-filter') === 'all') {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Show all cards
+            collegeCards.forEach(card => {
+                card.classList.remove('hidden');
+                removeHighlights(card);
+            });
+            
+            // Clear filter tags
+            activeFilters.innerHTML = '';
+            
+            updateResultsCount();
+        }
+        
+        function applyFilters() {
+            const activeFilterBtns = Array.from(filterBtns).filter(btn => 
+                btn.classList.contains('active') && btn.getAttribute('data-filter') !== 'all'
+            );
+            
+            // If no filters active, show all
+            if (activeFilterBtns.length === 0) {
+                resetFilters();
+                return;
+            }
+            
+            // Hide 'All' filter button if others are active
+            const allBtn = Array.from(filterBtns).find(btn => btn.getAttribute('data-filter') === 'all');
+            allBtn.classList.remove('active');
+            
+            // Filter cards
+            collegeCards.forEach(card => {
+                const cardTypes = card.getAttribute('data-type').split(' ');
+                
+                const match = activeFilterBtns.some(btn => {
+                    const filterType = btn.getAttribute('data-filter');
+                    return cardTypes.includes(filterType);
+                });
+                
+                if (match) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+            
+            updateResultsCount();
+        }
+        
+        function updateFilterTags() {
+            activeFilters.innerHTML = '';
+            
+            const activeFilterBtns = Array.from(filterBtns).filter(btn => 
+                btn.classList.contains('active') && btn.getAttribute('data-filter') !== 'all'
+            );
+            
+            activeFilterBtns.forEach(btn => {
+                const filterType = btn.getAttribute('data-filter');
+                
+                const tag = document.createElement('div');
+                tag.className = 'filter-tag';
+                tag.innerHTML = `
+                    ${filterType} 
+                    <button class="tag-remove" data-filter="${filterType}">×</button>
+                `;
+                
+                activeFilters.appendChild(tag);
+            });
+            
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.tag-remove').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const filterType = e.target.getAttribute('data-filter');
+                    const filterBtn = Array.from(filterBtns).find(btn => 
+                        btn.getAttribute('data-filter') === filterType
+                    );
+                    
+                    // Remove active class from filter button
+                    filterBtn.classList.remove('active');
+                    
+                    // Update filter tags
+                    updateFilterTags();
+                    
+                    // Apply filters
+                    applyFilters();
+                });
+            });
+        }
+        
+        function updateResultsCount() {
+            const visibleCards = Array.from(collegeCards).filter(card => !card.classList.contains('hidden'));
+            
+            resultsCount.textContent = `Showing ${visibleCards.length} of ${collegeCards.length} colleges`;
+            
+            if (visibleCards.length === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
+                    

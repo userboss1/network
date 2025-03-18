@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QBOT - Chatbot</title>
+    <link href="https://fonts.cdnfonts.com/css/Amerika" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Amerika', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #121212, #1a1a2e);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .qbot-title {
+            font-size: 64px;
+            font-weight: bold;
+            color: #00FF00;
+            text-shadow: 0 0 15px #FF0000, 0 0 25px #FF0000;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #FF0000, 0 0 20px #FF0000;
+            }
+            to {
+                text-shadow: 0 0 15px #FF0000, 0 0 30px #FF0000, 0 0 40px #FF0000;
+            }
+        }
+
+        .chat-container {
+            width: 450px;
+            height: 600px;
+            background: rgba(0, 0, 0, 0.75);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .chat-container:hover {
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.8);
+            transform: translateY(-5px);
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-bottom: 2px solid rgba(0, 255, 255, 0.4);
+            display: flex;
+            flex-direction: column;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #0ff rgba(0, 0, 0, 0.3);
+        }
+
+        .chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-box::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background-color: #0ff;
+            border-radius: 10px;
+        }
+
+        .user-message,
+        .bot-message {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 18px;
+            max-width: 80%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.4s ease-in-out;
+            font-size: 16px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
+            align-self: flex-end;
+            text-align: right;
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background: linear-gradient(135deg, #008CBA, #0073aa);
+            color: white;
+            align-self: flex-start;
+            text-align: left;
+            box-shadow: 0 4px 12px rgba(0, 140, 186, 0.4);
+            border-bottom-left-radius: 5px;
+        }
+
+        /* Style for chat images */
+        .chat-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-top: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .typing {
+            display: inline-block;
+            font-size: 14px;
+            color: #aaa;
+            font-style: italic;
+            margin: 10px;
+            align-self: flex-start;
+        }
+
+        .typing::after {
+            content: " .";
+            animation: typingDots 1.5s infinite steps(3);
+        }
+
+        @keyframes typingDots {
+            0% { content: " ."; }
+            33% { content: " .."; }
+            66% { content: " ..."; }
+        }
+
+        .input-container {
+            display: flex;
+            padding: 15px;
+            border-top: 2px solid rgba(0, 255, 255, 0.4);
+            background: rgba(10, 10, 15, 0.6);
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 15px 20px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            border-radius: 24px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #0ff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3), inset 0 0 5px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        #user-input:focus {
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 8px rgba(0, 0, 0, 0.7);
+        }
+
+        #user-input::placeholder {
+            color: rgba(0, 255, 255, 0.5);
+        }
+
+        #send-btn {
+            margin-left: 15px;
+            padding: 15px;
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: #0ff;
+            color: black;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #send-btn:hover {
+            background: #00ff88;
+            box-shadow: 0 0 20px #00ff88;
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        #send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .bubbles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: float var(--duration, 8s) infinite ease-in-out var(--delay, 0s);
+            filter: blur(1px);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) scale(0.8);
+                opacity: 0;
+            }
+            20% {
+                opacity: var(--opacity, 0.6);
+            }
+            80% {
+                opacity: var(--opacity, 0.6);
+            }
+            100% {
+                transform: translateY(-100vh) scale(1.2) rotate(var(--rotation, 0deg));
+                opacity: 0;
+            }
+        }
+
+        .bubble:nth-child(1) { left: 10%; width: 15px; height: 15px; --duration: 6s; --opacity: 0.7; --rotation: 20deg; background: rgba(255, 0, 0, 0.6); }
+        .bubble:nth-child(2) { left: 20%; width: 25px; height: 25px; --duration: 9s; --opacity: 0.8; --rotation: -15deg; background: rgba(0, 255, 0, 0.6); }
+        .bubble:nth-child(3) { left: 30%; width: 10px; height: 10px; --duration: 7s; --opacity: 0.6; --rotation: 30deg; background: rgba(0, 0, 255, 0.6); }
+        .bubble:nth-child(4) { left: 40%; width: 30px; height: 30px; --duration: 8s; --opacity: 0.7; --rotation: -25deg; background: rgba(255, 255, 0, 0.6); }
+        .bubble:nth-child(5) { left: 50%; width: 20px; height: 20px; --duration: 10s; --opacity: 0.8; --rotation: 15deg; background: rgba(255, 0, 255, 0.6); }
+        .bubble:nth-child(6) { left: 60%; width: 25px; height: 25px; --duration: 6.5s; --opacity: 0.7; --rotation: -20deg; background: rgba(0, 255, 255, 0.6); }
+        .bubble:nth-child(7) { left: 70%; width: 15px; height: 15px; --duration: 7.5s; --opacity: 0.6; --rotation: 25deg; background: rgba(255, 0, 0, 0.6); }
+        .bubble:nth-child(8) { left: 80%; width: 20px; height: 20px; --duration: 9.5s; --opacity: 0.8; --rotation: -30deg; background: rgba(0, 255, 0, 0.6); }
+        .bubble:nth-child(9) { left: 90%; width: 30px; height: 30px; --duration: 8.2s; --opacity: 0.7; --rotation: 15deg; background: rgba(0, 0, 255, 0.6); }
+        .bubble:nth-child(10) { left: 95%; width: 18px; height: 18px; --duration: 7.8s; --opacity: 0.6; --rotation: -10deg; background: rgba(255, 255, 0, 0.6); }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Start animation for bubbles with different delays */
+        .bubble:nth-child(1) { animation-delay: 0.2s; }
+        .bubble:nth-child(2) { animation-delay: 0.8s; }
+        .bubble:nth-child(3) { animation-delay: 0.4s; }
+        .bubble:nth-child(4) { animation-delay: 1.2s; }
+        .bubble:nth-child(5) { animation-delay: 0.6s; }
+        .bubble:nth-child(6) { animation-delay: 1.6s; }
+        .bubble:nth-child(7) { animation-delay: 0.9s; }
+        .bubble:nth-child(8) { animation-delay: 1.1s; }
+        .bubble:nth-child(9) { animation-delay: 0.3s; }
+        .bubble:nth-child(10) { animation-delay: 1.4s; }
+
+        .welcome-message {
+            color: #0ff;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Send button icon */
+        #send-btn:after {
+            content: ">";
+            font-weight: bold;
+            transform: rotate(90deg);
+            display: block;
+        }
+
+        @media (max-width: 500px) {
+            .chat-container {
+                width: 95%;
+                height: 80vh;
+            }
+            
+            .qbot-title {
+                font-size: 40px;
+                margin-bottom: 20px;
+            }
+            
+            .user-message, .bot-message {
+                max-width: 85%;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .chat-container {
+                height: 70vh;
+            }
+            
+            .qbot-title {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="qbot-title">QBOT</div>
+    
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box">
+            <div class="welcome-message">Welcome to QBOT! Type a message to start chatting.</div>
+        </div>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
+            <button id="send-btn"></button>
+        </div>
+    </div>
+
+    <div class="bubbles">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
+    <script>
+        // Show welcome message on load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                appendMessage({
+                    text: "Hi there! I'm QBOT. Try asking me about 'weather', 'cats', 'space', or a math calculation!",
+                }, 'bot-message');
+            }, 500);
+        });
+
+        document.getElementById('send-btn').addEventListener('click', function () {
+            sendMessage();
+        });
+
+        document.getElementById('user-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const userInput = document.getElementById('user-input').value.trim();
+            if (userInput) {
+                appendMessage({ text: userInput }, 'user-message');
+                document.getElementById('user-input').value = '';
+                
+                // Show typing indicator
+                const typingElement = document.createElement('div');
+                typingElement.classList.add('typing');
+                typingElement.textContent = 'QBOT is typing';
+                document.getElementById('chat-box').appendChild(typingElement);
+                
+                // Get and display bot response after a short delay
+                setTimeout(() => {
+                    document.getElementById('chat-box').removeChild(typingElement);
+                    const response = getBotResponse(userInput);
+                    appendMessage(response, 'bot-message');
+                }, 800);
+            }
+        }
+
+        function appendMessage(message, className) {
+            const chatBox = document.getElementById('chat-box');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add(className);
+            
+            // Add text content if available
+            if (message.text) {
+                messageElement.textContent = message.text;
+            }
+            
+            // Add image if available
+            if (message.image) {
+                const img = document.createElement('img');
+                img.src = message.image;
+                img.alt = 'QBOT image response';
+                img.classList.add('chat-image');
+                messageElement.appendChild(document.createElement('br'));
+                messageElement.appendChild(img);
+            }
+            
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function getBotResponse(userInput) {
+            // Check if the input contains a math expression
+            if (/[\d\+\-\*\/\^\.]/.test(userInput)) {
+                return { text: evaluateMath(userInput) };  // If it matches a math expression, evaluate it
+            }
+            
+            // Handle time request
+            if (userInput.toLowerCase().includes('time')) {
+                return { text: getCurrentTime() };
+            }
+
+            // Predefined responses with images
+            const responses = {
+                // Basic Greetings
+                'hello': { text: 'Hi there! How can I assist you today?' },
+                'hi': { text: 'Hello! What can I help you with today?' },
+                'hey': { text: 'Hey! Whats up?' },
+                'how are you': { text: 'Im doing great! Thanks for asking. How about you?' },
+                
+                // Questions
+                'what can you do': { text: 'I can chat with you, perform math calculations, tell you the time, and show images!' },
+                'who are you': { text: 'I\'m QBOT, your friendly cybernetic assistant!' },
+                
+                // Responses with images
+                'weather': { 
+                    text: 'Here\'s the current weather forecast:', 
+                    image: 'https://via.placeholder.com/350x150/4361ee/ffffff?text=Weather+Forecast'
+                },
+                'cats': {
+                    text: 'Everyone loves cats! Here\'s a cat image:',
+                    image: 'https://www.google.com/imgres?q=robot%20image&imgurl=https%3A%2F%2Ft4.ftcdn.net%2Fjpg%2F02%2F10%2F96%2F95%2F360_F_210969565_cIHkcrIzRpWNZzq8eaQnYotG4pkHh0P9.jpg&imgrefurl=https%3A%2F%2Fstock.adobe.com%2Fsearch%3Fk%3Drobot&docid=FxX46d0CJY0WcM&tbnid=gH_C2YOazOwM0M&vet=145nEVRuYcDcmXWky8CyvW79pq1qxePi72FucuiGUQAA..i&w=540&h=360&hcb=2&ved=2ahUKEwi1neW6h4WMAxUEr1YBHcTBKvsQM3oECGUQAA'
+                },
+                'dogs': {
+                    text: 'Dogs are awesome! Here\'s a dog image:',
+                    image: 'https://via.placeholder.com/350x250/FFC75F/000000?text=Cute+Dog+Image'
+                },
+                'space': {
+                    text: 'Space: the final frontier. Here\'s an image of space:',
+                    image: 'https://via.placeholder.com/350x200/845EC2/ffffff?text=Space+Image'
+                },
+                'robot': {
+                    text: 'Beep boop! Here\'s what I look like:',
+                    image: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.amazon.in%2FEilik-Electronic-Intelligent-Interactive-Animations%2Fdp%2FB0C2C9LJNQ&psig=AOvVaw3It1V4IzqxNjorfgfBL-OJ&ust=1741886169923000&source=images&cd=vfe&opi=89978449&ved=0CBLPMRJLhpnZT81QDZo1TiXUeMCEmyuUDrStCC4j'
+                },
+                
+                // Fun responses
+                'tell me a joke': { text: 'Why don\'t scientists trust atoms? Because they make up everything!' },
+                'sing': { text: 'La la la... 🎵 Im singing in the digital rain! 🎵' },
+                
+                // Default response
+                'default': { text: 'I\'m not sure how to respond to that. Try asking me about weather, cats, space, or a math problem!' }
+            };
+
+            return getFuzzyResponse(userInput, responses);
+        }
+
+        function getFuzzyResponse(userInput, responses) {
+            const cleanedInput = userInput.toLowerCase().replace(/[^\w\s]/g, '').trim();
+
+            // Check for exact matches or included keywords first
+            for (const key in responses) {
+                if (key === 'default') continue;
+                if (cleanedInput.includes(key)) {
+                    return responses[key];
+                }
+            }
+
+            // If no exact match, find the closest match
+            let closestMatch = 'default';
+            let smallestDistance = Infinity;
+
+            for (const key in responses) {
+                if (key === 'default') continue; // Skip default in distance calculation
+                
+                const distance = levenshtein(cleanedInput, key);
+                
+                if (distance < smallestDistance) {
+                    smallestDistance = distance;
+                    closestMatch = key;
+                }
+            }
+
+            // Threshold can be adjusted for more lenient matching
+            if (smallestDistance <= 3) {
+                return responses[closestMatch];
+            } else {
+                return responses['default'];
+            }
+        }
+
+        function levenshtein(a, b) {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+
+            const matrix = [];
+
+            // Initialize matrix
+            for (let i = 0; i <= b.length; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= a.length; j++) {
+                matrix[0][j] = j;
+            }
+
+            // Fill matrix
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    const cost = a.charAt(j - 1) === b.charAt(i - 1) ? 0 : 1;
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j] + 1,      // Deletion
+                        matrix[i][j - 1] + 1,      // Insertion
+                        matrix[i - 1][j - 1] + cost // Substitution
+                    );
+                }
+            }
+
+            return matrix[b.length][a.length];
+        }
+
+        function evaluateMath(input) {
+            try {
+                // Safely evaluate the expression
+                const sanitizedInput = input.replace(/[^0-9+\-*/().]/g, '');
+                
+                // Use Function constructor for safer evaluation
+                const result = new Function('return ' + sanitizedInput)();
+                
+                if (!isNaN(result) && isFinite(result)) {
+                    return `The result is: ${result}`;
+                } else {
+                    return 'Sorry, I couldn\'t calculate that. Please check your expression.';
+                }
+            } catch (error) {
+                return 'Sorry, I couldn\'t process that calculation. Please try a simpler expression.';
+            }
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            return `The current time is: ${hours}:${minutes}:${seconds}`;
+        }
+    </script>
+</body>
+</html>
