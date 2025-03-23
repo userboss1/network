@@ -61,13 +61,16 @@ console.log("this is querruy"+JSON.stringify(query));
             // Store student details + networkName in session
             req.session.loggedInStudents = true;
             req.session.studentDetails = { 
-                
+                duration:logEntry.duration,
                 name: matchedStudent.name,
                 roll: matchedStudent.roll,
                 register: matchedStudent.register,
                 className: logEntry.className,
                 networkName: logEntry.networkName ,
-                vivaname:logEntry.vivaname
+                vivaname:logEntry.vivaname,
+                viva_uid:logEntry.viva_uid,
+               
+                
                 // Add networkName
             };
 
@@ -90,21 +93,38 @@ router.get('/viva', isLoggedIn, (req, res) => {
  /* GET Attend Viva - Requires login
  
  ngnog*/
+//  router.get('/attendviva', isLoggedIn, (req, res) => {
+//     guestHelper.getQ({
+//         network_name: req.session.studentDetails.networkName,
+//         viva_uid: req.session.studentDetails.viva_uid // Use viva_uid instead of vivaname
+//     })
+//     .then((response) => {
+//         console.log(response);
+//         res.render('guest/viva', { response, student: req.session.studentDetails });
+//     })
+//     .catch((err) => {
+//         console.error("Error fetching questions:", err);
+//         res.status(500).send("Error fetching viva questions.");
+//     });
+// });
 router.get('/attendviva', isLoggedIn, (req, res) => {
-   
-
     guestHelper.getQ({
         network_name: req.session.studentDetails.networkName,
-        viva_name: req.session.studentDetails.vivaname
+        viva_uid: req.session.studentDetails.viva_uid
     })
     .then((response) => {
         console.log(response);
-        res.render('guest/viva', { response, student: req.session.studentDetails });
+        
+        // Render different views based on which collection the data came from
+        if (response.source === 'qbank') {
+            res.render('guest/viva', { response: response.data, student: req.session.studentDetails });
+        } else if (response.source === 'dqbank') {
+            res.render('guest/discript', { response: response.data, student: req.session.studentDetails });
+        }
     })
     .catch((err) => {
         console.error("Error fetching questions:", err);
         res.status(500).send("Error fetching viva questions.");
     });
 });
-
 module.exports = router;

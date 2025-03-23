@@ -464,19 +464,21 @@
                 {{#each viva}}
                 <div class="viva-card">
                     <div class="viva-header">
-                        {{this.vivaName}}
+                        {{this.subject_name}}
                     </div>
                     <div class="viva-content">
                         <div class="viva-info">
-                            <p><strong>Viva Name:</strong> {{this.vivaName}}</p>
+                             <p><strong>Viva Type</strong> {{this.type}}</p>
+                            <p><strong>Viva Name:</strong> {{this.viva_name}}</p>
+                             <p><strong>Viva UUID</strong> {{this.viva_uid}}</p>
                         </div>
 
                         <div class="actions">
-                            <a href="/Admin/assign?viva={{this.vivaName}}" class="assign">
+                            <a href="/Admin/assign?viva={{this.viva_uid}}" class="assign">
                                 <span class="action-icon">📋</span>
                                 Assign Class
                             </a>
-                            <a href="/Admin/editViva?viva={{this.vivaName}}&admin={{../adminName}}"
+                            <a href="/Admin/editViva?viva={{this.viva_uid}}&admin={{../adminName}}"
                                 class="view-assigned">
                                 <span class="action-icon">👥</span>
                                 Edit Viva Details

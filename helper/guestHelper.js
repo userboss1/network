@@ -63,16 +63,45 @@ module.exports={
 getQ: (userData) => {
     return new Promise((resolve, reject) => {
         console.log("Received userData:", userData);
-
+        
+        // First try to find in qbank
         db.get().collection('qbank')
-            .find({ network_name: userData.network_name, viva_name: userData.viva_name })
+            .find({ 
+                network_name: userData.network_name, 
+                viva_uid: userData.viva_uid 
+            })
             .toArray()
-            .then((response) => {
-                console.log("Fetched Questions:", response);
-                resolve(response);
+            .then((qbankResults) => {
+                // If we found results in qbank, return them with source info
+                if (qbankResults && qbankResults.length > 0) {
+                    console.log("Fetched Questions from qbank:", qbankResults);
+                    resolve({
+                        source: 'qbank',
+                        data: qbankResults
+                    });
+                } else {
+                    // If not found in qbank, try dqbank
+                    db.get().collection('dqbank')
+                        .find({ 
+                            network_name: userData.network_name, 
+                            viva_uid: userData.viva_uid 
+                        })
+                        .toArray()
+                        .then((dqbankResults) => {
+                            console.log("Fetched Questions from dqbank:", dqbankResults);
+                            resolve({
+                                source: 'dqbank',
+                                data: dqbankResults
+                            });
+                        })
+                        .catch((error) => {
+                            console.error("Error fetching questions from dqbank:", error);
+                            reject(error);
+                        });
+                }
             })
             .catch((error) => {
-                console.error("Error fetching questions:", error);
+                console.error("Error fetching questions from qbank:", error);
                 reject(error);
             });
     });

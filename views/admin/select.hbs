@@ -63,8 +63,11 @@
 <body>
     <h2>Select Your Class & Roll Number Range</h2>
     <form action="/admin/logIn" method="POST">
-        <label for="uniqueId">Generated Unique ID:</label>
+        <label for="uniqueId">Generated Unique ID for Login:</label>
         <input type="text" name="uniqueId" id="uniqueId" readonly>
+
+        <label for="viva_uid">Unique ID OF VIVA</label>
+        <input type="text" name="viva_uid" id="viva_uid" value="{{viva_uid}}" readonly>
 
         <label for="class">Choose a class:</label>
         <select name="className" id="class" onchange="updateRollNumbers()">
@@ -79,6 +82,10 @@
             <span class="range-info">to</span>
             <input type="number" name="rollEnd" id="rollEnd" placeholder="Max" min="1" max="1">
         </div>
+
+        <!-- Time Duration Input -->
+        <label for="duration">Select Time Duration (in minutes):</label>
+        <input type="number" name="duration" id="duration" min="1" max="60" value="10">
 
         <button type="submit">Submit</button>
     </form>
@@ -137,7 +144,7 @@
         generateUniqueId(); // Generate unique ID
         updateRollNumbers(); // Set roll number limits
     };
-</script>
+    </script>
 
 </body>
 </html>
