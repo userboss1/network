@@ -483,12 +483,19 @@
                                 <span class="action-icon">👥</span>
                                 Edit Viva Details
                             </a>
-
-                          <a href="/Admin/results?viva={{this.vivaName}}&admin={{../adminName}}" class="results">
+{{#if (eq this.type "MCQ")}}
+ <a href="/Admin/result?viva_uid={{this.viva_uid}}&network_name={{../adminName}}" class="results">
     <span class="action-icon">📊</span>
     Check Results
 </a>
-                        <a href="/Admin/delete-viva?admin={{../adminName}}&viva={{this.vivaName}}" class="delete">Delete Viva</a>
+{{else}}
+ <a href="/Admin/dresult?vivaUid={{this.viva_uid}}&networkName={{../adminName}}" class="results">
+    <span class="action-icon">📊</span>
+    Check Results
+</a>
+{{/if}}
+
+                                         <a href="/Admin/delete-viva?admin={{../adminName}}&viva={{this.viva_uid}}" class="delete">Delete Viva</a>
                         </div>
 
                         <div class="collapsible-section">

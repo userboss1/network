@@ -292,6 +292,7 @@ router.post("/result", async (req, res) => {
     const userAnswers = req.body;
 
     const user = {
+      viva_uid: userAnswers["user[viva_uid]"],
       name: userAnswers["user[name]"],
       roll: userAnswers["user[roll]"],
       department: userAnswers["user[department]"],
@@ -306,6 +307,7 @@ router.post("/result", async (req, res) => {
 
     // Final object to store in database
     const final = {
+      viva_uid:parseInt(user.viva_uid),
       name: user.name,
       rollNumb: user.roll,
       department: user.department,
@@ -329,13 +331,13 @@ router.post("/result", async (req, res) => {
   }
 });
 
-router.get('/results', isAuthenticated, async (req, res) => {
+router.get('/result', isAuthenticated, async (req, res) => {
   try {
-    const { viva, admin } = req.query;
-    console.log(viva, admin);
+    const { viva_uid, network_name } = req.query;
+   
 
     // Get results from your helper
-    const info = await AdminHelper.returnResult(viva, admin);
+    const info = await AdminHelper.returnResult(viva_uid,network_name);
 
     // Make sure info is an array
     const resultsArray = Array.isArray(info) ? info : [info];
@@ -382,31 +384,7 @@ router.get('/assign', (req, res) => {
     res.render('admin/select', { classData: response, viva_uid });
   });
 });
-router.post('/dsubmit', async (req, res) => {
-  try {
-      const { viva_uid, answers } = req.body;
-      const userId = req.session.user._id; // Assuming you have user authentication
-      
-      // Format the answers
-      const formattedAnswers = Object.keys(answers).map(questionNumber => ({
-          questionNumber: parseInt(questionNumber),
-          answer: answers[questionNumber]
-      }));
-      
-      // Save the answers to the database
-      await db.get().quizAnswers.insertOne({
-          viva_uid,
-          userId,
-          answers: formattedAnswers,
-          submittedAt: new Date()
-      });
-      
-      res.redirect('/quiz/thank-you');
-  } catch (error) {
-      console.error("Error submitting answers:", error);
-      res.status(500).send("Internal server error");
-  }
-});
+
 
 
 //ake sure this points to your MongoDB connection
@@ -577,10 +555,15 @@ router.get('/editViva', async (req, res) => {
       network_name: admin
     });
 
-    // Use the first match found
-    const existingViva = qbankMatch || dqbankMatch;
+    let existingViva, template;
 
-    if (!existingViva) {
+    if (qbankMatch) {
+      existingViva = qbankMatch;
+      template = 'admin/editViva'; // Render editViva.hbs if from qbank
+    } else if (dqbankMatch) {
+      existingViva = dqbankMatch;
+      template = 'admin/DeditViva'; // Render DeditViva.hbs if from dqbank
+    } else {
       return res.status(404).send("Viva not found!");
     }
 
@@ -595,8 +578,8 @@ router.get('/editViva', async (req, res) => {
       existingViva.questions = []; // Ensure questions is an array
     }
 
-    // Pass the data to the template
-    res.render('admin/editViva', {
+    // Pass the data to the selected template
+    res.render(template, {
       viva: existingViva,
       vivaDataJSON: JSON.stringify(existingViva), // For safe JavaScript access
       user: admin
@@ -608,6 +591,48 @@ router.get('/editViva', async (req, res) => {
   }
 });
 
+router.post('/dupdateViva', async (req, res) => {
+  try {
+    const { viva_uid, network_name, questions } = req.body; // Extract form data
+    console.log("Updating Viva:", viva_uid, network_name);
+
+    if (!viva_uid || !network_name) {
+      return res.status(400).send("Missing viva ID or network name.");
+    }
+
+    const dbInstance = db.get(); // Get DB instance
+
+    // Find the existing viva
+    let existingViva = await dbInstance.collection('dqbank').findOne({
+      viva_uid: parseInt(viva_uid),
+      network_name: network_name
+    });
+
+    if (!existingViva) {
+      return res.status(404).send("Viva not found.");
+    }
+
+    // Convert questions to proper format
+    const updatedQuestions = JSON.parse(questions).map((q, index) => ({
+      questionNumber: index + 1,
+      text: q.text
+    }));
+
+    // Update the viva in the database
+    await dbInstance.collection('dqbank').updateOne(
+      { viva_uid: parseInt(viva_uid), network_name: network_name },
+      { $set: { questions: updatedQuestions, updatedAt: new Date() } }
+    );
+
+    console.log("Viva updated successfully:", viva_uid);
+    res.redirect('/Admin/Home')
+  } catch (error) {
+    console.error("Error updating viva:", error);
+    res.status(500).send("Error updating viva.");
+  }
+});
+
+
 
 
   router.post('/updateViva', async (req, res) => {
@@ -616,11 +641,11 @@ router.get('/editViva', async (req, res) => {
       console.log("Request body:", req.body);
       console.log("Request files:", req.files ? Object.keys(req.files) : "No files");
 
-      const { viva_id, network_name, viva_name, viva_password } = req.body;
+      const { viva_id, network_name, viva_name,  } = req.body;
 
       console.log("Updating viva with ID:", viva_id);
 
-      if (!viva_id || !network_name || !viva_name || !viva_password) {
+      if (!viva_id || !network_name || !viva_name ) {
         return res.status(400).send("Missing required fields");
       }
 
@@ -781,8 +806,7 @@ router.get('/editViva', async (req, res) => {
       // Update the database
       const updateData = {
         network_name,
-        viva_name,
-        viva_password,
+        viva_name,   
         questions: updatedQuestions,
       };
 
@@ -810,7 +834,7 @@ router.get('/delete-viva', (req, res) => {
   const vivaName = req.query.viva;
   console.log(`Deleting viva: ${vivaName} from network: ${networkName}`);
 
-  AdminHelper.DeletViva(networkName, vivaName)
+  AdminHelper.DeletViva(networkName, parseInt(vivaName))
     .then(() => res.redirect('/Admin/home'))
     .catch(err => {
       console.error("Error deleting viva:", err);
@@ -818,6 +842,182 @@ router.get('/delete-viva', (req, res) => {
     });
 });
 
+
+
+// Assuming db is your MongoDB connection object
+// Example MongoDB setup (uncomment and adjust if needed):
+/*
+const { MongoClient } = require('mongodb');
+const uri = 'mongodb://localhost:27017/yourDatabase';
+let db;
+
+MongoClient.connect(uri, { useUnifiedTopology: true })
+    .then(client => {
+        db = client.db('yourDatabase');
+        console.log('Connected to MongoDB');
+    })
+    .catch(err => console.error('Failed to connect to MongoDB:', err));
+*/
+
+// POST endpoint for /Admin/disubmit
+router.post('/disubmit', async (req, res) => {
+  try {
+      console.log('Received data:', req.body); // Debugging
+
+      const {
+          network_name,
+          subject_name,
+          viva_name,
+          student_name,
+          student_roll,
+          student_register,
+          class_name,
+          teacher_name,
+          viva_uid,
+          duration
+      } = req.body;
+
+      // Validate required fields
+      if (!viva_uid || !student_name) {
+          return res.status(400).json({
+              success: false,
+              message: 'Missing required fields: viva_uid or student_name'
+          });
+      }
+
+      // Extract and structure answers
+      const answers = Object.keys(req.body)
+          .filter(key => key.startsWith('answers['))
+          .map(key => {
+              const index = key.match(/\d+/)[0]; // Extract index number
+              return {
+                  questionId: req.body[`questionIds[${index}]`] || index, // Use questionId if available, else fallback
+                  text: req.body[key] || ''
+              };
+          });
+
+      console.log('Parsed Answers:', answers);
+
+      // Prepare the document to save (flattened structure)
+      const resultDocument = {
+          networkName: network_name || '',
+          subjectName: subject_name || '',
+          vivaName: viva_name || '',
+          studentName: student_name, 
+          studentRoll: student_roll || '',
+          studentRegister: student_register || '',
+          className: class_name || '',
+          teacherName: teacher_name || '',
+          vivaUid: viva_uid,
+          duration: parseInt(duration) || 0,
+          answers,  // Directly store the array of answers
+          submittedAt: new Date(),
+          status: 'submitted'
+      };
+
+      // Insert into MongoDB
+      const collection = db.get().collection('dresult');
+      const insertResult = await collection.insertOne(resultDocument);
+
+      // Render success page or return JSON
+      if (insertResult.insertedId) {
+          res.render('admin/vivasuccess');
+      } else {
+          throw new Error('Failed to insert document');
+      }
+
+  } catch (error) {
+      console.error('Error in /Admin/disubmit:', error);
+      return res.status(500).json({
+          success: false,
+          message: 'Internal server error',
+          error: error.message
+      });
+  }
+});
+
+
+
+// Assuming db is your MongoDB connection object
+
+// GET endpoint to retrieve results grouped by className and student
+
+
+// Assuming db is your MongoDB connection object
+
+// GET endpoint to retrieve results and render disresult.hbs
+router.get('/dresult', async (req, res) => {
+  try {
+      const { vivaUid, networkName } = req.query;
+
+      if (!vivaUid || !networkName) {
+          return res.status(400).render('error', { 
+              message: 'Both vivaUid and networkName are required' 
+          });
+      }
+
+      const collection = db.get().collection('dresult');
+
+      const results = await collection.aggregate([
+        // Match specific vivaUid and networkName
+        { 
+            $match: { 
+                vivaUid: vivaUid, 
+                networkName: networkName 
+            } 
+        },
+        // Group by className to organize data properly
+        {
+            $group: {
+                _id: "$className",
+                students: {
+                    $push: {
+                        name: "$studentName",
+                        roll: "$studentRoll",
+                        register: "$studentRegister",
+                        answers: "$answers",
+                        submittedAt: "$submittedAt",
+                        subjectName: "$subjectName",
+                        vivaName: "$vivaName",
+                        duration: "$duration"
+                    }
+                }
+            }
+        },
+        // Project the final output
+        { 
+            $project: { 
+                className: "$_id", 
+                students: 1, 
+                _id: 0 
+            } 
+        }
+    ]).toArray();
+    
+
+      console.log('Aggregation Results:', JSON.stringify(results, null, 2));
+
+      if (results.length === 0) {
+          return res.render('admin/disresult', {
+              vivaUid,
+              networkName,
+              classes: [],
+              message: 'No results found for the specified vivaUid and networkName'
+          });
+      }
+
+      // Render the template with the processed results
+      res.render('admin/disresult', {
+          vivaUid,
+          networkName,
+          classes: results
+      });
+
+  } catch (error) {
+      console.error('Error in /Admin/dresult/by-class:', error);
+      res.status(500).render('error', { message: 'Internal server error' });
+  }
+});
 
 
 module.exports = router;

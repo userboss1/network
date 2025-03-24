@@ -128,12 +128,15 @@ return new Promise((resolve,reject)=>{
         },
       
 
-        returnResult: async (viva, admin) => {
+        returnResult: async (viva_uid, admin) => {
+            console.log(viva_uid,admin+"sknak");
+            
             try {
                 const results = await db.get().collection('results').find({
-                    vivaname: viva,
+                    viva_uid: parseInt(viva_uid),
                     networkName: admin
                 }).toArray();
+        console.log("this is reuslt"+results);
         
                 return results; // Returns an empty array if no matching documents are found
             } catch (error) {
@@ -241,20 +244,33 @@ return new Promise((resolve,reject)=>{
                 return { status: false, error: error.message };
             }
         },
-         DeletViva: (networkName, vivaName) => {
-            return new Promise((resolve, reject) => {
-                db.get().collection('qbank').deleteOne({ network_name: networkName, viva_name: vivaName })
-                    .then(result => {
-                        if (result.deletedCount > 0) {
-                            resolve("Viva deleted successfully");
-                        } else {
-                            reject("No matching viva found");
-                        }
-                    })
-                    .catch(error => reject(error));
-            });
-        },
-               
+        DeletViva: async (networkName, vivaName) => {
+            try {
+                const dbInstance = db.get();
+                const vivaUID = parseInt(vivaName);
+        
+                // Delete from `qbank`
+                let resultQBank = await dbInstance.collection('qbank').deleteMany({ network_name: networkName, viva_uid: vivaUID });
+        
+                // Delete from `dqbank`
+                let resultDQBank = await dbInstance.collection('dqbank').deleteMany({ network_name: networkName, viva_uid: vivaUID });
+        
+                // Delete from `logIn`
+                let resultLogIn = await dbInstance.collection('logIn').deleteMany({ network_name: networkName, viva_uid: vivaUID });
+        
+                const totalDeleted = resultQBank.deletedCount + resultDQBank.deletedCount + resultLogIn.deletedCount;
+        
+                if (totalDeleted > 0) {
+                    return `Viva deleted successfully from ${totalDeleted} records`;
+                } else {
+                    throw new Error("No matching viva found in qbank, dqbank, or logIn");
+                }
+            } catch (error) {
+                throw new Error("Error deleting viva: " + error.message);
+            }
+        }
+        
+           
     }
     
 //https://chatgpt.com/share/67bb5e4f-02c0-8004-8062-ccbf9c90dbbd

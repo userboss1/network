@@ -1,4 +1,314 @@
-document.addEventListener("DOMContentLoaded", function () {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take the Quiz</title>
+    <style>
+       body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #2c3e50;
+}
+
+.quiz-container {
+    width: 90%;
+    max-width: 850px;
+    margin: 30px auto;
+    padding: 2.5rem;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+h2 {
+    color: #1a365d;
+    text-align: center;
+    font-size: 2.2rem;
+    margin-bottom: 2rem;
+    font-weight: 700;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+h2:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    border-radius: 2px;
+}
+
+.input-container {
+    margin-bottom: 1.8rem;
+    position: relative;
+}
+
+label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #34495e;
+    transition: color 0.3s;
+}
+
+input, select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e0e6ed;
+    border-radius: 12px;
+    font-size: 1rem;
+    background: #f8fafc;
+    outline: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus {
+    border-color: #3498db;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+}
+
+input[readonly] {
+    background-color: #f2f5f8;
+    color: #4a5568;
+    cursor: not-allowed;
+}
+
+.quiz {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 1.8rem;
+    margin-bottom: 24px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s ease;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.quiz:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+.quiz p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1a365d;
+    margin-bottom: 1.2rem;
+    line-height: 1.5;
+}
+
+.options {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.options li {
+    padding: 15px 18px;
+    margin: 12px 0;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border: 2px solid #e0e6ed;
+    background: #ffffff;
+    transition: all 0.25s ease;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #334155;
+    position: relative;
+}
+
+.options li span {
+    display: inline-block;
+    font-weight: 600;
+    margin-right: 10px;
+    color: #3498db;
+    min-width: 24px;
+}
+
+.options li:hover {
+    background: #f0f7ff;
+    border-color: #93c5fd;
+    transform: translateX(5px);
+}
+
+.options li.selected {
+    background: #3498db;
+    color: white;
+    border-color: #2980b9;
+    box-shadow: 0 4px 14px rgba(52, 152, 219, 0.25);
+}
+
+.options li.selected span {
+    color: white;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.2);
+    margin-top: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: all 0.6s;
+}
+
+.submit-btn:hover {
+    background: linear-gradient(90deg, #2980b9, #1f6391);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+    transform: translateY(-2px);
+}
+
+.submit-btn:hover:before {
+    left: 100%;
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+}
+
+img {
+    max-width: 50%;
+    border-radius: 12px;
+    margin: 15px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .quiz-container {
+        width: 95%;
+        padding: 1.5rem;
+        margin: 20px auto;
+    }
+    
+    h2 {
+        font-size: 1.8rem;
+    }
+    
+    .quiz {
+        padding: 1.2rem;
+    }
+    
+    .options li {
+        padding: 12px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    .quiz p {
+        font-size: 1rem;
+    }
+    
+    .options li {
+        font-size: 0.95rem;
+    }
+    
+    .submit-btn {
+        padding: 14px;
+        font-size: 1rem;
+    }
+}
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <form id="quizForm" action="/admin/result" method="POST">
+            <h2>Quiz</h2>
+
+            <div class="input-container">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="user[name]" value="{{student.name}}" readonly>
+            </div>
+            
+            <div class="input-container">
+                <label for="teacher">Teacher Name</label>
+                <input type="text" id="teacher" name="user[networkName]" value="{{student.networkName}}" readonly>
+            </div>
+
+            <div class="input-container">
+                <label for="roll">Roll Number</label>
+                <input type="text" id="roll" name="user[roll]" value="{{student.roll}}" readonly>
+            </div>
+
+            <div class="input-container">
+                <label for="registernumber">Register Number</label>
+                <input type="text" id="registernumber" name="user[registernumber]" value="{{student.register}}" readonly>
+            </div>
+
+            <div class="input-container">
+                <label for="department">Department</label>
+                <input type="text" id="department" name="user[department]" value="{{student.className}}" readonly>
+            </div>
+
+            <div class="input-container">
+                <label for="vivaname">Viva Name</label>
+                <input type="text" id="vivaname" name="user[vivaname]" value="{{student.vivaname}}" readonly>
+            </div>
+              <div class="input-container">
+                <label for="vivaname">Viva UID</label>
+                <input type="text" id="vivaname" name="user[viva_uid]" value="{{student.viva_uid}}" readonly>
+            </div>
+</div>
+              <div class="input-container">
+                <label for="vivaname">Viva duration</label>
+                <input type="text" id="vivaname" name="user[viva_uid]" value="{{student.duration}}" readonly>
+            </div>
+            <div id="questionsContainer">
+                <!-- Questions will be inserted here by JavaScript -->
+            </div>
+
+            <button type="submit" class="submit-btn">Submit Quiz</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
     // Extract questions from the template
     const originalQuestions = [];
     
@@ -81,75 +391,6 @@ document.addEventListener("DOMContentLoaded", function () {
         questionsContainer.appendChild(questionDiv);
     });
     
-    // Create and add timer display
-    const timerDisplay = document.createElement("div");
-    timerDisplay.id = "timer-display";
-    timerDisplay.style.cssText = `
-        background-color: #3498db; 
-        color: white; 
-        font-weight: bold; 
-        padding: 10px 20px; 
-        border-radius: 10px; 
-        margin-bottom: 20px; 
-        text-align: center; 
-        font-size: 1.2rem;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    `;
-    document.querySelector(".quiz-container").insertBefore(timerDisplay, document.getElementById("questionsContainer"));
-    
-    // Get duration from student.duration (using Handlebars syntax properly)
-    const duration = {{student.duration}} || 1800; // Default 30 minutes if not set
-    
-    // Timer function
-    function startTimer(durationInSeconds) {
-        let timer = durationInSeconds;
-        const quizForm = document.getElementById("quizForm");
-        
-        // Update timer display function
-        const updateTimer = () => {
-            const minutes = Math.floor(timer / 60);
-            const seconds = timer % 60;
-            timerDisplay.textContent = `Time Remaining: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            // Change color when time is running low
-            if (timer <= 300) { // 5 minutes
-                timerDisplay.style.backgroundColor = "#e74c3c";
-            } else if (timer <= 600) { // 10 minutes
-                timerDisplay.style.backgroundColor = "#f39c12";
-            }
-        };
-        
-        // Initialize timer display
-        updateTimer();
-        
-        // Timer countdown interval
-        const interval = setInterval(() => {
-            timer--;
-            updateTimer();
-            
-            if (timer <= 0) {
-                clearInterval(interval);
-                
-                // Fill unanswered questions with "null"
-                document.querySelectorAll(".quiz").forEach((quiz) => {
-                    const hiddenInput = quiz.querySelector("input[type='hidden']");
-                    if (!hiddenInput.value) {
-                        hiddenInput.value = "null";
-                    }
-                });
-                
-                // Submit the form
-                quizForm.submit();
-            }
-        }, 1000);
-    }
-    
-    // Start the timer
-    startTimer(duration);
-    
     // Handle form submission
     document.getElementById("quizForm").addEventListener("submit", function(event) {
         let allAnswered = true;
@@ -174,3 +415,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return array;
     }
 });
+    </script>
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +17,7 @@
             --warning-color: #ff9800;
             --danger-color: #f44336;
         }
-        
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -27,7 +28,7 @@
             margin: 0;
             padding: 20px;
         }
-        
+
         .container {
             background: white;
             padding: 30px;
@@ -38,29 +39,29 @@
             overflow-y: auto;
             max-height: 90vh;
         }
-        
+
         h2 {
             text-align: center;
             color: #333;
             margin-bottom: 20px;
         }
-        
+
         .info-section {
             margin-bottom: 20px;
             padding: 15px;
             border-radius: 10px;
             background: var(--accent-color);
         }
-        
+
         .info-item {
             margin-bottom: 10px;
         }
-        
+
         .info-item strong {
             width: 150px;
             display: inline-block;
         }
-        
+
         .timer-container {
             text-align: center;
             margin-bottom: 20px;
@@ -69,28 +70,28 @@
             background: #fff8e1;
             border: 1px solid #ffd54f;
         }
-        
+
         .timer {
             font-size: 24px;
             font-weight: bold;
             color: var(--text-color);
         }
-        
-        .timer.warning {
+
+        .timer-container.warning .timer {
             color: var(--warning-color);
         }
-        
-        .timer.danger {
+
+        .timer-container.danger .timer {
             color: var(--danger-color);
             animation: pulse 1s infinite;
         }
-        
+
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.7; }
             100% { opacity: 1; }
         }
-        
+
         .question-block {
             margin-bottom: 20px;
             padding: 15px;
@@ -98,17 +99,17 @@
             background: var(--secondary-color);
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
         }
-        
+
         .question {
             font-weight: bold;
             margin-bottom: 10px;
             font-size: 18px;
         }
-        
+
         .answer-field {
             margin-top: 10px;
         }
-        
+
         .answer-field textarea {
             width: 100%;
             padding: 12px;
@@ -118,15 +119,16 @@
             background: #fff;
             transition: border 0.3s;
             min-height: 100px;
+            max-height: 300px;
             resize: vertical;
             box-sizing: border-box;
         }
-        
+
         .answer-field textarea:focus {
             border-color: var(--primary-color);
             outline: none;
         }
-        
+
         .submit-btn {
             background: var(--primary-color);
             color: white;
@@ -141,11 +143,11 @@
             margin: 20px auto 0;
             width: 200px;
         }
-        
+
         .submit-btn:hover {
             background: var(--primary-hover);
         }
-        
+
         .progress-container {
             margin-bottom: 20px;
             background: #f5f5f5;
@@ -153,14 +155,14 @@
             height: 10px;
             overflow: hidden;
         }
-        
+
         .progress-bar {
             height: 100%;
             background: var(--primary-color);
             width: 0%;
             transition: width 0.3s ease;
         }
-        
+
         .save-indicator {
             text-align: center;
             margin-top: 5px;
@@ -168,156 +170,168 @@
             color: var(--success-color);
             height: 20px;
         }
-        
+
         .word-count {
             text-align: right;
             font-size: 12px;
             color: #777;
             margin-top: 5px;
         }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 15px;
+                width: 100%;
+            }
+            .submit-btn {
+                width: 100%;
+            }
+            .info-item strong {
+                width: 100px;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h2>Descriptive Quiz</h2>
-        
+
         <div class="timer-container">
             <div class="timer" id="timer">Time Remaining: <span id="time">--:--</span></div>
         </div>
-        
+
         <div class="info-section">
-            <div class="info-item">
-                <strong>Subject:</strong> {{response.0.subject_name}}
-            </div>
-            <div class="info-item">
-                <strong>Viva Name:</strong> {{response.0.viva_name}}
-            </div>
-            <div class="info-item">
-                <strong>Student:</strong> {{student.name}}
-            </div>
-            <div class="info-item">
-                <strong>Roll:</strong> {{student.roll}}
-            </div>
-            <div class="info-item">
-                <strong>Register Number:</strong> {{student.register}}
-            </div>
-            <div class="info-item">
-                <strong>ClassName:</strong> {{student.className}}
-            </div>
-            <div class="info-item">
-                <strong>Teacher Name:</strong> {{student.networkName}}
-            </div>
-            <div class="info-item">
-                <strong>Viva Id:</strong> {{student.viva_uid}}
-            </div>
-            <div class="info-item">
-                <strong>Viva duration:</strong> {{student.duration}} minutes
-            </div>
+            <div class="info-item"><strong>Student Name:</strong> {{student.name}}</div>
+            <div class="info-item"><strong>Subject:</strong> {{response.0.subject_name}}</div>
+            <div class="info-item"><strong>Viva Name:</strong> {{response.0.viva_name}}</div>
+            <div class="info-item"><strong>Roll:</strong> {{student.roll}}</div>
+            <div class="info-item"><strong>Register Number:</strong> {{student.register}}</div>
+            <div class="info-item"><strong>ClassName:</strong> {{student.className}}</div>
+            <div class="info-item"><strong>Teacher Name:</strong> {{student.networkName}}</div>
+            <div class="info-item"><strong>Viva Id:</strong> {{student.viva_uid}}</div>
+            <div class="info-item"><strong>Viva duration:</strong> {{student.duration}} minutes</div>
         </div>
-        
+
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
-        
-        <form id="answerForm" action="/Admin/dsubmit" method="POST">
-            <input type="hidden" name="viva_uid" value="{{response.0.viva_uid}}">
-            <input type="hidden" name="network_name" value="{{response.0.network_name}}">
-            <input type="hidden" name="student_id" value="{{student._id}}">
-            
-            {{#each response.0.questions}}
+
+        <form id="answerForm" action="/Admin/disubmit" method="POST">
+            <input type="hidden" name="network_name" value="{{student.networkName}}">
+            <input type="hidden" name="subject_name" value="{{response.0.subject_name}}">
+            <input type="hidden" name="viva_name" value="{{student.vivaname}}">
+            <input type="hidden" name="student_name" value="{{student.name}}">
+            <input type="hidden" name="student_roll" value="{{student.roll}}">
+            <input type="hidden" name="student_register" value="{{student.register}}">
+            <input type="hidden" name="class_name" value="{{student.className}}">
+            <input type="hidden" name="teacher_name" value="{{student.networkName}}">
+            <input type="hidden" name="viva_uid" value="{{student.viva_uid}}">
+            <input type="hidden" name="duration" value="{{student.duration}}">
+
+          {{#each response.0.questions}}
             <div class="question-block">
                 <div class="question">Question {{this.questionNumber}}: {{this.text}}</div>
                 <div class="answer-field">
-                    <textarea 
-                        name="answers[{{this.questionNumber}}]" 
-                        id="answer-{{this.questionNumber}}" 
-                        placeholder="Type your answer here..." 
-                        class="answer-textarea"
-                        data-question="{{this.questionNumber}}"
-                        required></textarea>
+                    <label for="answer-{{this.questionNumber}}" class="sr-only">Answer for Question {{this.questionNumber}}</label>
+                    <textarea name="answers[{{this.questionNumber}}]" id="answer-{{this.questionNumber}}"
+                        placeholder="Type your answer here..." class="answer-textarea"
+                        data-question="{{this.questionNumber}}" required></textarea>
                     <div class="word-count" id="wordCount-{{this.questionNumber}}">0 words</div>
-                    <input type="hidden" name="questionIds[{{this.questionNumber}}]" value="{{this.questionNumber}}">
+                    <input type="hidden" name="questionIds[{{this.questionNumber}}]" value="{{this.text}}">
                 </div>
             </div>
             {{/each}}
-            
+
             <div class="save-indicator" id="saveIndicator"></div>
             <button type="submit" class="submit-btn" id="submitBtn">Submit Answers</button>
         </form>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get all necessary elements
+        document.addEventListener('DOMContentLoaded', function () {
+            // Elements
             const form = document.getElementById('answerForm');
-            const submitBtn = document.getElementById('submitBtn');
             const timerElement = document.getElementById('time');
             const timerContainer = document.getElementById('timer');
             const saveIndicator = document.getElementById('saveIndicator');
             const progressBar = document.getElementById('progressBar');
             const textareas = document.querySelectorAll('.answer-textarea');
             const totalQuestions = textareas.length;
-            
-            // Initialize variables
-            const vivaId = '{{response.0.viva_uid}}';
-            const studentId = '{{student._id}}';
+
+            // Variables
+            const vivaId = '{{student.viva_uid}}' || 'default_viva';
+            const studentId = '{{student._id}}' || 'default_student';
             const storageKey = `quiz_${vivaId}_${studentId}`;
-            let autoSaveTimeout;
+            const duration = parseInt('{{student.duration}}') || 10;
+            let timeRemaining = duration * 60;
             let timerInterval;
-            
-            // Duration in minutes (get from template variable)
-            const duration = parseInt('{{student.duration}}') || 10; // Default to 10 minutes if not provided
-            let timeRemaining = duration * 60; // Convert to seconds
-            
-            // Load saved answers if available
+
+            // Debounce function
+            function debounce(func, wait) {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+
+            // Load saved answers
             loadSavedAnswers();
-            
-            // Start the timer
+
+            // Start timer
             startTimer();
-            
-            // Update word counts initially
-            textareas.forEach(textarea => {
-                updateWordCount(textarea);
-            });
-            
-            // Update progress bar
+
+            // Initialize word counts and progress
+            textareas.forEach(textarea => updateWordCount(textarea));
             updateProgress();
-            
-            // Add event listeners to textareas
+
+            // Event listeners
+            const debouncedSave = debounce(saveAnswers, 1000);
             textareas.forEach(textarea => {
-                textarea.addEventListener('input', function() {
-                    // Update word count
+                textarea.addEventListener('input', function () {
                     updateWordCount(this);
-                    
-                    // Update progress
                     updateProgress();
-                    
-                    // Auto save
-                    clearTimeout(autoSaveTimeout);
-                    autoSaveTimeout = setTimeout(saveAnswers, 1000);
+                    debouncedSave();
                 });
             });
-            
-            // Form submission handler
-            form.addEventListener('submit', function(e) {
+
+            form.addEventListener('submit', function (e) {
                 e.preventDefault();
-                
                 if (confirm('Are you sure you want to submit your answers?')) {
-                    // Clear saved answers
                     localStorage.removeItem(storageKey);
-                    
-                    // Submit the form
                     this.submit();
                 }
             });
-            
-            // Function to start timer
+
+            window.addEventListener('beforeunload', function (e) {
+                let hasAnswers = false;
+                textareas.forEach(textarea => {
+                    if (textarea.value.trim().length > 0) hasAnswers = true;
+                });
+                if (hasAnswers) {
+                    console.log('Unsaved answers detected:', getAnswers());
+                    e.returnValue = '';
+                    return '';
+                }
+            });
+
+            // Functions
             function startTimer() {
                 updateTimerDisplay();
-                
-                timerInterval = setInterval(function() {
+                timerInterval = setInterval(() => {
                     timeRemaining--;
-                    
                     if (timeRemaining <= 0) {
                         clearInterval(timerInterval);
                         autoSubmitForm();
@@ -326,111 +340,86 @@
                     }
                 }, 1000);
             }
-            
-            // Function to update timer display
+
             function updateTimerDisplay() {
                 const minutes = Math.floor(timeRemaining / 60);
                 const seconds = timeRemaining % 60;
-                
-                // Format time as MM:SS
                 timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                // Change color when time is running out
-                if (timeRemaining <= 60) { // Less than 1 minute
+                timerContainer.classList.remove('warning', 'danger');
+                if (timeRemaining <= 60) {
                     timerContainer.classList.add('danger');
-                } else if (timeRemaining <= 300) { // Less than 5 minutes
+                } else if (timeRemaining <= 300) {
                     timerContainer.classList.add('warning');
                 }
             }
-            
-            // Function to auto submit the form when time expires
+
             function autoSubmitForm() {
-                // Show alert
                 alert('Time is up! Your answers will be submitted automatically.');
-                
-                // Clear saved answers
                 localStorage.removeItem(storageKey);
-                
-                // Submit the form
-                form.submit();
-            }
-            
-            // Function to save answers to localStorage
-            function saveAnswers() {
-                const answers = {};
-                
-                textareas.forEach(textarea => {
-                    const questionId = textarea.dataset.question;
-                    answers[questionId] = textarea.value;
-                });
-                
-                localStorage.setItem(storageKey, JSON.stringify(answers));
-                
-                // Show save indicator
-                saveIndicator.textContent = 'Answers saved';
-                setTimeout(() => {
-                    saveIndicator.textContent = '';
-                }, 2000);
-            }
-            
-            // Function to load saved answers from localStorage
-            function loadSavedAnswers() {
-                const savedData = localStorage.getItem(storageKey);
-                
-                if (savedData) {
-                    const answers = JSON.parse(savedData);
-                    
-                    textareas.forEach(textarea => {
-                        const questionId = textarea.dataset.question;
-                        if (answers[questionId]) {
-                            textarea.value = answers[questionId];
-                        }
-                    });
+                try {
+                    form.submit();
+                } catch (error) {
+                    alert('Submission failed. Please check your connection and try again.');
                 }
             }
-            
-            // Function to update word count
+
+            function saveAnswers() {
+                const answers = {};
+                textareas.forEach(textarea => {
+                    answers[textarea.dataset.question] = textarea.value;
+                });
+                try {
+                    localStorage.setItem(storageKey, JSON.stringify(answers));
+                    saveIndicator.textContent = 'Answers saved';
+                    setTimeout(() => saveIndicator.textContent = '', 2000);
+                } catch (e) {
+                    console.error('Failed to save answers:', e);
+                    saveIndicator.textContent = 'Save failed';
+                    setTimeout(() => saveIndicator.textContent = '', 2000);
+                }
+            }
+
+            function loadSavedAnswers() {
+                try {
+                    const savedData = localStorage.getItem(storageKey);
+                    if (savedData) {
+                        const answers = JSON.parse(savedData);
+                        textareas.forEach(textarea => {
+                            const questionId = textarea.dataset.question;
+                            if (answers[questionId]) textarea.value = answers[questionId];
+                        });
+                    }
+                } catch (e) {
+                    console.error('Failed to load saved answers:', e);
+                }
+            }
+
             function updateWordCount(textarea) {
                 const questionId = textarea.dataset.question;
                 const wordCountElement = document.getElementById(`wordCount-${questionId}`);
                 const text = textarea.value.trim();
                 const wordCount = text ? text.split(/\s+/).length : 0;
-                
                 wordCountElement.textContent = `${wordCount} word${wordCount !== 1 ? 's' : ''}`;
             }
-            
-            // Function to update progress bar
+
             function updateProgress() {
                 let answeredCount = 0;
-                
                 textareas.forEach(textarea => {
-                    if (textarea.value.trim().length > 0) {
-                        answeredCount++;
-                    }
+                    if (textarea.value.trim().length > 0) answeredCount++;
                 });
-                
-                const progressPercentage = (answeredCount / totalQuestions) * 100;
+                const progressPercentage = totalQuestions ? (answeredCount / totalQuestions) * 100 : 0;
                 progressBar.style.width = `${progressPercentage}%`;
             }
-            
-            // Listen for beforeunload to warn about unsaved changes
-            window.addEventListener('beforeunload', function(e) {
-                // Check if there are any answers
-                let hasAnswers = false;
-                
+
+            function getAnswers() {
+                const answers = {};
                 textareas.forEach(textarea => {
-                    if (textarea.value.trim().length > 0) {
-                        hasAnswers = true;
-                    }
+                    answers[textarea.dataset.question] = textarea.value;
                 });
-                
-                if (hasAnswers) {
-                    // Standard text shown regardless of returned string
-                    e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-                    return e.returnValue;
-                }
-            });
+                return answers;
+            }
         });
     </script>
 </body>
+
 </html>

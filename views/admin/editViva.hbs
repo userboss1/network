@@ -223,16 +223,18 @@
             }
             
             questionBlock.innerHTML = `
-                <button type="button" class="remove-btn" onclick="removeQuestion(this, ${index})">X</button>
-                <h3>Question ${index + 1}</h3>
-                <input type="text" name="questions[${index}]" value="${escapeHtml(questionData.question || '')}" placeholder="Enter your question" required>
-                
-                ${imageHTML}
-                
-                <h4>Options:</h4>
-                <div class="options-container">
-                    ${optionsHTML}
-                </div>
+              <button type="button" class="remove-btn" onclick="removeQuestion(this, ${index})" style="background-color: red; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">X</button>
+<h3 style="font-size: 1.2rem; color: #333; margin-bottom: 10px;">Question ${index + 1}</h3>
+<input type="text" name="questions[${index}]" value="${escapeHtml(questionData.question || '')}" placeholder="Enter your question" required 
+    style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; margin-bottom: 10px;">
+
+${imageHTML}
+
+<h4 style="font-size: 1rem; color: #555; margin-top: 10px;">Options:</h4>
+<div class="options-container" style="display: flex; flex-direction: column; gap: 8px;">
+    ${optionsHTML}
+</div>
+
             `;
             
             container.appendChild(questionBlock);
@@ -245,28 +247,38 @@
             questionBlock.dataset.index = questionIndex;
             
             questionBlock.innerHTML = `
-                <button type="button" class="remove-btn" onclick="removeQuestion(this, ${questionIndex})">X</button>
-                <h3>Question ${questionIndex + 1}</h3>
-                <input type="text" name="questions[${questionIndex}]" placeholder="Enter your question" required>
-                
-                <div class="image-upload" style="margin-top: 10px;">
-                    <label for="image-${questionIndex}">Add Image (Optional):</label>
-                    <input type="file" id="image-${questionIndex}" name="question_image[${questionIndex}]" 
-                           accept="image/*" onchange="previewImage(this, ${questionIndex})">
-                    <div class="preview-container">
-                        <img id="preview-${questionIndex}" class="image-preview" style="display: none;">
-                    </div>
-                </div>
-                
-                <h4>Options:</h4>
-                <div class="options-container">
-                    ${[0, 1, 2, 3].map(i => `
-                        <div class="option">
-                            <input type="text" name="options[${questionIndex}][${i}]" required placeholder="Option ${i + 1}">
-                            <input type="radio" name="correct_answer[${questionIndex}]" value="${i}" required ${i === 0 ? 'checked' : ''}>
-                        </div>
-                    `).join('')}
-                </div>
+               <button type="button" class="remove-btn" onclick="removeQuestion(this, ${questionIndex})" 
+        style="background-color: red; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 14px;">
+    X
+</button>
+
+<h3 style="font-size: 1.2rem; color: #333; margin-bottom: 10px;">Question ${questionIndex + 1}</h3>
+
+<input type="text" name="questions[${questionIndex}]" placeholder="Enter your question" required 
+       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; margin-bottom: 10px;">
+
+<div class="image-upload" style="margin-top: 10px;">
+    <label for="image-${questionIndex}" style="display: block; font-size: 0.9rem; color: #555; margin-bottom: 5px;">Add Image (Optional):</label>
+    <input type="file" id="image-${questionIndex}" name="question_image[${questionIndex}]" 
+           accept="image/*" onchange="previewImage(this, ${questionIndex})"
+           style="padding: 6px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.9rem;">
+    <div class="preview-container" style="margin-top: 8px;">
+        <img id="preview-${questionIndex}" class="image-preview" style="display: none; max-width: 100%; height: auto; border-radius: 5px;">
+    </div>
+</div>
+
+<h4 style="font-size: 1rem; color: #555; margin-top: 15px;">Options:</h4>
+<div class="options-container" style="display: flex; flex-direction: column; gap: 10px;">
+    ${[0, 1, 2, 3].map(i => `
+        <div class="option" style="display: flex; align-items: center; gap: 10px;">
+            <input type="text" name="options[${questionIndex}][${i}]" required placeholder="Option ${i + 1}"
+                   style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem;">
+            <input type="radio" name="correct_answer[${questionIndex}]" value="${i}" required ${i === 0 ? 'checked' : ''}
+                   style="transform: scale(1.2);">
+        </div>
+    `).join('')}
+</div>
+
             `;
             
             container.appendChild(questionBlock);
