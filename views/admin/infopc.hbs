@@ -1,0 +1,271 @@
+<div class="assignment-container">
+  <div class="header">
+    <h2>Student PC Assignments</h2>
+    <div class="session-info">
+      <div class="info-item">
+        <span class="label">Class:</span>
+        <span class="value">{{loginDetails.className}}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Lab:</span>
+        <span class="value">{{loginDetails.labName}}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Viva:</span>
+        <span class="value">{{loginDetails.vivaname}}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Duration:</span>
+        <span class="value">{{loginDetails.duration}} minutes</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Login Time:</span>
+        <span class="value">{{formattedDate}}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="assignment-table">
+      <thead>
+        <tr>
+          <th>Roll No.</th>
+          <th>Student Name</th>
+          <th>Register No.</th>
+          <th>PC Number</th>
+          <th>PC IP Address</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each loginDetails.students}}
+        <tr class="{{#if isAssigned}}assigned{{else}}waiting{{/if}}">
+          <td>{{roll}}</td>
+          <td>{{name}}</td>
+          <td>{{register}}</td>
+          <td>
+            {{#if isAssigned}}
+              {{pcNumber}}
+            {{else}}
+              <span class="not-assigned">Not Assigned</span>
+            {{/if}}
+          </td>
+          <td>
+            {{#if isAssigned}}
+              {{pcIP}}
+            {{else}}
+              <span class="not-assigned">Not Assigned</span>
+            {{/if}}
+          </td>
+          <td>
+            {{#if isAssigned}}
+              <span class="status active">Active</span>
+            {{else}}
+              <span class="status waiting">Waiting</span>
+            {{/if}}
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="summary">
+    <div class="summary-box">
+      <h3>Summary</h3>
+      <div class="summary-item">
+        <span class="label">Total Students:</span>
+        <span class="value">{{loginDetails.students.length}}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Students with PC:</span>
+        <span class="value">{{assignedCount}}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Students waiting:</span>
+        <span class="value">{{waitingCount}}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-print" onclick="window.print()">
+      <i class="fas fa-print"></i> Print
+    </button>
+    <a href="/admin/home" class="btn btn-back">
+      <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
+  </div>
+</div>
+
+<style>
+  .assignment-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .header {
+    margin-bottom: 30px;
+  }
+  
+  .header h2 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .session-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .info-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .label {
+    font-weight: bold;
+    margin-right: 8px;
+    color: #555;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+    margin-bottom: 30px;
+  }
+  
+  .assignment-table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .assignment-table th {
+    background-color: #4267B2;
+    color: white;
+    text-align: left;
+    padding: 12px 15px;
+  }
+  
+  .assignment-table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .assignment-table tr:nth-child(even) {
+    background-color: #f5f5f5;
+  }
+  
+  tr.assigned {
+    background-color: rgba(76, 175, 80, 0.1) !important;
+  }
+  
+  tr.waiting {
+    background-color: rgba(255, 152, 0, 0.1) !important;
+  }
+  
+  .not-assigned {
+    color: #f44336;
+    font-style: italic;
+  }
+  
+  .status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+  }
+  
+  .status.active {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .status.waiting {
+    background-color: #fff3e0;
+    color: #e65100;
+  }
+  
+  .summary {
+    margin-bottom: 30px;
+  }
+  
+  .summary-box {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .summary-box h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  
+  .btn i {
+    margin-right: 8px;
+  }
+  
+  .btn-print {
+    background-color: #4267B2;
+    color: white;
+  }
+  
+  .btn-back {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  .btn:hover {
+    opacity: 0.9;
+  }
+  
+  @media print {
+    .actions {
+      display: none;
+    }
+    
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .session-info {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+</style>

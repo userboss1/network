@@ -1,0 +1,23 @@
+<h2>Select a Lab to Edit</h2>
+<select id="labDropdown">
+    <option value="">Select a lab</option>
+    {{#each labs}}
+    <option value="{{this.labName}}">{{this.labName}}</option>
+    {{/each}}
+</select>
+
+<div id="labDetails"></div>
+
+<script>
+    document.getElementById('labDropdown').addEventListener('change', async function() {
+        let labName = this.value;
+        if (!labName) {
+            document.getElementById('labDetails').innerHTML = "";
+            return;
+        }
+
+        let response = await fetch(`/pc/edit/${labName}`);
+        let html = await response.text();
+        document.getElementById('labDetails').innerHTML = html;
+    });
+</script>

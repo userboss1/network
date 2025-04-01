@@ -76,6 +76,14 @@
             {{/each}}
         </select>
 
+        <!-- New Lab Name Dropdown -->
+        <label for="labName">Choose a lab:</label>
+        <select name="labName" id="labName">
+            {{#each labData}}
+                <option value="{{labName}}">{{labName}}</option>
+            {{/each}}
+        </select>
+
         <label for="roll-range">Choose roll number range:</label>
         <div class="range-container">
             <input type="number" name="rollStart" id="rollStart" placeholder="Min" min="1" max="1">
@@ -148,4 +156,3 @@
 
 </body>
 </html>
-    

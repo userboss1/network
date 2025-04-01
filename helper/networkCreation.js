@@ -224,7 +224,22 @@ return new Promise((resolve,reject)=>{
                 }
             });
         },
-       
+     
+        getPc: async() => {
+            try {
+              const lab = await db.get().collection('pc').find({}, { projection: { labName: 1, _id: 0 } }).toArray();
+              
+              if (lab.length === 0) {
+                return null; // No data found, return null or any default value
+              }
+          
+              return lab;  // Return the fetched lab data
+            } catch (error) {
+              console.error('Error fetching data:', error);
+              return null;  // Return null in case of an error
+            }
+          },
+          
       
         
                 

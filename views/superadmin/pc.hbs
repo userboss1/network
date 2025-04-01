@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Setup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 30px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 16px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .pc-entry {
+            margin-bottom: 20px;
+            background-color: #fafafa;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .pc-entry input {
+            width: calc(50% - 10px);
+            margin-right: 20px;
+        }
+
+        .pc-entry input:last-child {
+            margin-right: 0;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .add-btn {
+            background-color: #ff9800;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .add-btn:hover {
+            background-color: #e68900;
+        }
+
+        .form-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Lab Setup Form</h1>
+        <form id="labForm" action="/superadmin/add" method="POST">
+            <label for="labName">Lab Name:</label>
+            <input type="text" name="labName" id="labName" required placeholder="Enter Lab Name">
+
+            <div id="pcFields">
+                <div class="pc-entry">
+                    <label for="pcNumber">PC Number:</label>
+                    <input type="text" name="pcNumber" required placeholder="Enter PC Number">
+                    
+                    <label for="ip">IP Address:</label>
+                    <input type="text" name="ip" required placeholder="Enter IP Address">
+                </div>
+            </div>
+
+            <button type="button" id="addPcField" class="add-btn">Add Another PC</button>
+
+            <div class="form-actions">
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('addPcField').addEventListener('click', function() {
+            const pcFields = document.getElementById('pcFields');
+            const newEntry = document.querySelector('.pc-entry').cloneNode(true);
+            
+            // Clear input values in the cloned entry
+            newEntry.querySelectorAll('input').forEach(input => input.value = '');
+            
+            pcFields.appendChild(newEntry);
+        });
+
+        document.getElementById('labForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Collect form data with multiple entries
+            const formData = new FormData(this);
+            const data = {
+                labName: formData.get('labName'),
+                pcNumber: formData.getAll('pcNumber'),
+                ip: formData.getAll('ip')
+            };
+
+            try {
+                const response = await fetch('/superadmin/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert(result.message);
+                    // Optional: redirect or refresh
+                } else {
+                    console.error('Error details:', result);
+                    alert(result.error || 'Submission failed');
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+                alert('An error occurred while submitting the form');
+            }
+        });
+    </script>
+</body>
+</html>

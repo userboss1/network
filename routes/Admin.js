@@ -375,15 +375,34 @@ router.get('/assign', (req, res) => {
     return res.status(400).send("Viva name is missing");
   }
 
-  // Store in session
-  // req.session.vivaSpecificname = { viva_uid: vivaName };
+  // Fetch lab data
+  AdminHelper.getPc().then((pcResponse) => {
+    console.log("PC is list:", JSON.stringify(pcResponse));
 
-  // Fetch class data
-  AdminHelper.getClasses().then((response) => {
-    console.log("Class Data:", response);
-    res.render('admin/select', { classData: response, viva_uid });
+    // Fetch class data
+    AdminHelper.getClasses().then((classResponse) => {
+      console.log("Class Data:", classResponse);
+
+      // Assuming pcResponse contains labName
+      const labData = pcResponse.map(item => ({ labName: item.labName }));
+
+      // Render the view, passing both viva_uid, classData, and labData
+      res.render('admin/select', { 
+        classData: classResponse, 
+        viva_uid, 
+        labData 
+      });
+    }).catch(error => {
+      console.error("Error fetching class data:", error);
+      res.status(500).send("Error fetching class data");
+    });
+
+  }).catch(error => {
+    console.error("Error fetching PC data:", error);
+    res.status(500).send("Error fetching PC data");
   });
 });
+
 
 
 
@@ -447,73 +466,97 @@ router.get('/assign', (req, res) => {
 
 router.post('/logIn', async (req, res) => {
   try {
-    const { viva_uid, className, rollStart, rollEnd, uniqueId, duration } = req.body;
+    const { viva_uid, className, rollStart, rollEnd, uniqueId, duration, labName } = req.body;
     const userName = req.session.user?.name;
-
+    
     // Validate basic inputs
-    if (!className || !userName || !rollStart || !rollEnd || !viva_uid) {
+    if (!className || !userName || !rollStart || !rollEnd || !viva_uid || !labName) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
-
+    
     // Parse and validate roll number range
     const minRoll = parseInt(rollStart, 10);
     const maxRoll = parseInt(rollEnd, 10);
-
+    
     if (isNaN(minRoll) || isNaN(maxRoll) || minRoll > maxRoll || minRoll < 1) {
       return res.status(400).json({ success: false, message: "Invalid roll number range" });
     }
-
+    
     // Get viva details from qbank or dqbank based on viva_uid
     let vivaDetails = null;
-    
+        
     // Check qbank collection first
     vivaDetails = await db.get().collection('qbank').findOne({ viva_uid: Number(viva_uid) });
-    
+        
     // If not found in qbank, check dqbank
     if (!vivaDetails) {
       vivaDetails = await db.get().collection('dqbank').findOne({ viva_uid: Number(viva_uid) });
     }
-
+    
     // If viva details not found in either collection
     if (!vivaDetails) {
       return res.status(404).json({ success: false, message: "Viva not found with the provided ID" });
     }
-
+    
     const vivaName = vivaDetails.viva_name;
     const vivaType = vivaDetails.type;
-
+    
     // Get student data
     const studentData = await db.get().collection('students').findOne({ className });
-
+    
     if (!studentData || !studentData.students) {
       return res.status(404).json({ success: false, message: "Class not found or no students available" });
     }
-
+    
     // Filter students by roll number range
     const selectedStudents = studentData.students.filter(student => {
       return student.roll >= minRoll && student.roll <= maxRoll;
     });
-
+    
     if (selectedStudents.length === 0) {
       return res.status(400).json({ success: false, message: "No students found in the selected range" });
     }
-
+    
+    // Get PC data for the selected lab
+    const labData = await db.get().collection('pc').findOne({ labName });
+    const pcList = labData?.pcs || [];
+    
+    // Assign PCs to students
+    const studentsWithPCs = selectedStudents.map((student, index) => {
+      // If there are enough PCs in the lab
+      if (index < pcList.length) {
+        return {
+          ...student,
+          pcNumber: pcList[index].pcNumber,
+          pcIP: pcList[index].ip
+        };
+      } else {
+        // If there are not enough PCs, assign "No PC assigned"
+        return {
+          ...student,
+          pcNumber: "No PC assigned",
+          pcIP: "No PC assigned"
+        };
+      }
+    });
+    
     // Create log entry
     const logEntry = {
       uniqueId: Number(uniqueId),
       vivaname: vivaName,
       viva_uid: Number(viva_uid),
       type: vivaType,
-      duration: parseInt(duration), // Add the duration field from req.body
+      duration: parseInt(duration),
       className: studentData.className,
+      labName: labName, // Add lab name to the log
       networkName: userName,
-      students: selectedStudents,
+      students: studentsWithPCs, // Use students with PC assignments
       loginTime: new Date(),
     };
-
+    
     // Insert log entry into the database
     await db.get().collection('logIn').insertOne(logEntry);
-
+    
     res.redirect('/admin/home');
   } catch (error) {
     console.error("Error during login:", error);
@@ -530,8 +573,90 @@ router.get('/remove-class', async (req, res) => {
 
   res.redirect('/Admin/home'); // Redirect back to the dashboard
 });
+// //{
+//   "vivaname": "viva 2",
+//   "viva_uid": 8568,
+//   "className": "computer che",
+//   "networkName": "kabeer",
+//   "students": [
+//     { 
+//       "name": "hellodsd", 
+//       "roll": 1, 
+//       "register": 1,
+//       "pcNumber": 1,
+//       "pcIp": "12"
+//     },
+//     { 
+//       "name": "sadhilj", 
+//       "roll": 2, 
+//       "register": 2,
+//       "pcNumber": 1,
+//       "pcIp": "2"
+//     },
+//     // ... and so on
+//   ],
+//   "assignedAt": ISODate("2024-03-25T...")
+// }
+// Add this route to your 
 
-
+// Add this route to your admin router file
+router.get('/studentpc', async (req, res) => {
+  try {
+    const { uniqueId,logId } = req.query;
+    const numericUniqueId = Number(uniqueId); // Convert to number
+    const  loguid=Number(logId)
+    console.log(numericUniqueId+loguid);
+    const loginDetails = await db.get().collection('logIn').findOne({
+      viva_uid: numericUniqueId,
+      uniqueId:loguid
+    });
+    
+    if (!loginDetails) {
+      return res.status(404).render('error', { 
+        message: "Assignment data not found" 
+      });
+    }
+    
+    // Process student data to add isAssigned flag
+    const processedStudents = loginDetails.students.map(student => {
+      // Check if PC is assigned (not "No PC assigned" and not null/undefined)
+      const isAssigned = student.pcNumber && 
+                         student.pcNumber !== "No PC assigned" && 
+                         student.pcIP && 
+                         student.pcIP !== "No PC assigned";
+      
+      return {
+        ...student,
+        isAssigned: isAssigned
+      };
+    });
+    
+    // Update the students in loginDetails
+    loginDetails.students = processedStudents;
+    
+    // Calculate assigned and waiting counts
+    const assignedCount = processedStudents.filter(student => student.isAssigned).length;
+    const waitingCount = processedStudents.length - assignedCount;
+    
+    // Format date for display
+    const formattedDate = new Date(loginDetails.loginTime).toLocaleString();
+    
+    // Render the template with data
+    res.render('admin/infopc', {
+      title: "Student PC Assignments",
+      loginDetails: loginDetails,
+      assignedCount: assignedCount,
+      waitingCount: waitingCount,
+      formattedDate: formattedDate
+    });
+    
+  } catch (error) {
+    console.error("Error fetching PC assignment info:", error);
+    res.status(500).render('error', { 
+      message: "Server error while fetching PC assignment information" 
+    });
+  }
+});
 router.get('/editViva', async (req, res) => {
   try {
     const { viva, admin } = req.query;

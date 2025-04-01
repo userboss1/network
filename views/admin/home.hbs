@@ -521,7 +521,10 @@
                                         <span class="badge active">{{this.rollRange}}</span>
                                     </div>
                                     <div class="assigned-actions">
-
+   <a href="/Admin/studentpc?uniqueId={{../this.viva_uid}}&logId={{this.uniqueId}}"
+                                            class="remove small-btn">
+                                            Show Details
+                                        </a>
                                         <a href="/Admin/remove-class?admin={{../../adminName}}&class={{this.className}}&range={{this.rollRange}}&uniqueId={{this.uniqueId}}"
                                             class="remove small-btn">
                                             Remove
