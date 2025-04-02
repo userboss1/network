@@ -474,6 +474,16 @@ router.post('/logIn', async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
     
+    // Check if the lab is already assigned in the logIn collection
+    const existingLabAssignment = await db.get().collection('logIn').findOne({ labName });
+    
+    if (existingLabAssignment) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `This lab (${labName}) is already assigned. Please remove the previous assignment first check with superadmin  :)` 
+      });
+    }
+    
     // Parse and validate roll number range
     const minRoll = parseInt(rollStart, 10);
     const maxRoll = parseInt(rollEnd, 10);
@@ -484,10 +494,10 @@ router.post('/logIn', async (req, res) => {
     
     // Get viva details from qbank or dqbank based on viva_uid
     let vivaDetails = null;
-        
+    
     // Check qbank collection first
     vivaDetails = await db.get().collection('qbank').findOne({ viva_uid: Number(viva_uid) });
-        
+    
     // If not found in qbank, check dqbank
     if (!vivaDetails) {
       vivaDetails = await db.get().collection('dqbank').findOne({ viva_uid: Number(viva_uid) });

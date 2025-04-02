@@ -16,6 +16,9 @@ const hbs = require('hbs');  // Use 'hbs' instead of 'handlebars'
 hbs.registerHelper('eq', function(a, b) {
     return a === b;
 });
+hbs.registerHelper('json', function(context) {
+   return JSON.stringify(context);
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

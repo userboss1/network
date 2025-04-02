@@ -15,6 +15,11 @@
     justify-content: center;
     align-items: center;
     color: #2c3e50;
+    /* Prevent text selection */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .quiz-container {
@@ -26,6 +31,7 @@
     border-radius: 24px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
     animation: fadeIn 0.6s ease-out;
+    position: relative; /* For positioning sticky elements */
 }
 
 @keyframes fadeIn {
@@ -114,6 +120,11 @@ input[readonly] {
     color: #1a365d;
     margin-bottom: 1.2rem;
     line-height: 1.5;
+    /* Prevent text selection for questions */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .options {
@@ -136,6 +147,11 @@ input[readonly] {
     font-weight: 500;
     color: #334155;
     position: relative;
+    /* Prevent text selection for options */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .options li span {
@@ -196,9 +212,9 @@ input[readonly] {
     box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
     transform: translateY(-2px);
 }
-
 .submit-btn:hover:before {
     left: 100%;
+    transition: left 0.6s ease-in-out;
 }
 
 .submit-btn:active {
@@ -212,6 +228,90 @@ img {
     margin: 15px 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     display: block;
+    /* Prevent saving images */
+    pointer-events: none;
+}
+
+/* Sticky timer styles */
+.sticky-timer {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+.timer-label {
+    font-weight: 600;
+    color: #34495e;
+    margin-right: 15px;
+}
+
+.timer-display {
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 10px 15px;
+    background: #f0f7ff;
+    border-radius: 10px;
+    text-align: center;
+    color: #2980b9;
+    border: 2px solid #3498db;
+    min-width: 100px;
+    transition: all 0.3s ease;
+}
+
+.timer-warning {
+    background: #ffeeee;
+    border-color: #e74c3c;
+    color: #e74c3c;
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+}
+
+.progress-container {
+    height: 6px;
+    width: 100%;
+    background: #e0e6ed;
+    border-radius: 3px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    border-radius: 3px;
+    transition: width 1s linear;
+}
+
+/* Progress indicator */
+.progress-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    margin-top: 10px;
+    font-weight: 500;
+    color: #34495e;
+}
+
+/* Question counter */
+.question-counter {
+    flex-grow: 1;
+    text-align: right;
+    font-weight: 600;
+    color: #3498db;
 }
 
 /* Responsive adjustments */
@@ -253,9 +353,14 @@ img {
         font-size: 1rem;
     }
 }
+
+/* Hide fullscreen button after fullscreen is activated */
+.hidden-button {
+    display: none !important;
+}
     </style>
 </head>
-<body>
+<body oncontextmenu="return false">
 
     <div class="quiz-container">
         <form id="quizForm" action="/admin/result" method="POST">
@@ -290,15 +395,28 @@ img {
                 <label for="vivaname">Viva Name</label>
                 <input type="text" id="vivaname" name="user[vivaname]" value="{{student.vivaname}}" readonly>
             </div>
-              <div class="input-container">
+            <div class="input-container">
                 <label for="vivaname">Viva UID</label>
                 <input type="text" id="vivaname" name="user[viva_uid]" value="{{student.viva_uid}}" readonly>
             </div>
-</div>
-              <div class="input-container">
+
+            <div class="input-container">
                 <label for="vivaname">Viva duration</label>
                 <input type="text" id="vivaname" name="user[viva_uid]" value="{{student.duration}}" readonly>
             </div>
+
+            <!-- Sticky Timer -->
+            <div class="sticky-timer" id="stickyTimer">
+                <div>
+                    <div class="timer-label">Time Remaining</div>
+                    <div class="timer-display" id="timer">00:00</div>
+                </div>
+                <div class="question-counter" id="questionCounter">Answered: 0/0</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar" style="width: 100%;"></div>
+                </div>
+            </div>
+
             <div id="questionsContainer">
                 <!-- Questions will be inserted here by JavaScript -->
             </div>
@@ -306,115 +424,422 @@ img {
             <button type="submit" class="submit-btn">Submit Quiz</button>
         </form>
     </div>
-
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Automatically request fullscreen on page load
+            function requestFullScreenOnLoad() {
+                // Small delay to ensure the browser is ready
+                setTimeout(() => {
+                    try {
+                        if (document.documentElement.requestFullscreen) {
+                            document.documentElement.requestFullscreen().catch(err => {
+                                console.error('Error attempting to enable fullscreen:', err);
+                                // Auto-click the fullscreen button if auto-request fails
+                                setTimeout(() => {
+                                    const fsButton = document.getElementById('fullscreenButton');
+                                    if (fsButton) fsButton.click();
+                                }, 500);
+                            });
+                        } else if (document.documentElement.webkitRequestFullscreen) {
+                            document.documentElement.webkitRequestFullscreen();
+                        } else if (document.documentElement.mozRequestFullScreen) {
+                            document.documentElement.mozRequestFullScreen();
+                        } else if (document.documentElement.msRequestFullscreen) {
+                            document.documentElement.msRequestFullscreen();
+                        } else {
+                            // Auto-click the fullscreen button if method not available
+                            setTimeout(() => {
+                                const fsButton = document.getElementById('fullscreenButton');
+                                if (fsButton) fsButton.click();
+                            }, 500);
+                        }
+                    } catch (e) {
+                        console.error("Fullscreen error:", e);
+                        // Auto-click the fullscreen button if any error occurs
+                        setTimeout(() => {
+                            const fsButton = document.getElementById('fullscreenButton');
+                            if (fsButton) fsButton.click();
+                        }, 500);
+                    }
+                }, 500);
+            }
+            
+            // Call the function to request fullscreen on page load
+            requestFullScreenOnLoad();
+        });
+
         document.addEventListener("DOMContentLoaded", function () {
-    // Extract questions from the template
-    const originalQuestions = [];
-    
-    {{#each response}}
-        {{#each this.questions}}
-            originalQuestions.push({
-                question: "{{this.question}}",
-                options: [{{#each this.options}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}],
-                image: "{{this.image}}",
-                originalIndex: {{@index}}
+            // Extract questions from the template
+            const originalQuestions = [];
+            
+            {{#each response}}
+                {{#each this.questions}}
+                    originalQuestions.push({
+                        question: "{{this.question}}",
+                        options: [{{#each this.options}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}],
+                        image: "{{this.image}}",
+                        originalIndex: {{@index}}
+                    });
+                {{/each}}
+            {{/each}}
+            
+            // Shuffle the questions
+            const shuffledQuestions = shuffleArray([...originalQuestions]);
+            const totalQuestions = shuffledQuestions.length;
+            
+            // Generate HTML for shuffled questions
+            const questionsContainer = document.getElementById("questionsContainer");
+            const questionCounter = document.getElementById("questionCounter");
+            
+            // Update question counter initially
+            questionCounter.textContent = `Answered: 0/${totalQuestions}`;
+            
+            // Keep track of answered questions
+            let answeredCount = 0;
+            
+            shuffledQuestions.forEach((questionData, displayIndex) => {
+                const questionDiv = document.createElement("div");
+                questionDiv.className = "quiz";
+                questionDiv.dataset.questionIndex = displayIndex;
+                
+                // Create question text
+                const questionP = document.createElement("p");
+                questionP.innerHTML = `<strong>Q${displayIndex + 1}. ${questionData.question}</strong>`;
+                questionDiv.appendChild(questionP);
+                
+                // Add image if exists
+                if (questionData.image) {
+                    const img = document.createElement("img");
+                    img.src = questionData.image;
+                    img.alt = "Question Image";
+                    img.draggable = false; // Prevent dragging images
+                    questionDiv.appendChild(img);
+                }
+                
+                // Create options
+                const optionsList = document.createElement("ul");
+                optionsList.className = "options";
+                
+                // Shuffle options
+                const shuffledOptions = shuffleArray([...questionData.options]);
+                
+                shuffledOptions.forEach((option, optionIndex) => {
+                    const optionLi = document.createElement("li");
+                    optionLi.dataset.value = option;
+                    
+                    const optionSpan = document.createElement("span");
+                    optionSpan.textContent = ["A.", "B.", "C.", "D."][optionIndex] + " ";
+                    
+                    optionLi.appendChild(optionSpan);
+                    optionLi.appendChild(document.createTextNode(option));
+                    optionsList.appendChild(optionLi);
+                    
+                    // Add click event to options
+                    optionLi.addEventListener("click", () => {
+                        // If this was previously unanswered, increment the counter
+                        if (hiddenInput.value === "") {
+                            answeredCount++;
+                            updateQuestionCounter();
+                        }
+                        
+                        optionsList.querySelectorAll("li").forEach(li => li.classList.remove("selected"));
+                        optionLi.classList.add("selected");
+                        hiddenInput.value = option;
+                        
+                        // Highlight the question as answered
+                        questionDiv.style.borderLeft = "5px solid #3498db";
+                    });
+                });
+                
+                questionDiv.appendChild(optionsList);
+                
+                // Create hidden input for the answer (with original index)
+                const hiddenInput = document.createElement("input");
+                hiddenInput.type = "hidden";
+                hiddenInput.name = `answers[${questionData.originalIndex}]`;
+                hiddenInput.value = "";
+                questionDiv.appendChild(hiddenInput);
+                
+                questionsContainer.appendChild(questionDiv);
             });
-        {{/each}}
-    {{/each}}
-    
-    // Shuffle the questions
-    const shuffledQuestions = shuffleArray([...originalQuestions]);
-    
-    // Generate HTML for shuffled questions
-    const questionsContainer = document.getElementById("questionsContainer");
-    
-    shuffledQuestions.forEach((questionData, displayIndex) => {
-        const questionDiv = document.createElement("div");
-        questionDiv.className = "quiz";
-        questionDiv.dataset.questionIndex = displayIndex;
-        
-        // Create question text
-        const questionP = document.createElement("p");
-        questionP.innerHTML = `<strong>Q${displayIndex + 1}. ${questionData.question}</strong>`;
-        questionDiv.appendChild(questionP);
-        
-        // Add image if exists
-        if (questionData.image) {
-            const img = document.createElement("img");
-            img.src = questionData.image;
-            img.alt = "Question Image";
-            questionDiv.appendChild(img);
-        }
-        
-        // Create options
-        const optionsList = document.createElement("ul");
-        optionsList.className = "options";
-        
-        // Shuffle options
-        const shuffledOptions = shuffleArray([...questionData.options]);
-        
-        // Create a mapping to track original option values
-        const optionMapping = {};
-        shuffledOptions.forEach((option, index) => {
-            optionMapping[index] = option;
-        });
-        
-        shuffledOptions.forEach((option, optionIndex) => {
-            const optionLi = document.createElement("li");
-            optionLi.dataset.value = option;
             
-            const optionSpan = document.createElement("span");
-            optionSpan.textContent = ["A.", "B.", "C.", "D."][optionIndex] + " ";
+            // Update question counter function
+            function updateQuestionCounter() {
+                questionCounter.textContent = `Answered: ${answeredCount}/${totalQuestions}`;
+            }
             
-            optionLi.appendChild(optionSpan);
-            optionLi.appendChild(document.createTextNode(option));
-            optionsList.appendChild(optionLi);
+            // Add timer functionality
+            // Get duration from student.duration (in minutes)
+            const durationMinutes = parseInt("{{student.duration}}") || 10; // Default to 10 if not provided
+            let timeLeft = durationMinutes * 60; // Convert to seconds
+            const totalTime = timeLeft;
             
-            // Add click event to options
-            optionLi.addEventListener("click", () => {
-                optionsList.querySelectorAll("li").forEach(li => li.classList.remove("selected"));
-                optionLi.classList.add("selected");
-                hiddenInput.value = option;
+            // Update timer display
+            const timerDisplay = document.getElementById("timer");
+            const progressBar = document.getElementById("progressBar");
+            
+            // Update timer every second
+            const timerInterval = setInterval(function() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                
+                // Format the timer display
+                timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                // Update progress bar
+                const percentageLeft = (timeLeft / totalTime) * 100;
+                progressBar.style.width = `${percentageLeft}%`;
+                
+                // Change color when time is running out
+                if (timeLeft <= 60) { // last minute
+                    timerDisplay.classList.add("timer-warning");
+                    progressBar.style.background = 'linear-gradient(90deg, #e74c3c, #c0392b)';
+                }
+                
+                // When time is up
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    fillEmptyAnswers();
+                    
+                    // Show a brief message before submitting
+                    const submitMessage = document.createElement("div");
+                    submitMessage.style.position = "fixed";
+                    submitMessage.style.top = "50%";
+                    submitMessage.style.left = "50%";
+                    submitMessage.style.transform = "translate(-50%, -50%)";
+                    submitMessage.style.background = "rgba(0, 0, 0, 0.8)";
+                    submitMessage.style.color = "white";
+                    submitMessage.style.padding = "20px 30px";
+                    submitMessage.style.borderRadius = "10px";
+                    submitMessage.style.fontSize = "18px";
+                    submitMessage.style.fontWeight = "bold";
+                    submitMessage.style.zIndex = "1000";
+                    submitMessage.textContent = "Time's up! Submitting your answers...";
+                    document.body.appendChild(submitMessage);
+                    
+                    // Submit after a brief delay to show the message
+                    setTimeout(() => {
+                        document.getElementById("quizForm").submit();
+                    }, 1500);
+                }
+                
+                timeLeft--;
+            }, 1000);
+            
+            // Function to fill empty answers with the string "null"
+            function fillEmptyAnswers() {
+                document.querySelectorAll(".quiz input[type='hidden']").forEach((input) => {
+                    if (!input.value) {
+                        input.value = "n1ull";
+                    }
+                });
+            }
+            
+            // Handle form submission
+            document.getElementById("quizForm").addEventListener("submit", function(event) {
+                // Fill empty answers with the string "null"
+                fillEmptyAnswers();
+                // Form will submit normally
             });
-        });
-        
-        questionDiv.appendChild(optionsList);
-        
-        // Create hidden input for the answer (with original index)
-        const hiddenInput = document.createElement("input");
-        hiddenInput.type = "hidden";
-        hiddenInput.name = `answers[${questionData.originalIndex}]`;
-        hiddenInput.value = "";
-        questionDiv.appendChild(hiddenInput);
-        
-        questionsContainer.appendChild(questionDiv);
-    });
-    
-    // Handle form submission
-    document.getElementById("quizForm").addEventListener("submit", function(event) {
-        let allAnswered = true;
-        document.querySelectorAll(".quiz").forEach((quiz) => {
-            if (!quiz.querySelector("input[type='hidden']").value) {
-                allAnswered = false;
+            
+            // Function to shuffle an array (Fisher-Yates algorithm)
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
             }
         });
-
-        if (!allAnswered) {
-            event.preventDefault();
-            alert("⚠ Please answer all questions before submitting!");
-        }
-    });
-    
-    // Function to shuffle an array (Fisher-Yates algorithm)
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-});
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            // Enhanced fullscreen functionality
+            const quizContainer = document.querySelector('.quiz-container');
+            const form = document.getElementById('quizForm');
+            
+            // Create fullscreen button with better styling
+            const fullscreenBtn = document.createElement('button');
+            fullscreenBtn.type = 'button'; // Prevent form submission
+            fullscreenBtn.textContent = 'Enter Full Screen Mode';
+            fullscreenBtn.className = 'submit-btn';
+            fullscreenBtn.id = 'fullscreenButton';
+            fullscreenBtn.style.background = 'linear-gradient(90deg, #27ae60, #2ecc71)';
+            fullscreenBtn.style.marginBottom = '20px';
+            
+            // Insert the button before the form's first child (the h2)
+            form.insertBefore(fullscreenBtn, form.firstChild);
+            
+            // Create a fullscreen message
+            const fsMessage = document.createElement('div');
+            fsMessage.className = 'sticky-timer';
+            fsMessage.style.display = 'none';
+            fsMessage.style.marginBottom = '20px';
+            fsMessage.style.color = '#e74c3c';
+            fsMessage.style.fontWeight = 'bold';
+            fsMessage.textContent = 'Please return to full screen mode to continue the exam';
+            form.insertBefore(fsMessage, fullscreenBtn.nextSibling);
+            
+            // Set to true to enforce fullscreen mode
+            const enforceFullscreen = true;
+            
+            // Fullscreen change event handler
+            function handleFullscreenChange() {
+                if (document.fullscreenElement || 
+                    document.webkitFullscreenElement || 
+                    document.mozFullScreenElement ||
+                    document.msFullscreenElement) {
+                    // In fullscreen mode
+                    fullscreenBtn.classList.add('hidden-button'); // Hide button when in fullscreen
+                    fsMessage.style.display = 'none';
+                    
+                    // Enable form elements
+                    enableFormElements(true);
+                } else {
+                    // Not in fullscreen mode
+                    fullscreenBtn.classList.remove('hidden-button'); // Show button when not in fullscreen
+                    fullscreenBtn.textContent = 'Enter Full Screen Mode';
+                    fullscreenBtn.style.background = 'linear-gradient(90deg, #27ae60, #2ecc71)';
+                    fsMessage.style.display = 'block';
+                    
+                    // Disable form elements until returning to fullscreen
+                    enableFormElements(false);
+                    
+                    // Auto re-enter fullscreen after a brief delay if enforcement is on
+                    if (enforceFullscreen) {
+                        setTimeout(() => {
+                            fullscreenBtn.click();
+                        }, 1500);
+                    }
+                }
+            }
+            
+            // Function to enable/disable form elements
+            function enableFormElements(enable) {
+                // Only apply if fullscreen is mandatory
+                if (!enforceFullscreen) return;
+                
+                // Get all interactive elements
+                const options = document.querySelectorAll('.options li');
+                const submitBtn = document.querySelector('.submit-btn:not(#fullscreenButton)');
+                
+                if (enable) {
+                    // Enable elements
+                    options.forEach(option => {
+                        option.style.pointerEvents = 'auto';
+                        option.style.opacity = '1';
+                    });
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                    }
+                } else {
+                    // Disable elements
+                    options.forEach(option => {
+                        option.style.pointerEvents = 'none';
+                        option.style.opacity = '0.5';
+                    });
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.5';
+                    }
+                }
+            }
+            
+            // Add fullscreen change event listeners
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+            
+            // Initialize - disable elements if enforcement is on
+            if (enforceFullscreen) {
+                enableFormElements(false);
+            }
+            
+            // Fullscreen button click handler
+            fullscreenBtn.addEventListener('click', function() {
+                if (!document.fullscreenElement && 
+                    !document.webkitFullscreenElement && 
+                    !document.mozFullScreenElement && 
+                    !document.msFullscreenElement) {
+                    // Try to enter fullscreen with all possible methods
+                    try {
+                        // Try the standard method first
+                        if (document.documentElement.requestFullscreen) {
+                            document.documentElement.requestFullscreen().catch(err => {
+                                console.error('Error attempting to enable fullscreen:', err);
+                              
+                            });
+                        } 
+                        // Try webkit (Safari, Chrome)
+                        else if (document.documentElement.webkitRequestFullscreen) {
+                            document.documentElement.webkitRequestFullscreen();
+                        } 
+                        // Try Firefox
+                        else if (document.documentElement.mozRequestFullScreen) {
+                            document.documentElement.mozRequestFullScreen();
+                        } 
+                        // Try IE/Edge
+                        else if (document.documentElement.msRequestFullscreen) {
+                            document.documentElement.msRequestFullscreen();
+                        }
+                        // If none of these work
+                        else {
+                            alert("Fullscreen is not supported by your browser!");
+                        }
+                    } catch (e) {
+                        console.error("Fullscreen error:", e);
+                        alert("There was an error entering fullscreen mode. Please try again.");
+                    }
+                }
+            });
+            
+            // Auto-detect fullscreen exit at regular intervals and force re-entry
+            setInterval(function() {
+                if (enforceFullscreen && 
+                    !document.fullscreenElement && 
+                    !document.webkitFullscreenElement && 
+                    !document.mozFullScreenElement && 
+                    !document.msFullscreenElement) {
+                    // Show warning if not in fullscreen
+                    fsMessage.style.display = 'block';
+                    enableFormElements(false);
+                    
+                    // Try to re-enter fullscreen automatically
+                    setTimeout(() => {
+                        const fsButton = document.getElementById('fullscreenButton');
+                        if (fsButton) fsButton.click();
+                    }, 2000);
+                }
+            }, 1000);
+            
+            // Attempt to lock orientation to landscape on mobile (if supported)
+            if (window.screen && window.screen.orientation && window.screen.orientation.lock) {
+                try {
+                    window.screen.orientation.lock('landscape').catch(function(error) {
+                        console.log('Orientation lock failed: ' + error);
+                    });
+                } catch(e) {
+                    console.log('Orientation API not supported');
+                }
+            }
+            
+            // Disable right-click context menu
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+            
+            // Disable keyboard shortcuts that might allow copying
+            document.addEventListener('keydown', function(e) {
+                // Prevent Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+P, F12, etc.
+                if ((e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'x' || e.key === 'p')) || 
+                    e.key === 'F12' || e.key === 'PrintScreen') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
     </script>
 
 </body>

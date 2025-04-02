@@ -9,6 +9,9 @@
         .hidden {
             display: none;
         }
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="bg-gray-100 p-8">
@@ -18,7 +21,7 @@
         </h1>
 
         {{#if message}}
-            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
+            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-4" role="alert">
                 {{message}}
             </div>
         {{/if}}
@@ -26,58 +29,58 @@
         <div class="space-y-4">
             <h2 class="text-2xl font-semibold text-gray-700">Classes</h2>
             {{#each classes}}
-                <div class="class-section bg-gray-50 border rounded p-4 hover:bg-gray-100 cursor-pointer">
-                    <div class="class-header flex justify-between items-center" data-classname="{{this.className}}">
+                <div class="class-section bg-gray-50 border rounded p-4">
+                    <div class="class-header flex justify-between items-center cursor-pointer" data-classname="{{this.className}}">
                         <span class="text-xl font-medium text-blue-700">{{this.className}}</span>
                         <svg class="w-6 h-6 text-blue-500 toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </div>
-                    <div class="students-list hidden" id="students-{{className}}">
-                        {{#each students}}
-                            <div class="student-section bg-white border-t p-3 hover:bg-blue-50 cursor-pointer student-details" 
-                                 data-name="{{name}}"
-                                 data-subject="{{subjectName}}"
-                                 data-viva="{{vivaName}}"
-                                 data-submitted="{{submittedAt}}"
-                                 data-duration="{{duration}}">
+                    <div class="students-list hidden mt-3">
+                        {{#each this.students}}
+                            <div class="student-section bg-white border border-gray-200 rounded mb-2 p-3 hover:bg-blue-50 cursor-pointer">
                                 <div class="flex justify-between items-center">
                                     <div>
                                         <span class="font-semibold text-gray-700">{{name}}</span>
+                                        <span class="text-sm text-gray-500 ml-2">Roll: {{roll}}</span>
                                     </div>
                                     <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 </div>
+                                <div class="student-details hidden mt-3 bg-gray-50 rounded p-3">
+                                    <div class="grid grid-cols-2 gap-4 mb-3">
+                                        <div>
+                                            <p><strong>Subject:</strong> {{subjectName}}</p>
+                                            <p><strong>Viva Name:</strong> {{vivaName}}</p>
+                                        </div>
+                                        <div>
+                                            <p><strong>Submitted At:</strong> {{formatDate submittedAt}}</p>
+                                            <p><strong>Duration:</strong> {{duration}} minutes</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <h3 class="text-lg font-semibold mt-4 mb-2 text-gray-700">Answers</h3>
+                                    <div class="space-y-2">
+                                        {{#each answers}}
+                                            <div class="bg-blue-50 p-3 rounded">
+                                                <p><strong>Question ID:</strong> {{this.questionId}}</p>
+                                                <p><strong>Answer:</strong> {{this.text}}</p>
+                                            </div>
+                                        {{else}}
+                                            <p class="text-gray-500">No answers available for this student.</p>
+                                        {{/each}}
+                                    </div>
+                                </div>
                             </div>
                         {{/each}}
                     </div>
                 </div>
+            {{else}}
+                <div class="bg-gray-50 border rounded p-4 text-center text-gray-500">
+                    No classes found.
+                </div>
             {{/each}}
-        </div>
-
-        <div id="student-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 id="modal-student-name" class="text-2xl font-bold text-blue-700"></h2>
-                    <button id="close-modal" class="text-red-500 hover:text-red-700">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                <div id="modal-student-details" class="space-y-3">
-                    <p><strong>Subject:</strong> <span id="modal-subject"></span></p>
-                    <p><strong>Viva Name:</strong> <span id="modal-viva"></span></p>
-                    <p><strong>Submitted At:</strong> <span id="modal-submitted"></span></p>
-                    <p><strong>Duration:</strong> <span id="modal-duration"></span></p>
-                    
-                    <h3 class="text-xl font-semibold mt-4 text-gray-700">Answers</h3>
-                    <div id="modal-answers" class="space-y-2">
-                        <!-- Answers will be dynamically populated -->
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -89,42 +92,21 @@
                 $(this).find('.toggle-icon').toggleClass('rotate-180');
             });
 
-            // Show student details modal
-            $('.student-details').on('click', function() {
-                const name = $(this).data('name');
-                const subject = $(this).data('subject');
-                const viva = $(this).data('viva');
-                const submitted = new Date($(this).data('submitted')).toLocaleString();
-                const duration = $(this).data('duration') + ' minutes';
-
-                $('#modal-student-name').text(name);
-                $('#modal-subject').text(subject);
-                $('#modal-viva').text(viva);
-                $('#modal-submitted').text(submitted);
-                $('#modal-duration').text(duration);
-
-                // You would typically fetch answers via AJAX here
-                // For this example, we'll use dummy answers
-                const answers = [
-                    {questionId: 'hbhib', text: 'd'},
-                    {questionId: 'ww', text: 'ddw'},
-                    {questionId: 'ed', text: 'dw'}
-                ];
-
-                const answersHtml = answers.map(answer => `
-                    <div class="bg-blue-50 p-3 rounded">
-                        <p><strong>Question ID:</strong> ${answer.questionId}</p>
-                        <p><strong>Answer:</strong> ${answer.text}</p>
-                    </div>
-                `).join('');
-
-                $('#modal-answers').html(answersHtml);
-                $('#student-modal').removeClass('hidden');
+            // Toggle student details visibility
+            $('.student-section').on('click', function() {
+                $(this).find('.student-details').toggleClass('hidden');
             });
-
-            // Close modal
-            $('#close-modal').on('click', function() {
-                $('#student-modal').addClass('hidden');
+            
+            // Format date (add this function if your dates need formatting)
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleString();
+            }
+            
+            // Format any dates on the page
+            $('.date-format').each(function() {
+                const dateString = $(this).text();
+                $(this).text(formatDate(dateString));
             });
         });
     </script>

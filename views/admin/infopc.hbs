@@ -1,6 +1,10 @@
 <div class="assignment-container">
   <div class="header">
-    <h2>Student PC Assignments</h2>
+    <div style="color: #291409;padding: 10px; width: max-content; height: 30px;">
+<h1 style="margin-left: 500px; margin-bottom: 50px ;">Student PC Assignments</h1>
+    </div>
+    <h2>UNIQUE ID FOR LOGIN:{{loginDetails.uniqueId}}</h2>
+ 
     <div class="session-info">
       <div class="info-item">
         <span class="label">Class:</span>
@@ -9,6 +13,10 @@
       <div class="info-item">
         <span class="label">Lab:</span>
         <span class="value">{{loginDetails.labName}}</span>
+      </div>
+        <div class="info-item">
+        <span class="label">Viva UID:</span>
+        <span class="value">{{loginDetails.viva_uid}}</span>
       </div>
       <div class="info-item">
         <span class="label">Viva:</span>

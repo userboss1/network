@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .lab-selector {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .lab-selector select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .pc-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .pc-list {
+            margin-top: 20px;
+        }
+
+        .pc-item {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 120px);
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .btn-container {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .no-labs {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>{{title}}</h1>
+    </div>
+
+    <div class="container">
+        {{#if labs}}
+        <div class="lab-selector">
+            <h2>Select Lab</h2>
+            <select id="labSelector">
+                <option value="">-- Select a Lab --</option>
+                {{#each labs}}
+                <option value="{{this.labName}}">{{this.labName}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        {{#each labs}}
+        <div id="lab-{{this.labName}}" class="pc-container">
+            <h2>Edit PCs in {{this.labName}} Lab</h2>
+
+            {{#if this.pcs}}
+            <form id="form-{{this.labName}}" action="/superadmin/editpc" method="POST">
+                <input type="hidden" name="labName" value="{{this.labName}}">
+
+                <div class="pc-list">
+                    {{#each this.pcs}}
+                    <div class="pc-item">
+                        <div class="form-group">
+                            <label for="ip_{{@index}}">PC #{{this.pcNumber}}:</label>
+                            <input type="text" id="ip_{{@index}}" name="ip_{{@index}}" value="{{this.ip}}" required>
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+
+                <div class="btn-container">
+                    <button type="submit">Update All IPs</button>
+                </div>
+            </form>
+            {{else}}
+            <p>No PCs found in this lab.</p>
+            {{/if}}
+        </div>
+        {{/each}}
+        {{else}}
+        <div class="no-labs">
+            <p>No labs found in the database.</p>
+        </div>
+        {{/if}}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const labSelector = document.getElementById('labSelector');
+
+            labSelector.addEventListener('change', function () {
+                // Hide all PC containers first
+                const pcContainers = document.querySelectorAll('.pc-container');
+                pcContainers.forEach(container => {
+                    container.style.display = 'none';
+                });
+
+                // Show the selected lab's PCs
+                const selectedLab = this.value;
+                if (selectedLab) {
+                    const selectedContainer = document.getElementById('lab-' + selectedLab);
+                    if (selectedContainer) {
+                        selectedContainer.style.display = 'block';
+                    }
+                }
+            });
+
+            // Form validation
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function (event) {
+                    const ipInputs = this.querySelectorAll('input[name^="ips"][name$="[ip]"]');
+                    let isValid = true;
+
+                    // IP validation
+                    const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+
+                    ipInputs.forEach(input => {
+                        if (!ipPattern.test(input.value)) {
+                            isValid = false;
+                            input.style.borderColor = 'red';
+                        } else {
+                            input.style.borderColor = '#ddd';
+                        }
+                    });
+
+                    if (!isValid) {
+                        event.preventDefault();
+                        alert('Please enter valid IP addresses for all PCs');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

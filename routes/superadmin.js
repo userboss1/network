@@ -141,67 +141,81 @@ router.post('/add', async (req, res) => {
    }
 });
 
+// Using Express Router
 
+
+// Route to display the edit PC page
 router.get('/editpc', async (req, res) => {
-   try {// Fetch all labs
-       const labs = await db.get().collection('pc').find().toArray();
-
-       res.render('superadmin/editpc', { labs });
-   } catch (error) {
-       console.error(error);
-       res.status(500).send("Error fetching labs.");
-   } finally {
+    try {
+      // Fetch labs with their PCs from the database
+      const labs = await db.get().collection('pc').find({}).toArray();
       
-   }
-});
-router.get('/edit/:labName', async (req, res) => {
-   const labName = req.params.labName;
+      // Render the edit PC page with the data
+      res.render('superadmin/infoeditpc', { 
+        labs: labs,
+        title: 'Edit PC Information'
+      });
+    } catch (error) {
+      console.error('Error fetching PC data:', error);
+      res.status(500).send('Error fetching PC data');
+    }
+  });
 
-   try {
-       await client.connect();
-       const db = client.db(dbName);
-       const collection = db.collection('pc');
+// Route to handle the PC update
+// 1. Make sure route matches the form action
+router.post('/editpc', async (req, res) => {
+    try {
+      console.log('Form data received:', req.body);
+      
+      const { labName } = req.body;
+      
+      if (!labName) {
+        return res.status(400).send('Lab name is required');
+      }
+  
+      // Extract PC updates from form data
+      const updateOperations = {};
+      
+      // Process fields with names like "ip_0", "ip_1", etc.
+      for (const key in req.body) {
+        if (key.startsWith('ip_')) {
+          const index = parseInt(key.substring(3)); // Extract the index number after "ip_"
+          const ip = req.body[key];
+          
+          if (!isNaN(index) && ip) {
+            updateOperations[`pcs.${index}.ip`] = ip;
+          }
+        }
+      }
+      
+      console.log('Update operations:', updateOperations);
+      
+      if (Object.keys(updateOperations).length === 0) {
+        return res.status(400).send('No valid PC updates found in the request');
+      }
+      
+      // Apply all updates in a single operation
+      const result = await db.get().collection('pc').updateOne(
+        { labName },
+        { $set: updateOperations }
+      );
+      
+      console.log('Update result:', result);
+      
+      if (result.modifiedCount === 0) {
+        console.log('No changes made to the database');
+      } else {
+        console.log('Updates completed successfully');
+      }
+      
+      res.redirect('/superadmin');
+    } catch (error) {
+      console.error('Error updating PC data:', error);
+      res.status(500).send(`Error updating PC data: ${error.message}`);
+    }
+  });
+// Don't forget to export the router
 
-       const lab = await collection.findOne({ labName });
 
-       if (!lab) {
-           return res.send("<p>Lab not found.</p>");
-       }
-
-       res.render('superadmin/editPcForm', { lab });
-   } catch (error) {
-       console.error(error);
-       res.send("<p>Error fetching lab details.</p>");
-   } finally {
-       await client.close();
-   }
-});
-router.post('/update/:labName', async (req, res) => {
-   const labName = req.params.labName;
-   const { pcNumber, ip } = req.body;
-
-   const updatedPcs = pcNumber.map((pc, index) => ({
-       pcNumber: pc,  // Keep PC number same
-       ip: ip[index]   // Update only IP
-   }));
-
-   try {
-       await client.connect();
-       const db = client.db(dbName);
-       const collection = db.collection('pc');
-
-       await collection.updateOne(
-           { labName },
-           { $set: { pcs: updatedPcs } }
-       );
-
-       res.send("Lab updated successfully! <a href='/pc/edit'>Go Back</a>");
-   } catch (error) {
-       console.error(error);
-       res.status(500).send("Error updating lab.");
-   } finally {
-       await client.close();
-   }
-});
 
 module.exports=router
