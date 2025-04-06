@@ -472,6 +472,7 @@
                 </svg>
                 Create New Viva
             </a>
+ 
         </div>
 
         <div class="viva-grid">
@@ -514,10 +515,17 @@
                             Check Results
                         </a>
                         {{else}}
-                        <a href="/Admin/dresult?vivaUid={{this.viva_uid}}&networkName={{../adminName}}" class="action-btn results">
+                                   <a class="action-btn results" href="/Admin/score-viva?vivaUid={{this.viva_uid}}&networkName={{../adminName}}">    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 3v18h18"></path>
+                                <path d="m19 9-5 5-4-4-3 3"></path>
+                                
+                            </svg>
+                            Validate Results</a>
+                        <a href="/Admin/ddresult?vivaUid={{this.viva_uid}}&networkName={{../adminName}}" class="action-btn results">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M3 3v18h18"></path>
                                 <path d="m19 9-5 5-4-4-3 3"></path>
+                                
                             </svg>
                             Check Results
                         </a>
@@ -628,6 +636,31 @@
                 }
             });
         });
+        // Add this after $(document).ready(function() {
+    // Get URL parameters and set them in all forms
+    const urlParams = new URLSearchParams(window.location.search);
+    const vivaUid = urlParams.get('vivaUid');
+    const networkName = urlParams.get('networkName');
+    
+    if (vivaUid) {
+        $('input[name="vivaUid"]').val(vivaUid);
+    }
+    
+    if (networkName) {
+        $('input[name="networkName"]').val(networkName);
+    }
+    
+    // Ensure className is set properly in each form
+    $('.class-section').each(function() {
+        const className = $(this).find('.class-header').data('classname');
+        $(this).find('input[name="className"]').val(className);
+    });
+    
+    // Log what values we're setting
+    console.log('Setting form values from URL:', {
+        vivaUid: vivaUid,
+        networkName: networkName
+    });
     </script>
 </body>
 

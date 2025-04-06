@@ -343,7 +343,34 @@ img {
     .quiz p {
         font-size: 1rem;
     }
-    
+    /* Add to your existing CSS */
+.options li img {
+    max-width: 200px;
+    max-height: 150px;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Container for option images */
+.option-image-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* Make sure options with images have proper spacing */
+.options li {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* Ensure option text aligns correctly */
+.options li span {
+    align-self: flex-start;
+}
     .options li {
         font-size: 0.95rem;
     }
@@ -472,17 +499,17 @@ img {
             // Extract questions from the template
             const originalQuestions = [];
             
-            {{#each response}}
-                {{#each this.questions}}
-                    originalQuestions.push({
-                        question: "{{this.question}}",
-                        options: [{{#each this.options}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}],
-                        image: "{{this.image}}",
-                        originalIndex: {{@index}}
-                    });
-                {{/each}}
-            {{/each}}
-            
+           {{#each response}}
+    {{#each this.questions}}
+        originalQuestions.push({
+            question: "{{this.question}}",
+            options: [{{#each this.options}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}],
+            option_images: [{{#each this.option_images}}{{#if this}}"{{this}}"{{else}}null{{/if}}{{#unless @last}},{{/unless}}{{/each}}],
+            image: "{{this.image}}",
+            originalIndex: {{@index}}
+        });
+    {{/each}}
+{{/each}}
             // Shuffle the questions
             const shuffledQuestions = shuffleArray([...originalQuestions]);
             const totalQuestions = shuffledQuestions.length;
@@ -523,33 +550,68 @@ img {
                 // Shuffle options
                 const shuffledOptions = shuffleArray([...questionData.options]);
                 
-                shuffledOptions.forEach((option, optionIndex) => {
-                    const optionLi = document.createElement("li");
-                    optionLi.dataset.value = option;
-                    
-                    const optionSpan = document.createElement("span");
-                    optionSpan.textContent = ["A.", "B.", "C.", "D."][optionIndex] + " ";
-                    
-                    optionLi.appendChild(optionSpan);
-                    optionLi.appendChild(document.createTextNode(option));
-                    optionsList.appendChild(optionLi);
-                    
-                    // Add click event to options
-                    optionLi.addEventListener("click", () => {
-                        // If this was previously unanswered, increment the counter
-                        if (hiddenInput.value === "") {
-                            answeredCount++;
-                            updateQuestionCounter();
-                        }
-                        
-                        optionsList.querySelectorAll("li").forEach(li => li.classList.remove("selected"));
-                        optionLi.classList.add("selected");
-                        hiddenInput.value = option;
-                        
-                        // Highlight the question as answered
-                        questionDiv.style.borderLeft = "5px solid #3498db";
-                    });
-                });
+               
+  // Inside the shuffledOptions.forEach loop where options are created
+
+shuffledOptions.forEach((option, optionIndex) => {
+    const optionLi = document.createElement("li");
+    optionLi.dataset.value = option;
+    
+    const optionSpan = document.createElement("span");
+    optionSpan.textContent = ["A.", "B.", "C.", "D."][optionIndex] + " ";
+    
+    optionLi.appendChild(optionSpan);
+    optionLi.appendChild(document.createTextNode(option));
+    
+    // Find the original index of this option in the original options array
+    const originalOptionIndex = questionData.options.indexOf(option);
+    
+    // Check if there's a valid image for this option
+    if (originalOptionIndex !== -1 && 
+        questionData.option_images && 
+        Array.isArray(questionData.option_images) &&
+        questionData.option_images.length > originalOptionIndex &&
+        questionData.option_images[originalOptionIndex]) {
+        
+        // Create a container for the image
+        const imgContainer = document.createElement("div");
+        imgContainer.className = "option-image-container";
+        
+        const optionImg = document.createElement("img");
+        optionImg.src = questionData.option_images[originalOptionIndex];
+        optionImg.alt = "Option Image";
+        optionImg.draggable = false;
+        optionImg.className = "option-image";
+        
+        imgContainer.appendChild(optionImg);
+        optionLi.appendChild(imgContainer);
+    }
+    
+    optionsList.appendChild(optionLi);
+    
+    // Add click event to select option
+    optionLi.addEventListener("click", function() {
+        // Remove selected class from all options in this question
+        const questionDiv = this.closest(".quiz");
+        questionDiv.querySelectorAll(".options li").forEach(li => {
+            li.classList.remove("selected");
+        });
+        
+        // Add selected class to this option
+        this.classList.add("selected");
+        
+        // Update hidden input value
+        const hiddenInput = questionDiv.querySelector("input[type='hidden']");
+        hiddenInput.value = this.dataset.value;
+        
+        // Update answered questions count if this is a new answer
+        if (!questionDiv.dataset.answered) {
+            questionDiv.dataset.answered = "true";
+            answeredCount++;
+            updateQuestionCounter();
+        }
+    });
+});
                 
                 questionDiv.appendChild(optionsList);
                 

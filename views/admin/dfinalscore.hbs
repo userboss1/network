@@ -1,0 +1,524 @@
+{{!-- views/filtered-results.hbs --}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validated Results</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .filter-btn {
+      padding: 8px 16px;
+      background-color: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover {
+      background-color: #e0e0e0;
+    }
+    .filter-btn.active {
+      background-color: #4a90e2;
+      color: white;
+      border-color: #4a90e2;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .results-table th {
+      background-color: #f0f0f0;
+      padding: 12px;
+      text-align: left;
+      font-weight: bold;
+      border-bottom: 2px solid #ddd;
+    }
+    .results-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .results-table tr:hover {
+      background-color: #f9f9f9;
+    }
+    .results-table tr.hidden {
+      display: none;
+    }
+    .search-box {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 300px;
+      font-size: 16px;
+    }
+    .download-btn {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    .download-btn:hover {
+      background-color: #45a049;
+    }
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .total-count {
+      margin-top: 10px;
+      text-align: right;
+      font-weight: bold;
+    }
+    .result-details {
+      display: none;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-top: 1px solid #eee;
+    }
+    .expand-btn {
+      cursor: pointer;
+      color: #4a90e2;
+      margin-left: 5px;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 5px;
+    }
+    .page-btn {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      background-color: white;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .page-btn.active {
+      background-color: #4a90e2;
+      color: white;
+      border-color: #4a90e2;
+    }
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      visibility: hidden;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #4a90e2;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Validated Results</h1>
+    
+    {{#if hasResults}}
+      <div class="header-actions">
+        <input type="text" id="searchInput" class="search-box" placeholder="Search by student name or ID...">
+        <button id="downloadExcel" class="download-btn">Download as Excel</button>
+      </div>
+      
+      <div class="filters">
+        <button class="filter-btn active" data-class="all">All Classes</button>
+        {{#each classNames}}
+          <button class="filter-btn" data-class="{{this}}">{{this}}</button>
+        {{/each}}
+      </div>
+      
+      <table class="results-table" id="resultsTable">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Roll No</th>
+            <th>Viva Name</th>
+            <th>Viva UID</th>
+            <th>Class</th>
+            <th>Total Score</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each results}}
+            <tr class="result-row" data-class="{{className}}" data-student="{{studentName}} {{studentRoll}} {{studentRegister}}">
+              <td>{{studentName}}</td>
+              <td>{{studentRoll}}</td>
+              <td>{{vivaName}}</td>
+              <td>{{vivaUid}}</td>
+              <td>{{className}}</td>
+              <td>{{totalScore}}</td>
+              <td>
+                <span class="expand-btn" data-id="{{@index}}">Details</span>
+              </td>
+            </tr>
+            <tr id="details-{{@index}}" class="result-details">
+              <td colspan="7">
+                <div>
+                  <p><strong>Register No:</strong> {{studentRegister}}</p>
+                  <p><strong>Subject:</strong> {{subjectName}}</p>
+                  <p><strong>Network:</strong> {{networkName}}</p>
+                  
+                  <h4>Scores</h4>
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                      <tr>
+                        <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: left;">Question</th>
+                        <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: left;">Score</th>
+                        <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: left;">Comment</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {{#each scores}}
+                        <tr>
+                          <td style="padding: 8px; border-bottom: 1px solid #eee;">{{questionId}}</td>
+                          <td style="padding: 8px; border-bottom: 1px solid #eee;">{{score}}</td>
+                          <td style="padding: 8px; border-bottom: 1px solid #eee;">{{comment}}</td>
+                        </tr>
+                      {{/each}}
+                    </tbody>
+                  </table>
+                  
+                  <p style="margin-top: 10px; text-align: right;"><strong>Validated by:</strong> {{validatedBy}} on {{validatedAt}}</p>
+                </div>
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+      
+      <div class="total-count">
+        <span id="visibleCount">{{results.length}}</span> of <span id="totalCount">{{results.length}}</span> results
+      </div>
+      
+      <div class="pagination" id="pagination"></div>
+    {{else}}
+      <div class="no-results">
+        <h2>No validated results found</h2>
+        <p>There are currently no validated results in the database.</p>
+      </div>
+    {{/if}}
+  </div>
+  
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Make results data available in JavaScript
+      const allResults = {{{json results}}};
+      
+      // Elements
+      const filterButtons = document.querySelectorAll('.filter-btn');
+      const resultRows = document.querySelectorAll('.result-row');
+      const searchInput = document.getElementById('searchInput');
+      const downloadBtn = document.getElementById('downloadExcel');
+      const visibleCountEl = document.getElementById('visibleCount');
+      const totalCountEl = document.getElementById('totalCount');
+      const paginationEl = document.getElementById('pagination');
+      const loadingOverlay = document.getElementById('loadingOverlay');
+      
+      // Pagination settings
+      const rowsPerPage = 20;
+      let currentPage = 1;
+      let filteredRows = [...resultRows];
+      
+      // Initialize
+      updatePagination();
+      showPage(1);
+      
+      // Handle filter button clicks
+      filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          
+          // Add active class to clicked button
+          this.classList.add('active');
+          
+          // Apply filters and update pagination
+          applyFilters();
+        });
+      });
+      
+      // Handle search input
+      searchInput.addEventListener('input', function() {
+        applyFilters();
+      });
+      
+      // Handle Excel download
+      downloadBtn.addEventListener('click', function() {
+        showLoading();
+        setTimeout(() => {
+          exportToExcel();
+          hideLoading();
+        }, 100);
+      });
+      
+      // Details expand/collapse
+      document.querySelectorAll('.expand-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const detailsId = this.getAttribute('data-id');
+          const detailsRow = document.getElementById('details-' + detailsId);
+          
+          if (detailsRow.style.display === 'table-row') {
+            detailsRow.style.display = 'none';
+            this.textContent = 'Details';
+          } else {
+            detailsRow.style.display = 'table-row';
+            this.textContent = 'Hide';
+          }
+        });
+      });
+      
+      // Apply filters (class + search)
+      function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const activeClass = document.querySelector('.filter-btn.active').getAttribute('data-class');
+        let visibleCount = 0;
+        
+        // Reset filtered rows
+        filteredRows = [];
+        
+        resultRows.forEach(row => {
+          const studentData = row.getAttribute('data-student').toLowerCase();
+          const rowClass = row.getAttribute('data-class');
+          
+          // Check if row matches both class filter and search term
+          const matchesClass = activeClass === 'all' || rowClass === activeClass;
+          const matchesSearch = searchTerm === '' || studentData.includes(searchTerm);
+          
+          // Hide/show related details row
+          const rowIndex = Array.from(resultRows).indexOf(row);
+          const detailsRow = document.getElementById('details-' + rowIndex);
+          
+          if (matchesClass && matchesSearch) {
+            row.classList.remove('hidden');
+            if (detailsRow) detailsRow.classList.remove('hidden');
+            visibleCount++;
+            filteredRows.push(row);
+          } else {
+            row.classList.add('hidden');
+            if (detailsRow) {
+              detailsRow.classList.add('hidden');
+              detailsRow.style.display = 'none';
+            }
+          }
+        });
+        
+        // Update counters
+        visibleCountEl.textContent = visibleCount;
+        
+        // Update pagination based on filtered results
+        currentPage = 1; // Reset to first page after filtering
+        updatePagination();
+        showPage(1);
+      }
+      
+      // Pagination functions
+      function updatePagination() {
+        const numPages = Math.ceil(filteredRows.length / rowsPerPage);
+        paginationEl.innerHTML = '';
+        
+        // Only show pagination if we have more than one page
+        if (numPages <= 1) return;
+        
+        // Previous button
+        if (numPages > 1) {
+          const prevBtn = document.createElement('button');
+          prevBtn.className = 'page-btn';
+          prevBtn.innerHTML = '&laquo;'; // Left arrow
+          prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) showPage(currentPage - 1);
+          });
+          paginationEl.appendChild(prevBtn);
+        }
+        
+        // Page buttons (max 5 showing)
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(numPages, startPage + 4);
+        
+        if (endPage - startPage < 4) {
+          startPage = Math.max(1, endPage - 4);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+          const pageBtn = document.createElement('button');
+          pageBtn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+          pageBtn.textContent = i;
+          pageBtn.addEventListener('click', () => showPage(i));
+          paginationEl.appendChild(pageBtn);
+        }
+        
+        // Next button
+        if (numPages > 1) {
+          const nextBtn = document.createElement('button');
+          nextBtn.className = 'page-btn';
+          nextBtn.innerHTML = '&raquo;'; // Right arrow
+          nextBtn.addEventListener('click', () => {
+            if (currentPage < numPages) showPage(currentPage + 1);
+          });
+          paginationEl.appendChild(nextBtn);
+        }
+      }
+      
+      function showPage(pageNum) {
+        currentPage = pageNum;
+        
+        // Hide all rows first
+        filteredRows.forEach(row => {
+          row.style.display = 'none';
+          const rowIndex = Array.from(resultRows).indexOf(row);
+          const detailsRow = document.getElementById('details-' + rowIndex);
+          if (detailsRow) detailsRow.style.display = 'none';
+        });
+        
+        // Show rows for current page
+        const start = (pageNum - 1) * rowsPerPage;
+        const end = Math.min(start + rowsPerPage, filteredRows.length);
+        
+        for (let i = start; i < end; i++) {
+          filteredRows[i].style.display = 'table-row';
+        }
+        
+        // Update pagination
+        updatePagination();
+      }
+      
+      // Export to Excel function
+      function exportToExcel() {
+        try {
+          // Get visible results that match current filters
+          const visibleRows = Array.from(resultRows).filter(row => !row.classList.contains('hidden'));
+          
+          // Create data array for Excel
+          const data = [
+            ['Student Name', 'Roll No', 'Register No', 'Class Name', 'Viva Name', 'Viva UID', 'Subject', 'Total Score', 'Validated By', 'Validated At']
+          ];
+          
+          visibleRows.forEach(row => {
+            const rowIndex = Array.from(resultRows).indexOf(row);
+            const result = allResults[rowIndex]; // Get the full data from JS variable
+            
+            if (result) {
+              data.push([
+                result.studentName || '',
+                result.studentRoll || '',
+                result.studentRegister || '',
+                result.className || '',
+                result.vivaName || '',
+                result.vivaUid || '',
+                result.subjectName || '',
+                result.totalScore || 0,
+                result.validatedBy || '',
+                result.validatedAt || ''
+              ]);
+            }
+          });
+          
+          // Convert to CSV format
+          let csvContent = data.map(row => row.map(cell => {
+            // Handle special characters and null values
+            if (cell === null || cell === undefined) return '""';
+            if (typeof cell === 'string') return `"${cell.replace(/"/g, '""')}"`;
+            return cell;
+          }).join(',')).join('\n');
+          
+          // Create blob and download
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          
+          link.setAttribute('href', url);
+          link.setAttribute('download', 'validated_results.csv');
+          link.style.visibility = 'hidden';
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Clean up
+          URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error('Error exporting to Excel:', error);
+          alert('Error exporting to Excel. Please try again.');
+          hideLoading();
+        }
+      }
+      
+      // Loading overlay functions
+      function showLoading() {
+        loadingOverlay.style.visibility = 'visible';
+      }
+      
+      function hideLoading() {
+        loadingOverlay.style.visibility = 'hidden';
+      }
+      
+      // Helper function to format dates
+      function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleString();
+      }
+    });
+  </script>
+</body>
+</html>

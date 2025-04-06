@@ -19,7 +19,12 @@ hbs.registerHelper('eq', function(a, b) {
 hbs.registerHelper('json', function(context) {
    return JSON.stringify(context);
 });
-
+app.set('env', 'development');
+app.use((req, res, next) => {
+   res.setHeader('Cache-Control', 'no-store');
+   next();
+ });
+ 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
@@ -29,11 +34,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+hbs.registerHelper('toJSON', hbs.handlebars.helpers.json);
+
 app.use(session({
    secret: "your_secret_key",
    resave: false,
-   saveUninitialized: true 
+   saveUninitialized: true,
+   cookie: {
+       maxAge: 3 * 60 * 60 * 1000 // 1 hour in milliseconds
+   }
 }));
+
 
 app.use('/', indexRouter);
 app.use('/admin', usersRouter);

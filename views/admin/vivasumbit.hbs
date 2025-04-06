@@ -76,7 +76,7 @@
         }
         .option {
             display: flex;
-            align-items: center;
+            flex-direction: column;
             margin-bottom: 12px;
             background: white;
             padding: 8px;
@@ -87,6 +87,11 @@
         .option:hover {
             border-color: #007BFF;
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.1);
+        }
+        .option-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
         }
         .option input[type="text"] {
             flex: 1;
@@ -166,6 +171,12 @@
             border-radius: 5px;
             margin: 10px 0;
         }
+        .option-image-upload {
+            padding: 5px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -229,7 +240,7 @@
                 <input type="text" class="question-input" name="questions[${questionIndex}]" placeholder="Enter your question" required>
                 
                 <div class="image-upload">
-                    <label for="image-${questionIndex}">Add Image (Optional):</label>
+                    <label for="image-${questionIndex}">Add Question Image (Optional):</label>
                     <input type="file" id="image-${questionIndex}" name="question_image[${questionIndex}]" 
                         accept="image/*" onchange="previewImage(this, ${questionIndex})">
                     <div class="preview-container">
@@ -241,8 +252,18 @@
                 <div class="options-container">
                     ${[0, 1, 2, 3].map(i => `
                         <div class="option">
-                            <input type="text" name="options[${questionIndex}][${i}]" required placeholder="Option ${i + 1}">
-                            <input type="radio" name="correct_answer[${questionIndex}]" value="${i}" required ${i === 0 ? 'checked' : ''}>
+                            <div class="option-row">
+                                <input type="text" name="options[${questionIndex}][${i}]" required placeholder="Option ${i + 1}">
+                                <input type="radio" name="correct_answer[${questionIndex}]" value="${i}" required ${i === 0 ? 'checked' : ''}>
+                            </div>
+                            <div class="option-image-upload">
+                                <label for="option-image-${questionIndex}-${i}">Add Option Image (Optional):</label>
+                                <input type="file" id="option-image-${questionIndex}-${i}" name="option_image[${questionIndex}][${i}]" 
+                                    accept="image/*" onchange="previewOptionImage(this, ${questionIndex}, ${i})">
+                                <div class="preview-container">
+                                    <img id="option-preview-${questionIndex}-${i}" class="image-preview">
+                                </div>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -296,6 +317,23 @@
             }
         }
         
+        function previewOptionImage(input, questionIndex, optionIndex) {
+            const preview = document.getElementById(`option-preview-${questionIndex}-${optionIndex}`);
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+        
         // Validate form before submission
         document.getElementById('quizForm').addEventListener('submit', function(event) {
             const questionBlocks = document.querySelectorAll('.question-block');
@@ -333,4 +371,4 @@
         });
     </script>
 </body>
-</html>
+</html> 

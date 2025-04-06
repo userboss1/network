@@ -10,73 +10,101 @@ function isLoggedIn(req, res, next) {
     }
     next(); // Proceed if logged in
 }
+// Authentication middleware to use on protected routes
 
+
+// Example usage:
+// router.get('/viva', authenticateStudent, (req, res) => {
+//     // Protected route code here
+// });
 /* GET login page */
-/* GET login page or auto-login by IP */
-router.get('/', async function(req, res, next) {
-    try {
-        // Get client IP address
-        const clientIP = req.headers['x-forwarded-for'] || 
-            req.connection.remoteAddress || 
-            req.socket.remoteAddress;
-        
-        // Clean the client IP
-        const cleanedClientIP = clientIP.split(',')[0].trim();
-        console.log("Client IP:", cleanedClientIP);
-        
-        // Check for loopback address or local network C-class
-        const isLocalIP = cleanedClientIP === '::1' || cleanedClientIP === '127.0.0.1' || cleanedClientIP.startsWith('192.168.');
-        if (!isLocalIP) {
-            console.log(`IP ${cleanedClientIP} is not allowed for login.`);
-            return res.send("You must login from a machine in the local network.");
+router.get('/',async function(req, res, next) { 
+    try { 
+        // Get client IP address 
+        const clientIP = req.headers['x-forwarded-for'] ||  
+            req.connection.remoteAddress ||  
+            req.socket.remoteAddress; 
+         
+        // Clean the client IP 
+        const cleanedClientIP = clientIP.split(',')[0].trim(); 
+        console.log("Client IP:", cleanedClientIP); 
+         
+        // Check for loopback address or local network C-class 
+        const isLocalIP = cleanedClientIP === '::1' || cleanedClientIP === '127.0.0.1' || cleanedClientIP.startsWith('192.168.'); 
+        if (!isLocalIP) { 
+            console.log(`IP ${cleanedClientIP} is not allowed for login.`); 
+            return res.send("You must login from a machine in the local network."); 
         }
-        
-        // Query the database for a student with this IP address
-        const allLogEntries = await db.get().collection('logIn').find().toArray();
-        
-        // Loop through all log entries to find a student with this IP
-        let foundStudent = null;
-        let logEntry = null;
-        
-        for (const entry of allLogEntries) {
-            if (entry.students && Array.isArray(entry.students)) {
-                const student = entry.students.find(s => s.pcIP === cleanedClientIP);
-                if (student) {
-                    foundStudent = student;
-                    logEntry = entry;
-                    break;
-                }
+
+        // First check: If there's an existing session, verify the student still exists in DB
+        if (req.session.loggedInStudents && req.session.studentDetails) {
+            const studentIP = req.session.studentDetails.pcIP;
+            const viva_uid = req.session.studentDetails.viva_uid;
+            
+            // Verify this student still exists in the database
+            const logEntry = await db.get().collection('logIn').findOne({
+                viva_uid: viva_uid,
+                'students.pcIP': studentIP
+            });
+            
+            if (!logEntry) {
+                // Student no longer exists in DB, clear the session
+                console.log("Student exists in session but not in DB. Clearing session.");
+                req.session.loggedInStudents = false;
+                req.session.studentDetails = null;
+                // Redirect to login
+                return res.render('guest/login');
+            } else {
+                // Student confirmed still in database, proceed to viva
+                return res.redirect('/viva');
             }
         }
-        
-        if (foundStudent && logEntry) {
-            // Store student details + networkName in session
-            req.session.loggedInStudents = true;
-            req.session.studentDetails = {
-                duration: logEntry.duration,
-                name: foundStudent.name,
-                roll: foundStudent.roll,
-                register: foundStudent.register,
-                className: logEntry.className,
-                networkName: logEntry.networkName,
-                vivaname: logEntry.vivaname,
-                viva_uid: logEntry.viva_uid,
-                pcIP: foundStudent.pcIP
-            };
-            
-            console.log("Session Data:", req.session.studentDetails);
-            return res.redirect('/viva');
-        } else {
-            // If no match by IP, render the login form
-            res.render('guest/login');
-        }
-    } catch (error) {
-        console.error("Error during auto-login:", error);
-        // On error, just render the login form
-        res.render('guest/login');
-    }
+         
+        // If no active session, try to find the student by IP
+        const allLogEntries = await db.get().collection('logIn').find().toArray(); 
+         
+        // Loop through all log entries to find a student with this IP 
+        let foundStudent = null; 
+        let logEntry = null; 
+         
+        for (const entry of allLogEntries) { 
+            if (entry.students && Array.isArray(entry.students)) { 
+                const student = entry.students.find(s => s.pcIP === cleanedClientIP); 
+                if (student) { 
+                    foundStudent = student; 
+                    logEntry = entry; 
+                    break; 
+                } 
+            } 
+        } 
+         
+        if (foundStudent && logEntry) { 
+            // Store student details + networkName in session 
+            req.session.loggedInStudents = true; 
+            req.session.studentDetails = { 
+                duration: logEntry.duration, 
+                name: foundStudent.name, 
+                roll: foundStudent.roll, 
+                register: foundStudent.register, 
+                className: logEntry.className, 
+                networkName: logEntry.networkName, 
+                vivaname: logEntry.vivaname, 
+                viva_uid: logEntry.viva_uid, 
+                pcIP: foundStudent.pcIP 
+            }; 
+             
+            console.log("Session Data:", req.session.studentDetails); 
+            return res.redirect('/viva'); 
+        } else { 
+            // If no match by IP, render the login form 
+            res.render('guest/login'); 
+        } 
+    } catch (error) { 
+        console.error("Error during auto-login:", error); 
+        // On error, just render the login form 
+        res.render('guest/login'); 
+    } 
 });
-
 /* POST login - still keep this as fallback */
 router.post('/login', async (req, res) => {
     try {
