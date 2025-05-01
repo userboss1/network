@@ -43,18 +43,19 @@
             grid-template-rows: auto 1fr;
         }
 
-        header {
-            background: var(--card-bg);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
+      header {
+  background: var(--card-bg);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
 
         .logo-container {
             display: flex;
@@ -387,6 +388,21 @@
             display: flex;
             gap: 0.5rem;
         }
+.logout-btn {
+  margin-left: 1rem;
+  background-color: var(--accent-color, #007bff);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: var(--accent-hover, #0056b3);
+}
 
         .small-btn {
             padding: 0.5rem 0.75rem;
@@ -443,15 +459,23 @@
 </head>
 
 <body>
-    <header>
-        <div class="logo-container">
-            <span class="logo-text">JDT ToolHub</span>
-        </div>
-        <div class="admin-profile">
-            <div class="profile-icon">👤</div>
-            <span class="admin-name">{{adminName}}</span>
-        </div>
-    </header>
+   <header>
+  <div class="logo-container">
+    <span class="logo-text">JDT PORTAL</span>
+  </div>
+
+  <div class="admin-section">
+    <div class="admin-profile">
+      <div class="profile-icon">👤</div>
+      <span class="admin-name">{{adminName}}</span>
+          <form action="/Admin/logout" method="POST">
+      <button type="submit" class="logout-btn">Log Out</button>
+    </form>
+    </div>
+
+  </div>
+</header>
+
 
     <div class="main-content">
         <div class="actions-bar">
@@ -472,6 +496,7 @@
                 </svg>
                 Create New Viva
             </a>
+
  
         </div>
 

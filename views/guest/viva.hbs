@@ -5,452 +5,527 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Take the Quiz</title>
     <style>
-       body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #2c3e50;
-    /* Prevent text selection */
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-}
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-.quiz-container {
-    width: 90%;
-    max-width: 850px;
-    margin: 30px auto;
-    padding: 2.5rem;
-    background: #ffffff;
-    border-radius: 24px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-    animation: fadeIn 0.6s ease-out;
-    position: relative; /* For positioning sticky elements */
-}
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --primary-light: #eef2ff;
+            --secondary: #2ec4b6;
+            --danger: #ef476f;
+            --warning: #ffd166;
+            --success: #06d6a0;
+            --dark: #1d3557;
+            --light: #f8f9fa;
+            --border: #e9ecef;
+            --text: #2b2d42;
+            --text-light: #6c757d;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --border-radius: 16px;
+            --transition: all 0.3s ease;
+        }
 
-@keyframes fadeIn {
-    from { transform: translateY(30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-h2 {
-    color: #1a365d;
-    text-align: center;
-    font-size: 2.2rem;
-    margin-bottom: 2rem;
-    font-weight: 700;
-    position: relative;
-    padding-bottom: 15px;
-}
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f6f8ff, #eef2ff);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text);
+            padding: 20px;
+            /* Prevent text selection */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
 
-h2:after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 4px;
-    background: linear-gradient(90deg, #3498db, #2980b9);
-    border-radius: 2px;
-}
+        .quiz-container {
+            width: 95%;
+            max-width: 900px;
+            margin: 30px auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+            position: relative;
+        }
 
-.input-container {
-    margin-bottom: 1.8rem;
-    position: relative;
-}
+        @keyframes fadeIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
 
-label {
-    font-weight: 600;
-    display: block;
-    margin-bottom: 10px;
-    font-size: 1rem;
-    color: #34495e;
-    transition: color 0.3s;
-}
+        .quiz-header {
+            background: var(--primary);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
 
-input, select {
-    width: 100%;
-    padding: 14px 16px;
-    border: 2px solid #e0e6ed;
-    border-radius: 12px;
-    font-size: 1rem;
-    background: #f8fafc;
-    outline: none;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
-}
+        .quiz-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
 
-input:focus, select:focus {
-    border-color: #3498db;
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
-}
+        .quiz-form {
+            padding: 2rem;
+        }
 
-input[readonly] {
-    background-color: #f2f5f8;
-    color: #4a5568;
-    cursor: not-allowed;
-}
+        .user-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+        }
 
-.quiz {
-    background: #f8fafc;
-    border-radius: 16px;
-    padding: 1.8rem;
-    margin-bottom: 24px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
-    transition: all 0.25s ease;
-    border: 1px solid rgba(226, 232, 240, 0.8);
-}
+        .input-container {
+            margin-bottom: 1rem;
+        }
 
-.quiz:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-}
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
 
-.quiz p {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1a365d;
-    margin-bottom: 1.2rem;
-    line-height: 1.5;
-    /* Prevent text selection for questions */
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-}
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            outline: none;
+            transition: var(--transition);
+        }
 
-.options {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
 
-.options li {
-    padding: 15px 18px;
-    margin: 12px 0;
-    border-radius: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    border: 2px solid #e0e6ed;
-    background: #ffffff;
-    transition: all 0.25s ease;
-    font-size: 1rem;
-    font-weight: 500;
-    color: #334155;
-    position: relative;
-    /* Prevent text selection for options */
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-}
+        input[readonly] {
+            background-color: #f8f9fa;
+            color: var(--text-light);
+            cursor: not-allowed;
+        }
 
-.options li span {
-    display: inline-block;
-    font-weight: 600;
-    margin-right: 10px;
-    color: #3498db;
-    min-width: 24px;
-}
+        /* Timer Section */
+        .sticky-timer {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
 
-.options li:hover {
-    background: #f0f7ff;
-    border-color: #93c5fd;
-    transform: translateX(5px);
-}
+        .timer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
 
-.options li.selected {
-    background: #3498db;
-    color: white;
-    border-color: #2980b9;
-    box-shadow: 0 4px 14px rgba(52, 152, 219, 0.25);
-}
+        .timer-display-container {
+            display: flex;
+            align-items: center;
+        }
 
-.options li.selected span {
-    color: white;
-}
+        .timer-label {
+            font-weight: 600;
+            color: var(--text);
+            margin-right: 10px;
+        }
 
-.submit-btn {
-    width: 100%;
-    padding: 16px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    background: linear-gradient(90deg, #3498db, #2980b9);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.2);
-    margin-top: 10px;
-    position: relative;
-    overflow: hidden;
-}
+        .timer-display {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 8px 15px;
+            background: var(--primary-light);
+            border-radius: 8px;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            min-width: 90px;
+            text-align: center;
+            transition: var(--transition);
+        }
 
-.submit-btn:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: all 0.6s;
-}
+        .timer-warning {
+            background: rgba(239, 71, 111, 0.15);
+            border-color: var(--danger);
+            color: var(--danger);
+            animation: pulse 1.5s infinite alternate;
+        }
 
-.submit-btn:hover {
-    background: linear-gradient(90deg, #2980b9, #1f6391);
-    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
-    transform: translateY(-2px);
-}
-.submit-btn:hover:before {
-    left: 100%;
-    transition: left 0.6s ease-in-out;
-}
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
 
-.submit-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
-}
+        .question-counter {
+            font-weight: 600;
+            color: var(--primary);
+        }
 
-img {
-    max-width: 50%;
-    border-radius: 12px;
-    margin: 15px 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    display: block;
-    /* Prevent saving images */
-    pointer-events: none;
-}
+        .progress-container {
+            height: 6px;
+            width: 100%;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
 
-/* Sticky timer styles */
-.sticky-timer {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: #ffffff;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    transition: all 0.3s ease;
-}
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: width 1s linear;
+        }
 
-.timer-label {
-    font-weight: 600;
-    color: #34495e;
-    margin-right: 15px;
-}
+        /* Questions */
+        .quiz-question {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
 
-.timer-display {
-    font-size: 1.2rem;
-    font-weight: bold;
-    padding: 10px 15px;
-    background: #f0f7ff;
-    border-radius: 10px;
-    text-align: center;
-    color: #2980b9;
-    border: 2px solid #3498db;
-    min-width: 100px;
-    transition: all 0.3s ease;
-}
+        .quiz-question:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+        }
 
-.timer-warning {
-    background: #ffeeee;
-    border-color: #e74c3c;
-    color: #e74c3c;
-    animation: pulse 1s infinite alternate;
-}
+        .quiz-question p {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1.2rem;
+            line-height: 1.5;
+        }
 
-@keyframes pulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.05); }
-}
+        .quiz-question img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: block;
+            /* Prevent saving images */
+            pointer-events: none;
+        }
 
-.progress-container {
-    height: 6px;
-    width: 100%;
-    background: #e0e6ed;
-    border-radius: 3px;
-    margin-top: 10px;
-    overflow: hidden;
-}
+        .options {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-.progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #3498db, #2980b9);
-    border-radius: 3px;
-    transition: width 1s linear;
-}
+        .options li {
+            padding: 14px 18px;
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            border: 2px solid var(--border);
+            background: white;
+            transition: var(--transition);
+            font-size: 1rem;
+            color: var(--text);
+            position: relative;
+        }
 
-/* Progress indicator */
-.progress-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    margin-top: 10px;
-    font-weight: 500;
-    color: #34495e;
-}
+        .options li span {
+            display: inline-block;
+            font-weight: 600;
+            margin-right: 10px;
+            color: var(--primary);
+            min-width: 24px;
+        }
 
-/* Question counter */
-.question-counter {
-    flex-grow: 1;
-    text-align: right;
-    font-weight: 600;
-    color: #3498db;
-}
+        .options li:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .quiz-container {
-        width: 95%;
-        padding: 1.5rem;
-        margin: 20px auto;
-    }
-    
-    h2 {
-        font-size: 1.8rem;
-    }
-    
-    .quiz {
-        padding: 1.2rem;
-    }
-    
-    .options li {
-        padding: 12px 14px;
-    }
-}
+        .options li.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary-dark);
+            box-shadow: 0 4px 14px rgba(67, 97, 238, 0.25);
+        }
 
-@media (max-width: 480px) {
-    h2 {
-        font-size: 1.5rem;
-    }
-    
-    .quiz p {
-        font-size: 1rem;
-    }
-    /* Add to your existing CSS */
-.options li img {
-    max-width: 200px;
-    max-height: 150px;
-    object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+        .options li.selected span {
+            color: white;
+        }
 
-/* Container for option images */
-.option-image-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
-}
+        /* Option images */
+        .options li {
+            flex-direction: column;
+        }
 
-/* Make sure options with images have proper spacing */
-.options li {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
+        .option-image-container {
+            width: 100%;
+            display: flex;
+            justify-content: safe; max
+            margin-top: 10px;
+        }
 
-/* Ensure option text aligns correctly */
-.options li span {
-    align-self: flex-start;
-}
-    .options li {
-        font-size: 0.95rem;
-    }
-    
-    .submit-btn {
-        padding: 14px;
-        font-size: 1rem;
-    }
-}
+        .options li img {
+            max-width: 100%;
+            max-height: 160px;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
 
-/* Hide fullscreen button after fullscreen is activated */
-.hidden-button {
-    display: none !important;
-}
+        /* Submit button */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 6px 16px rgba(67, 97, 238, 0.2);
+            margin-top: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.6s;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+        }
+
+        .submit-btn:hover:before {
+            left: 100%;
+            transition: left 0.6s ease-in-out;
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.2);
+        }
+
+        .submit-btn:disabled {
+            background: #a0a0a0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Fullscreen button */
+        .fs-btn {
+            background: var(--success);
+            margin-bottom: 1.5rem;
+        }
+
+        .fs-btn:hover {
+            background: #05b084;
+        }
+
+        /* Validation message */
+        .validation-message {
+            background: rgba(239, 71, 111, 0.1);
+            color: var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--danger);
+            font-weight: 500;
+            display: none;
+        }
+
+        /* Fullscreen message */
+        .fs-message {
+            background: rgba(239, 71, 111, 0.1);
+            color: var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--danger);
+            font-weight: 500;
+            display: none;
+        }
+
+        /* Hide fullscreen button after fullscreen is activated */
+        .hidden-button {
+            display: none !important;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .quiz-container {
+                width: 95%;
+                margin: 15px auto;
+            }
+            
+            .quiz-header {
+                padding: 1.5rem;
+            }
+            
+            .quiz-header h2 {
+                font-size: 1.8rem;
+            }
+            
+            .quiz-form {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quiz-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .quiz-question p {
+                font-size: 1rem;
+            }
+            
+            .options li {
+                padding: 12px 14px;
+                font-size: 0.95rem;
+            }
+            
+            .submit-btn {
+                padding: 14px;
+                font-size: 1rem;
+            }
+            
+            .timer-display {
+                font-size: 1rem;
+                padding: 6px 12px;
+            }
+        }
     </style>
 </head>
 <body oncontextmenu="return false">
 
     <div class="quiz-container">
-        <form id="quizForm" action="/admin/result" method="POST">
+        <div class="quiz-header">
             <h2>Quiz</h2>
-
-            <div class="input-container">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="user[name]" value="{{student.name}}" readonly>
-            </div>
+        </div>
+        
+        <form id="quizForm" action="/admin/result" method="POST" class="quiz-form">
+            <!-- Fullscreen button -->
+            <button type="button" id="fullscreenButton" class="submit-btn fs-btn">Enter Full Screen Mode</button>
             
-            <div class="input-container">
-                <label for="teacher">Teacher Name</label>
-                <input type="text" id="teacher" name="user[networkName]" value="{{student.networkName}}" readonly>
-            </div>
+            <!-- Fullscreen message -->
+            <div id="fsMessage" class="fs-message">Please return to full screen mode to continue the exam</div>
+            
+            <!-- User information section -->
+            <div class="user-info-grid">
+                <div class="input-container">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="user[name]" value="{{student.name}}" readonly>
+                </div>
+                
+                <div class="input-container">
+                    <label for="teacher">Teacher Name</label>
+                    <input type="text" id="teacher" name="user[networkName]" value="{{student.networkName}}" readonly>
+                </div>
 
-            <div class="input-container">
-                <label for="roll">Roll Number</label>
-                <input type="text" id="roll" name="user[roll]" value="{{student.roll}}" readonly>
-            </div>
+                <div class="input-container">
+                    <label for="roll">Roll Number</label>
+                    <input type="text" id="roll" name="user[roll]" value="{{student.roll}}" readonly>
+                </div>
 
-            <div class="input-container">
-                <label for="registernumber">Register Number</label>
-                <input type="text" id="registernumber" name="user[registernumber]" value="{{student.register}}" readonly>
-            </div>
+                <div class="input-container">
+                    <label for="registernumber">Register Number</label>
+                    <input type="text" id="registernumber" name="user[registernumber]" value="{{student.register}}" readonly>
+                </div>
 
-            <div class="input-container">
-                <label for="department">Department</label>
-                <input type="text" id="department" name="user[department]" value="{{student.className}}" readonly>
-            </div>
+                <div class="input-container">
+                    <label for="department">Department</label>
+                    <input type="text" id="department" name="user[department]" value="{{student.className}}" readonly>
+                </div>
 
-            <div class="input-container">
-                <label for="vivaname">Viva Name</label>
-                <input type="text" id="vivaname" name="user[vivaname]" value="{{student.vivaname}}" readonly>
-            </div>
-            <div class="input-container">
-                <label for="vivaname">Viva UID</label>
-                <input type="text" id="vivaname" name="user[viva_uid]" value="{{student.viva_uid}}" readonly>
-            </div>
+                <div class="input-container">
+                    <label for="vivaname">Viva Name</label>
+                    <input type="text" id="vivaname" name="user[vivaname]" value="{{student.vivaname}}" readonly>
+                </div>
+                
+                <div class="input-container">
+                    <label for="vivauid">Viva UID</label>
+                    <input type="text" id="vivauid" name="user[viva_uid]" value="{{student.viva_uid}}" readonly>
+                </div>
 
-            <div class="input-container">
-                <label for="vivaname">Viva duration</label>
-                <input type="text" id="vivaname" name="user[viva_uid]" value="{{student.duration}}" readonly>
+                <div class="input-container">
+                    <label for="vivaduration">Viva Duration</label>
+                    <input type="text" id="vivaduration" name="user[viva_duration]" value="{{student.duration}}" readonly>
+                </div>
             </div>
 
             <!-- Sticky Timer -->
             <div class="sticky-timer" id="stickyTimer">
-                <div>
-                    <div class="timer-label">Time Remaining</div>
-                    <div class="timer-display" id="timer">00:00</div>
+                <div class="timer-header">
+                    <div class="timer-display-container">
+                        <div class="timer-label">Time Remaining:</div>
+                        <div class="timer-display" id="timer">00:00</div>
+                    </div>
+                    <div class="question-counter" id="questionCounter">Answered: 0/0</div>
                 </div>
-                <div class="question-counter" id="questionCounter">Answered: 0/0</div>
                 <div class="progress-container">
                     <div class="progress-bar" id="progressBar" style="width: 100%;"></div>
                 </div>
             </div>
+            
+            <!-- Validation message -->
+            <div id="validationMessage" class="validation-message">
+                Please answer all questions before submitting the quiz.
+            </div>
 
+            <!-- Questions Container -->
             <div id="questionsContainer">
                 <!-- Questions will be inserted here by JavaScript -->
             </div>
 
-            <button type="submit" class="submit-btn">Submit Quiz</button>
+            <button type="submit" id="submitButton" class="submit-btn">Submit Quiz</button>
         </form>
     </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Automatically request fullscreen on page load
@@ -493,23 +568,22 @@ img {
             
             // Call the function to request fullscreen on page load
             requestFullScreenOnLoad();
-        });
-
-        document.addEventListener("DOMContentLoaded", function () {
+            
             // Extract questions from the template
             const originalQuestions = [];
             
-           {{#each response}}
-    {{#each this.questions}}
-        originalQuestions.push({
-            question: "{{this.question}}",
-            options: [{{#each this.options}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}],
-            option_images: [{{#each this.option_images}}{{#if this}}"{{this}}"{{else}}null{{/if}}{{#unless @last}},{{/unless}}{{/each}}],
-            image: "{{this.image}}",
-            originalIndex: {{@index}}
-        });
-    {{/each}}
-{{/each}}
+            {{#each response}}
+                {{#each this.questions}}
+                    originalQuestions.push({
+                        question: "{{this.question}}",
+                        options: [{{#each this.options}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}}],
+                        option_images: [{{#each this.option_images}}{{#if this}}"{{this}}"{{else}}null{{/if}}{{#unless @last}},{{/unless}}{{/each}}],
+                        image: "{{this.image}}",
+                        originalIndex: {{@index}}
+                    });
+                {{/each}}
+            {{/each}}
+            
             // Shuffle the questions
             const shuffledQuestions = shuffleArray([...originalQuestions]);
             const totalQuestions = shuffledQuestions.length;
@@ -517,6 +591,8 @@ img {
             // Generate HTML for shuffled questions
             const questionsContainer = document.getElementById("questionsContainer");
             const questionCounter = document.getElementById("questionCounter");
+            const validationMessage = document.getElementById("validationMessage");
+            const submitButton = document.getElementById("submitButton");
             
             // Update question counter initially
             questionCounter.textContent = `Answered: 0/${totalQuestions}`;
@@ -524,9 +600,10 @@ img {
             // Keep track of answered questions
             let answeredCount = 0;
             
+            // Generate and append questions to the container
             shuffledQuestions.forEach((questionData, displayIndex) => {
                 const questionDiv = document.createElement("div");
-                questionDiv.className = "quiz";
+                questionDiv.className = "quiz-question";
                 questionDiv.dataset.questionIndex = displayIndex;
                 
                 // Create question text
@@ -550,68 +627,71 @@ img {
                 // Shuffle options
                 const shuffledOptions = shuffleArray([...questionData.options]);
                 
-               
-  // Inside the shuffledOptions.forEach loop where options are created
-
-shuffledOptions.forEach((option, optionIndex) => {
-    const optionLi = document.createElement("li");
-    optionLi.dataset.value = option;
-    
-    const optionSpan = document.createElement("span");
-    optionSpan.textContent = ["A.", "B.", "C.", "D."][optionIndex] + " ";
-    
-    optionLi.appendChild(optionSpan);
-    optionLi.appendChild(document.createTextNode(option));
-    
-    // Find the original index of this option in the original options array
-    const originalOptionIndex = questionData.options.indexOf(option);
-    
-    // Check if there's a valid image for this option
-    if (originalOptionIndex !== -1 && 
-        questionData.option_images && 
-        Array.isArray(questionData.option_images) &&
-        questionData.option_images.length > originalOptionIndex &&
-        questionData.option_images[originalOptionIndex]) {
-        
-        // Create a container for the image
-        const imgContainer = document.createElement("div");
-        imgContainer.className = "option-image-container";
-        
-        const optionImg = document.createElement("img");
-        optionImg.src = questionData.option_images[originalOptionIndex];
-        optionImg.alt = "Option Image";
-        optionImg.draggable = false;
-        optionImg.className = "option-image";
-        
-        imgContainer.appendChild(optionImg);
-        optionLi.appendChild(imgContainer);
-    }
-    
-    optionsList.appendChild(optionLi);
-    
-    // Add click event to select option
-    optionLi.addEventListener("click", function() {
-        // Remove selected class from all options in this question
-        const questionDiv = this.closest(".quiz");
-        questionDiv.querySelectorAll(".options li").forEach(li => {
-            li.classList.remove("selected");
-        });
-        
-        // Add selected class to this option
-        this.classList.add("selected");
-        
-        // Update hidden input value
-        const hiddenInput = questionDiv.querySelector("input[type='hidden']");
-        hiddenInput.value = this.dataset.value;
-        
-        // Update answered questions count if this is a new answer
-        if (!questionDiv.dataset.answered) {
-            questionDiv.dataset.answered = "true";
-            answeredCount++;
-            updateQuestionCounter();
-        }
-    });
-});
+                // Create each option
+                shuffledOptions.forEach((option, optionIndex) => {
+                    const optionLi = document.createElement("li");
+                    optionLi.dataset.value = option;
+                    
+                    const optionSpan = document.createElement("span");
+                    optionSpan.textContent = ["A.", "B.", "C.", "D."][optionIndex] + " ";
+                    
+                    optionLi.appendChild(optionSpan);
+                    optionLi.appendChild(document.createTextNode(option));
+                    
+                    // Find the original index of this option in the original options array
+                    const originalOptionIndex = questionData.options.indexOf(option);
+                    
+                    // Check if there's a valid image for this option
+                    if (originalOptionIndex !== -1 && 
+                        questionData.option_images && 
+                        Array.isArray(questionData.option_images) &&
+                        questionData.option_images.length > originalOptionIndex &&
+                        questionData.option_images[originalOptionIndex]) {
+                        
+                        // Create a container for the image
+                        const imgContainer = document.createElement("div");
+                        imgContainer.className = "option-image-container";
+                        
+                        const optionImg = document.createElement("img");
+                        optionImg.src = questionData.option_images[originalOptionIndex];
+                        optionImg.alt = "Option Image";
+                        optionImg.draggable = false;
+                        optionImg.className = "option-image";
+                        
+                        imgContainer.appendChild(optionImg);
+                        optionLi.appendChild(imgContainer);
+                    }
+                    
+                    optionsList.appendChild(optionLi);
+                    
+                    // Add click event to select option
+                    optionLi.addEventListener("click", function() {
+                        // Remove selected class from all options in this question
+                        const questionDiv = this.closest(".quiz-question");
+                        questionDiv.querySelectorAll(".options li").forEach(li => {
+                            li.classList.remove("selected");
+                        });
+                        
+                        // Add selected class to this option
+                        this.classList.add("selected");
+                        
+                        // Update hidden input value
+                        const hiddenInput = questionDiv.querySelector("input[type='hidden']");
+                        hiddenInput.value = this.dataset.value;
+                        
+                        // Update answered questions count if this is a new answer
+                        if (!questionDiv.dataset.answered) {
+                            questionDiv.dataset.answered = "true";
+                            answeredCount++;
+                            updateQuestionCounter();
+                            
+                            // Hide validation message if all questions are answered
+                            if (answeredCount === totalQuestions) {
+                                validationMessage.style.display = "none";
+                            }
+                        }
+                    });
+                });
                 
                 questionDiv.appendChild(optionsList);
                 
@@ -635,13 +715,15 @@ shuffledOptions.forEach((option, optionIndex) => {
             const durationMinutes = parseInt("{{student.duration}}") || 10; // Default to 10 if not provided
             let timeLeft = durationMinutes * 60; // Convert to seconds
             const totalTime = timeLeft;
+            let timerInterval; // Store the interval ID
+            let isTimeUp = false; // Flag to track if time is up
             
             // Update timer display
             const timerDisplay = document.getElementById("timer");
             const progressBar = document.getElementById("progressBar");
             
-            // Update timer every second
-            const timerInterval = setInterval(function() {
+            // Function to update timer
+            function updateTimer() {
                 const minutes = Math.floor(timeLeft / 60);
                 const seconds = timeLeft % 60;
                 
@@ -655,12 +737,13 @@ shuffledOptions.forEach((option, optionIndex) => {
                 // Change color when time is running out
                 if (timeLeft <= 60) { // last minute
                     timerDisplay.classList.add("timer-warning");
-                    progressBar.style.background = 'linear-gradient(90deg, #e74c3c, #c0392b)';
+                    progressBar.style.background = 'var(--danger)';
                 }
                 
                 // When time is up
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
+                    isTimeUp = true;
                     fillEmptyAnswers();
                     
                     // Show a brief message before submitting
@@ -686,22 +769,45 @@ shuffledOptions.forEach((option, optionIndex) => {
                 }
                 
                 timeLeft--;
-            }, 1000);
+            }
             
-            // Function to fill empty answers with the string "null"
+            // Start the timer
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            // Function to fill empty answers with the string "n1ull"
             function fillEmptyAnswers() {
-                document.querySelectorAll(".quiz input[type='hidden']").forEach((input) => {
+                document.querySelectorAll(".quiz-question input[type='hidden']").forEach((input) => {
                     if (!input.value) {
                         input.value = "n1ull";
                     }
                 });
             }
             
-            // Handle form submission
+            // Handle form submission with validation
             document.getElementById("quizForm").addEventListener("submit", function(event) {
-                // Fill empty answers with the string "null"
+                // If time is up, allow submission with empty answers
+                if (isTimeUp) {
+                    fillEmptyAnswers();
+                    return true;
+                }
+                
+                // Check if all questions are answered
+                if (answeredCount < totalQuestions) {
+                    event.preventDefault();
+                    validationMessage.style.display = "block";
+                    
+                    // Scroll to first unanswered question
+                    const unansweredQuestion = document.querySelector(".quiz-question:not([data-answered])");
+                    if (unansweredQuestion) {
+                        unansweredQuestion.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                    
+                    return false;
+                }
+                
+                // If all questions are answered, fill any that might have been missed and submit
                 fillEmptyAnswers();
-                // Form will submit normally
+                return true;
             });
             
             // Function to shuffle an array (Fisher-Yates algorithm)
@@ -712,34 +818,10 @@ shuffledOptions.forEach((option, optionIndex) => {
                 }
                 return array;
             }
-        });
-        
-        document.addEventListener("DOMContentLoaded", function() {
+            
             // Enhanced fullscreen functionality
-            const quizContainer = document.querySelector('.quiz-container');
-            const form = document.getElementById('quizForm');
-            
-            // Create fullscreen button with better styling
-            const fullscreenBtn = document.createElement('button');
-            fullscreenBtn.type = 'button'; // Prevent form submission
-            fullscreenBtn.textContent = 'Enter Full Screen Mode';
-            fullscreenBtn.className = 'submit-btn';
-            fullscreenBtn.id = 'fullscreenButton';
-            fullscreenBtn.style.background = 'linear-gradient(90deg, #27ae60, #2ecc71)';
-            fullscreenBtn.style.marginBottom = '20px';
-            
-            // Insert the button before the form's first child (the h2)
-            form.insertBefore(fullscreenBtn, form.firstChild);
-            
-            // Create a fullscreen message
-            const fsMessage = document.createElement('div');
-            fsMessage.className = 'sticky-timer';
-            fsMessage.style.display = 'none';
-            fsMessage.style.marginBottom = '20px';
-            fsMessage.style.color = '#e74c3c';
-            fsMessage.style.fontWeight = 'bold';
-            fsMessage.textContent = 'Please return to full screen mode to continue the exam';
-            form.insertBefore(fsMessage, fullscreenBtn.nextSibling);
+            const fullscreenBtn = document.getElementById('fullscreenButton');
+            const fsMessage = document.getElementById('fsMessage');
             
             // Set to true to enforce fullscreen mode
             const enforceFullscreen = true;
@@ -758,9 +840,7 @@ shuffledOptions.forEach((option, optionIndex) => {
                     enableFormElements(true);
                 } else {
                     // Not in fullscreen mode
-                    fullscreenBtn.classList.remove('hidden-button'); // Show button when not in fullscreen
-                    fullscreenBtn.textContent = 'Enter Full Screen Mode';
-                    fullscreenBtn.style.background = 'linear-gradient(90deg, #27ae60, #2ecc71)';
+                    fullscreenBtn.classList.remove('hidden-button');
                     fsMessage.style.display = 'block';
                     
                     // Disable form elements until returning to fullscreen
@@ -782,7 +862,6 @@ shuffledOptions.forEach((option, optionIndex) => {
                 
                 // Get all interactive elements
                 const options = document.querySelectorAll('.options li');
-                const submitBtn = document.querySelector('.submit-btn:not(#fullscreenButton)');
                 
                 if (enable) {
                     // Enable elements
@@ -790,119 +869,138 @@ shuffledOptions.forEach((option, optionIndex) => {
                         option.style.pointerEvents = 'auto';
                         option.style.opacity = '1';
                     });
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.style.opacity = '1';
-                    }
+                    submitButton.disabled = false;
+                    submitButton.style.opacity = '1';
                 } else {
                     // Disable elements
                     options.forEach(option => {
                         option.style.pointerEvents = 'none';
                         option.style.opacity = '0.5';
                     });
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.style.opacity = '0.5';
-                    }
+                    submitButton.disabled = true;
+                    submitButton.style.opacity = '0.5';
                 }
             }
+            // Add fullscreen button click handler
+            fullscreenBtn.addEventListener('click', function() {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                }
+            });
             
-            // Add fullscreen change event listeners
+            // Add event listeners for fullscreen change
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.addEventListener('mozfullscreenchange', handleFullscreenChange);
             document.addEventListener('MSFullscreenChange', handleFullscreenChange);
             
-            // Initialize - disable elements if enforcement is on
-            if (enforceFullscreen) {
-                enableFormElements(false);
-            }
-            
-            // Fullscreen button click handler
-            fullscreenBtn.addEventListener('click', function() {
-                if (!document.fullscreenElement && 
-                    !document.webkitFullscreenElement && 
-                    !document.mozFullScreenElement && 
-                    !document.msFullscreenElement) {
-                    // Try to enter fullscreen with all possible methods
-                    try {
-                        // Try the standard method first
-                        if (document.documentElement.requestFullscreen) {
-                            document.documentElement.requestFullscreen().catch(err => {
-                                console.error('Error attempting to enable fullscreen:', err);
-                              
-                            });
-                        } 
-                        // Try webkit (Safari, Chrome)
-                        else if (document.documentElement.webkitRequestFullscreen) {
-                            document.documentElement.webkitRequestFullscreen();
-                        } 
-                        // Try Firefox
-                        else if (document.documentElement.mozRequestFullScreen) {
-                            document.documentElement.mozRequestFullScreen();
-                        } 
-                        // Try IE/Edge
-                        else if (document.documentElement.msRequestFullscreen) {
-                            document.documentElement.msRequestFullscreen();
-                        }
-                        // If none of these work
-                        else {
-                            alert("Fullscreen is not supported by your browser!");
-                        }
-                    } catch (e) {
-                        console.error("Fullscreen error:", e);
-                        alert("There was an error entering fullscreen mode. Please try again.");
-                    }
+            // Prevent keyboard shortcuts for exiting fullscreen
+            document.addEventListener('keydown', function(e) {
+                // Prevent F11 key
+                if (e.key === 'F11' || e.keyCode === 122) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Prevent Escape key
+                if (e.key === 'Escape' || e.keyCode === 27) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Prevent Alt+Tab (though this might not work in all browsers)
+                if (e.altKey && (e.key === 'Tab' || e.keyCode === 9)) {
+                    e.preventDefault();
+                    return false;
                 }
             });
             
-            // Auto-detect fullscreen exit at regular intervals and force re-entry
-            setInterval(function() {
-                if (enforceFullscreen && 
-                    !document.fullscreenElement && 
-                    !document.webkitFullscreenElement && 
-                    !document.mozFullScreenElement && 
-                    !document.msFullscreenElement) {
-                    // Show warning if not in fullscreen
-                    fsMessage.style.display = 'block';
-                    enableFormElements(false);
-                    
-                    // Try to re-enter fullscreen automatically
-                    setTimeout(() => {
-                        const fsButton = document.getElementById('fullscreenButton');
-                        if (fsButton) fsButton.click();
-                    }, 2000);
-                }
-            }, 1000);
-            
-            // Attempt to lock orientation to landscape on mobile (if supported)
-            if (window.screen && window.screen.orientation && window.screen.orientation.lock) {
-                try {
-                    window.screen.orientation.lock('landscape').catch(function(error) {
-                        console.log('Orientation lock failed: ' + error);
-                    });
-                } catch(e) {
-                    console.log('Orientation API not supported');
-                }
-            }
-            
-            // Disable right-click context menu
+            // Prevent right-click menu
             document.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 return false;
             });
             
-            // Disable keyboard shortcuts that might allow copying
+            // Prevent printing
             document.addEventListener('keydown', function(e) {
-                // Prevent Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+P, F12, etc.
-                if ((e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'x' || e.key === 'p')) || 
-                    e.key === 'F12' || e.key === 'PrintScreen') {
+                if (e.ctrlKey && (e.key === 'p' || e.keyCode === 80)) {
                     e.preventDefault();
                     return false;
                 }
             });
+            
+            // Handle visibility change (tab switching)
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState !== 'visible' && enforceFullscreen) {
+                    // Show warning when tab is not visible
+                    fsMessage.style.display = 'block';
+                }
+            });
+            
+            // Initial setup - disable form if not in fullscreen and enforcement is on
+            if (enforceFullscreen && 
+                !(document.fullscreenElement || 
+                  document.webkitFullscreenElement || 
+                  document.mozFullScreenElement || 
+                  document.msFullscreenElement)) {
+                enableFormElements(false);
+            }
         });
-    </script>
+        
+document.addEventListener("DOMContentLoaded", () => {
+  const element = document.documentElement;
 
+  function requestFullscreen() {
+    if (
+      !document.fullscreenElement &&
+      !document.webkitFullscreenElement &&
+      !document.mozFullScreenElement &&
+      !document.msFullscreenElement
+    ) {
+      const method =
+        element.requestFullscreen ||
+        element.webkitRequestFullscreen ||
+        element.mozRequestFullScreen ||
+        element.msRequestFullscreen;
+
+      if (method) {
+        method.call(element).catch(err => {
+          // Some browsers reject without user gesture
+          console.warn("Fullscreen failed:", err.message);
+        });
+      }
+    }
+  }
+
+  // List of interactions that could trigger fullscreen
+  const interactions = ["click", "touchstart", "keydown", "mousemove"];
+
+  // Attach listener to all
+  interactions.forEach(event => {
+    document.addEventListener(event, requestFullscreen);
+  });
+
+  // Optionally retry every 1s if still not fullscreen
+  const retryInterval = setInterval(() => {
+    if (
+      !document.fullscreenElement &&
+      !document.webkitFullscreenElement &&
+      !document.mozFullScreenElement &&
+      !document.msFullscreenElement
+    ) {
+      requestFullscreen();
+    } else {
+      clearInterval(retryInterval);
+      console.log("Entered fullscreen");
+    }
+  }, 1000);
+});
+    </script>
 </body>
 </html>

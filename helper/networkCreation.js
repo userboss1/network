@@ -145,17 +145,19 @@ return new Promise((resolve,reject)=>{
             }
         },
         
-        getVivaDetailsAndLogs: async (userData) => { 
+          getVivaDetailsAndLogs: async (userData) => { 
             try {
+                console.log("useenMEEE",userData);
+                
                 // Step 1: Get user's viva details from both qbank and dqbank collections
                 const [qbankVivaList, dqbankVivaList] = await Promise.all([
                     db.get().collection('qbank').find(
-                        { user_id: userData.user_id }, // Filter by user_id
+                        { network_name: userData }, // Filter by user_id
                         { projection: { viva_uid: 1, viva_name: 1, subject_name: 1, type: 1, _id: 0 } } // Include type
                     ).toArray(),
                     
                     db.get().collection('dqbank').find(
-                        { user_id: userData.user_id }, // Filter by user_id
+                        { network_name: userData }, // Filter by user_id
                         { projection: { viva_uid: 1, viva_name: 1, subject_name: 1, type: 1, _id: 0 } } // Include type
                     ).toArray()
                 ]);

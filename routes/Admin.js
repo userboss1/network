@@ -25,7 +25,10 @@ function isAuthenticated(req, res, next) {
     res.redirect("/"); // Redirect to login page if not logged in
   }
 }
-
+router.post('/logout',(req,res)=>{
+  req.session.user=null
+  res.redirect('/admin')
+})
 router.get("/", checkSession, function (req, res) {
   res.render("admin/network");
 });
