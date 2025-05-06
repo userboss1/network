@@ -2,7 +2,8 @@ var express = require('express');
 var router = express.Router();
 const usersHelpers = require('../helper/guestHelper');
 const guestHelper = require('../helper/guestHelper');
-const db=require('../config/connection')
+const db=require('../config/connection');
+const { route } = require('./superadmin');
 /* Middleware to check if student is logged in */
 function isLoggedIn(req, res, next) {
     if (!req.session.loggedInStudents) {
@@ -189,7 +190,18 @@ router.get('/viva', isLoggedIn, (req, res) => {
 //         res.status(500).send("Error fetching viva questions.");
 //     });
 // });
+
+router.get('/attend/:viva_uid', async (req, res) => {
+    const viva_uid = parseInt(req.params.viva_uid);
+    const questions = await db.get().collection('qstatemcq').find({ vivaUID:viva_uid }).toArray();
+  
+    if (!questions.length) return res.send("❌ No questions found.");
+  
+    res.render('guest/statemcq', { viva_uid, questions });
+  });
+  
 router.get('/attendviva', isLoggedIn, (req, res) => {
+
     guestHelper.getQ({
         network_name: req.session.studentDetails.networkName,
         viva_uid: req.session.studentDetails.viva_uid

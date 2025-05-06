@@ -1,0 +1,20 @@
+<form method="POST" action="/Admin/attend/{{viva_uid}}">
+  <input type="text" name="name" required>
+  <input type="text" name="rollNumb" required>
+  <input type="text" name="department" required>
+  <input type="text" name="vivaName" required>
+  <input type="text" name="teacherName" required>
+
+  {{#each questions}}
+    <p>Q{{@index}}: {{this.question}}</p>
+    {{#each this.options}}
+      <label>
+        <input type="radio" name="answer{{@../index}}" value="{{this.text}}" required>
+        {{this.text}} 
+      </label><br>
+    {{/each}}
+    <br>
+  {{/each}}
+
+  <button type="submit">Submit</button>
+</form>

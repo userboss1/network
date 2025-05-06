@@ -331,7 +331,8 @@ router.post("/result", async (req, res) => {
     console.log(user);
 
     // Compare answers (assuming AdminHelper.compare exists)
-    const result = await AdminHelper.compare(userAnswers);
+    
+    const result = await AdminHelper.compare(userAnswers,user.viva_uid);
 
     // Final object to store in database
     const final = {
@@ -1436,5 +1437,188 @@ router.get('/ddresult', async (req, res) => {
     });
   }
 });
+
+function generateUniqueVivaCode() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
+// Render viva creation page
+router.get('/stateviva', async (req, res) => {
+  try {
+    // Get list of teachers for the dropdown
+    const teachers = "namedydy"
+    
+    // Get list of subjects for the dropdown
+    const subjects = "es"
+    const uniqueCode = Math.floor(1000 + Math.random() * 9000);
+    // Generate a unique viva code
+    const vivaCode = generateUniqueVivaCode();
+    
+    res.render('admin/createstateviva',);
+  } catch (error) {
+    console.error('Error preparing viva creation page:', error);
+    res.status(500).send('Error loading viva creation page');
+  }
+});
+
+
+router.post('/add-question', async (req, res) => {
+  const {
+    vivaUID,
+    teacherName,
+    subject,
+    vivaName,
+    examType,
+    question,
+    option1, score1,
+    option2, score2,
+    option3, score3,
+    option4, score4
+  } = req.body;
+
+  const options = [
+    { text: option1, score: parseInt(score1) || 0 },
+    { text: option2, score: parseInt(score2) || 0 },
+    { text: option3, score: parseInt(score3) || 0 },
+    { text: option4, score: parseInt(score4) || 0 }
+  ];
+
+  const totalScore = options.reduce((sum, opt) => sum + opt.score, 0);
+
+  const questionData = {
+    vivaUID: parseInt(vivaUID),
+    teacherName,
+    subject,
+    vivaName,
+    examType,
+    question,
+    options,
+    totalScore
+  };
+
+  try {
+    await db.get().collection('qstatemcq').insertOne(questionData);
+    res.send("✅ Question added successfully! <a href='/add-question'>Add another</a>");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("❌ Failed to save question.");
+  }
+});
+
+
+
+router.get('/edit-question', async (req, res) => {
+  console.log("everyhting ehre");
+  
+  const vivaUID = 2002
+  try {
+    const question = await db.get().collection('qstatemcq').findOne({ vivaUID: vivaUID });
+console.log(question);
+
+    if (!question) {
+      return res.send("❌ No question found with that UID.");
+    }
+
+    res.render('admin/edit-question', { question });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("❌ Error loading question.");
+  }
+});
+router.post('/edit-question/:vivaUID', async (req, res) => {
+  const vivaUID = req.params.vivaUID;
+  const {
+    teacherName,
+    subject,
+    vivaName,
+    examType,
+    question,
+    option1, score1,
+    option2, score2,
+    option3, score3,
+    option4, score4
+  } = req.body;
+
+  const options = [
+    { text: option1, score: parseInt(score1) || 0 },
+    { text: option2, score: parseInt(score2) || 0 },
+    { text: option3, score: parseInt(score3) || 0 },
+    { text: option4, score: parseInt(score4) || 0 }
+  ];
+
+  const totalScore = options.reduce((sum, opt) => sum + opt.score, 0);
+
+  try {
+    await db.get().collection('qstatemcq').updateOne(
+      { vivaUID: parseInt(vivaUID) },
+      {
+        $set: {
+          teacherName,
+          subject,
+          vivaName,
+          examType,
+          question,
+          options,
+          totalScore
+        }
+      }
+    );
+    res.send("✅ Question updated successfully!");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("❌ Failed to update question.");
+  }
+});
+//state viva posted by student
+router.post('/attend/:viva_uid', async (req, res) => {
+  const viva_uid = parseInt(req.params.viva_uid);
+  const questions = await db.get().collection('qstatemcq').find({ vivaUID: viva_uid }).toArray();
+
+  const { name, rollNumb, department, vivaName, teacherName } = req.body;
+  let score = 0;
+  const answers = [];
+
+  questions.forEach((q, i) => {
+    const answerKey = `answer${i}`;
+    const selectedText = req.body[answerKey];
+
+    const matchedOption = q.options.find(opt => opt.text === selectedText);
+    const optionScore = matchedOption ? matchedOption.score : 0;
+    score += optionScore;
+
+    answers.push({
+      question: q.question,
+      selected: selectedText,
+      score: optionScore
+    });
+  });
+
+  await db.get().collection('stateresults').insertOne({
+    viva_uid,
+    name,
+    rollNumb,
+    department,
+    vivaName,
+    teacherName,
+    answers,
+    score
+  });
+
+  res.send(`Submitted. Score: ${score}`);
+});
+
+router.get('/result/:viva_uid', async (req, res) => {
+  const viva_uid = parseInt(req.params.viva_uid);
+
+  const results = await db.get().collection('stateresults')
+    .find({ viva_uid })
+    .toArray();
+console.log("res",results);
+
+  res.render('admin/stateresult', { viva_uid, results });
+});
+
+
+// Get all vivas for viewing/management
 
 module.exports = router;

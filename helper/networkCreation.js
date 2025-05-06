@@ -85,11 +85,14 @@ module.exports={
             }
         }      
         ,
-        compare: async (userAnswers) => {
+        compare: async (userAnswers,id) => {
             console.log(userAnswers);
+
         
             try {
-                const quizzes = await db.get().collection('qbank').find().toArray(); // Fetch all quizzes
+                const quizzes = await db.get().collection('qbank').find({viva_uid:parseInt(id)}).toArray() // Fetch all quizzes
+               console.log(quizzes+"gg");
+               
                 let score = 0;
                 let results = [];
         

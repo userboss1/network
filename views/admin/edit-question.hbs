@@ -1,0 +1,32 @@
+<h2>Edit Question - UID: {{question.questionId}}</h2>
+<form action="/Admin/edit-question/{{question.vivaUID}}" method="POST">
+  <label>Teacher Name:</label><br>
+  <input type="text" name="teacherName" value="{{question.teacherName}}" required><br><br>
+
+  <label>Subject Name:</label><br>
+  <input type="text" name="subject" value="{{question.subject}}" required><br><br>
+
+  <label>Viva Name:</label><br>
+  <input type="text" name="vivaName" value="{{question.vivaName}}" required><br><br>
+
+  <label>Exam Type:</label><br>
+  <input type="text" name="examType" value="{{question.examType}}" required><br><br>
+
+  <label>Question:</label><br>
+  <input type="text" name="question" value="{{question.question}}" required><br><br>
+
+  {{#each question.options}}
+    <label>Option {{@index}}</label>
+    <input type="text" name="option{{inc @index}}" value="{{this.text}}" required>
+    Score: <input type="number" name="score{{inc @index}}" value="{{this.score}}" required><br><br>
+  {{/each}}
+
+  <button type="submit">Update Question</button>
+</form>
+
+<script>
+  // Handlebars helper to make index start from 1
+  Handlebars.registerHelper('inc', function(value) {
+    return parseInt(value) + 1;
+  });
+</script>

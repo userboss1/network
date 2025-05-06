@@ -1,0 +1,50 @@
+<h2>Add a New Question</h2>
+<form action="/Admin/add-question" method="POST">
+  <label>Viva UID (auto-generated 4-digit ID):</label><br>
+  <input type="text" name="vivaUID" id="vivaUID" readonly required><br><br>
+<h1>{{teacher}}idu</h1>
+  <label>Teacher Name:</label><br>
+  <input type="text" name="teacherName" value="{{teacher}}" required><br><br>
+
+  <label>Subject Name:</label><br>
+  <input type="text" name="subject" required><br><br>
+
+  <label>Viva Name:</label><br>
+  <input type="text" name="vivaName" required><br><br>
+
+  <label>Exam Type:</label><br>
+  <input type="text" name="examType" value="MCQ" required><br><br>
+
+  <label>Question:</label><br>
+  <input type="text" name="question" required><br><br>
+
+  {{!-- Option 1 --}}
+  <label>Option 1:</label>
+  <input type="text" name="option1" required>
+  Score: <input type="number" name="score1" required><br><br>
+
+  {{!-- Option 2 --}}
+  <label>Option 2:</label>
+  <input type="text" name="option2" required>
+  Score: <input type="number" name="score2" required><br><br>
+
+  {{!-- Option 3 --}}
+  <label>Option 3:</label>
+  <input type="text" name="option3" required>
+  Score: <input type="number" name="score3" required><br><br>
+
+  {{!-- Option 4 --}}
+  <label>Option 4:</label>
+  <input type="text" name="option4" required>
+  Score: <input type="number" name="score4" required><br><br>
+
+  <button type="submit">Submit Question</button>
+</form>
+
+<script>
+  function generate4DigitUID() {
+    return Math.floor(1000 + Math.random() * 9000);
+  }
+
+  document.getElementById("vivaUID").value = generate4DigitUID();
+</script>

@@ -24,7 +24,9 @@ app.use((req, res, next) => {
    res.setHeader('Cache-Control', 'no-store');
    next();
  });
- 
+ hbs.registerHelper('inc', function(value) {
+   return parseInt(value) + 1;
+ });
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');

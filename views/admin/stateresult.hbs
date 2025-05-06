@@ -1,0 +1,24 @@
+<h2>Results for Viva UID: {{viva_uid}}</h2>
+
+<table border="1" cellpadding="5">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Roll Number</th>
+      <th>Department</th>
+      <th>Total Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each results}}
+      <tr>
+        <td>{{@index}}</td>
+        <td>{{this.name}}</td>
+        <td>{{this.rollNumb}}</td>
+        <td>{{this.department}}</td>
+        <td>{{this.score}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
