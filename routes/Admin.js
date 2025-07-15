@@ -25,25 +25,36 @@ function isAuthenticated(req, res, next) {
     res.redirect("/"); // Redirect to login page if not logged in
   }
 }
-router.post('/logout',(req,res)=>{
-  req.session.user=null
+router.post('/logout', (req, res) => {
+  req.session.user = null
   res.redirect('/admin')
 })
 router.get("/", checkSession, function (req, res) {
   res.render("admin/network");
 });
 router.get("/home", isAuthenticated, async (req, res) => {
-  let user2 = req.session.user
+  let user2 = req.session.user;
   let vivaDetails = await AdminHelper.getVivaDetailsAndLogs(user2.name);
 
+  console.log("received details", JSON.stringify(vivaDetails));
+  req.session.vivaDetails = vivaDetails;
 
-  console.log("recieved details", JSON.stringify(vivaDetails));
-  req.session.vivaDetails = vivaDetails
+  // Store the current message before clearing it
+  const currentMessage = req.session.message;
 
+  // Clear the message from session after reading it
+  // This ensures it won't show on subsequent page loads
+  if (req.session.message) {
+    req.session.message = null;
+    console.log("✅ Message cleared from session after displaying");
+  }
 
-  res.render("admin/home", { viva: vivaDetails, adminName: req.session.user.name }); // Render home page if logged in
+  res.render("admin/home", {
+    viva: vivaDetails,
+    adminName: req.session.user.name,
+    message: currentMessage  // Pass the message to template
+  });
 });
-
 
 // Super Admin Login
 router.post('/adminLog', async (req, res) => {
@@ -157,7 +168,7 @@ router.post('/qsumbit', async (req, res) => {
 
         // Process option image if it exists
         let optionImagePath = null;
-        
+
         if (req.files && req.files[`option_image[${index}][${i}]`]) {
           const file = req.files[`option_image[${index}][${i}]`];
 
@@ -175,7 +186,7 @@ router.post('/qsumbit', async (req, res) => {
           // Store the relative path to the image
           optionImagePath = `/uploads/${filename}`;
         }
-        
+
         optionImages[i] = optionImagePath;
       }
 
@@ -331,12 +342,12 @@ router.post("/result", async (req, res) => {
     console.log(user);
 
     // Compare answers (assuming AdminHelper.compare exists)
-    
-    const result = await AdminHelper.compare(userAnswers,user.viva_uid);
+
+    const result = await AdminHelper.compare(userAnswers, user.viva_uid);
 
     // Final object to store in database
     const final = {
-      viva_uid:parseInt(user.viva_uid),
+      viva_uid: parseInt(user.viva_uid),
       name: user.name,
       rollNumb: user.roll,
       department: user.department,
@@ -363,10 +374,10 @@ router.post("/result", async (req, res) => {
 router.get('/result', isAuthenticated, async (req, res) => {
   try {
     const { viva_uid, network_name } = req.query;
-   
+
 
     // Get results from your helper
-    const info = await AdminHelper.returnResult(viva_uid,network_name);
+    const info = await AdminHelper.returnResult(viva_uid, network_name);
 
     // Make sure info is an array
     const resultsArray = Array.isArray(info) ? info : [info];
@@ -416,10 +427,10 @@ router.get('/assign', (req, res) => {
       const labData = pcResponse.map(item => ({ labName: item.labName }));
 
       // Render the view, passing both viva_uid, classData, and labData
-      res.render('admin/select', { 
-        classData: classResponse, 
-        viva_uid, 
-        labData 
+      res.render('admin/select', {
+        classData: classResponse,
+        viva_uid,
+        labData
       });
     }).catch(error => {
       console.error("Error fetching class data:", error);
@@ -497,69 +508,72 @@ router.post('/logIn', async (req, res) => {
   try {
     const { viva_uid, className, rollStart, rollEnd, uniqueId, duration, labName } = req.body;
     const userName = req.session.user?.name;
-    
+
     // Validate basic inputs
     if (!className || !userName || !rollStart || !rollEnd || !viva_uid || !labName) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
-    
+
     // Check if the lab is already assigned in the logIn collection
     const existingLabAssignment = await db.get().collection('logIn').findOne({ labName });
-    
+
     if (existingLabAssignment) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `This lab (${labName}) is already assigned. Please remove the previous assignment first check with superadmin  :)` 
+      return res.status(400).json({
+        success: false,
+        message: `This lab (${labName}) is already assigned. Please remove the previous assignment first check with superadmin  :)`
       });
     }
-    
+
     // Parse and validate roll number range
     const minRoll = parseInt(rollStart, 10);
     const maxRoll = parseInt(rollEnd, 10);
-    
+
     if (isNaN(minRoll) || isNaN(maxRoll) || minRoll > maxRoll || minRoll < 1) {
       return res.status(400).json({ success: false, message: "Invalid roll number range" });
     }
-    
+
     // Get viva details from qbank or dqbank based on viva_uid
     let vivaDetails = null;
-    
+
     // Check qbank collection first
     vivaDetails = await db.get().collection('qbank').findOne({ viva_uid: Number(viva_uid) });
-    
+
     // If not found in qbank, check dqbank
     if (!vivaDetails) {
       vivaDetails = await db.get().collection('dqbank').findOne({ viva_uid: Number(viva_uid) });
     }
-    
+    if (!vivaDetails) {
+      vivaDetails = await db.get().collection('qstatemcq').findOne({ viva_uid: Number(viva_uid) });
+    }
+
     // If viva details not found in either collection
     if (!vivaDetails) {
       return res.status(404).json({ success: false, message: "Viva not found with the provided ID" });
     }
-    
+
     const vivaName = vivaDetails.viva_name;
     const vivaType = vivaDetails.type;
-    
+
     // Get student data
     const studentData = await db.get().collection('students').findOne({ className });
-    
+
     if (!studentData || !studentData.students) {
       return res.status(404).json({ success: false, message: "Class not found or no students available" });
     }
-    
+
     // Filter students by roll number range
     const selectedStudents = studentData.students.filter(student => {
       return student.roll >= minRoll && student.roll <= maxRoll;
     });
-    
+
     if (selectedStudents.length === 0) {
       return res.status(400).json({ success: false, message: "No students found in the selected range" });
     }
-    
+
     // Get PC data for the selected lab
     const labData = await db.get().collection('pc').findOne({ labName });
     const pcList = labData?.pcs || [];
-    
+
     // Assign PCs to students
     const studentsWithPCs = selectedStudents.map((student, index) => {
       // If there are enough PCs in the lab
@@ -578,7 +592,7 @@ router.post('/logIn', async (req, res) => {
         };
       }
     });
-    
+
     // Create log entry
     const logEntry = {
       uniqueId: Number(uniqueId),
@@ -592,10 +606,10 @@ router.post('/logIn', async (req, res) => {
       students: studentsWithPCs, // Use students with PC assignments
       loginTime: new Date(),
     };
-    
+
     // Insert log entry into the database
     await db.get().collection('logIn').insertOne(logEntry);
-    
+
     res.redirect('/admin/home');
   } catch (error) {
     console.error("Error during login:", error);
@@ -641,45 +655,45 @@ router.get('/remove-class', async (req, res) => {
 // Add this route to your admin router file
 router.get('/studentpc', async (req, res) => {
   try {
-    const { uniqueId,logId } = req.query;
+    const { uniqueId, logId } = req.query;
     const numericUniqueId = Number(uniqueId); // Convert to number
-    const  loguid=Number(logId)
-    console.log(numericUniqueId+loguid);
+    const loguid = Number(logId)
+    console.log(numericUniqueId + loguid);
     const loginDetails = await db.get().collection('logIn').findOne({
       viva_uid: numericUniqueId,
-      uniqueId:loguid
+      uniqueId: loguid
     });
-    
+
     if (!loginDetails) {
-      return res.status(404).render('error', { 
-        message: "Assignment data not found" 
+      return res.status(404).render('error', {
+        message: "Assignment data not found"
       });
     }
-    
+
     // Process student data to add isAssigned flag
     const processedStudents = loginDetails.students.map(student => {
       // Check if PC is assigned (not "No PC assigned" and not null/undefined)
-      const isAssigned = student.pcNumber && 
-                         student.pcNumber !== "No PC assigned" && 
-                         student.pcIP && 
-                         student.pcIP !== "No PC assigned";
-      
+      const isAssigned = student.pcNumber &&
+        student.pcNumber !== "No PC assigned" &&
+        student.pcIP &&
+        student.pcIP !== "No PC assigned";
+
       return {
         ...student,
         isAssigned: isAssigned
       };
     });
-    
+
     // Update the students in loginDetails
     loginDetails.students = processedStudents;
-    
+
     // Calculate assigned and waiting counts
     const assignedCount = processedStudents.filter(student => student.isAssigned).length;
     const waitingCount = processedStudents.length - assignedCount;
-    
+
     // Format date for display
     const formattedDate = new Date(loginDetails.loginTime).toLocaleString();
-    
+
     // Render the template with data
     res.render('admin/infopc', {
       title: "Student PC Assignments",
@@ -688,70 +702,12 @@ router.get('/studentpc', async (req, res) => {
       waitingCount: waitingCount,
       formattedDate: formattedDate
     });
-    
+
   } catch (error) {
     console.error("Error fetching PC assignment info:", error);
-    res.status(500).render('error', { 
-      message: "Server error while fetching PC assignment information" 
+    res.status(500).render('error', {
+      message: "Server error while fetching PC assignment information"
     });
-  }
-});
-router.get('/editViva', async (req, res) => {
-  try {
-    const { viva, admin } = req.query;
-    console.log("Editing Viva:", viva, admin);
-
-    // Validate input parameters
-    if (!viva || !admin) {
-      return res.status(400).send("Missing viva name or admin name");
-    }
-
-    const dbInstance = db.get();
-
-    // Search for viva in both collections
-    const qbankMatch = await dbInstance.collection('qbank').findOne({
-      viva_uid: parseInt(viva),
-      network_name: admin
-    });
-
-    const dqbankMatch = await dbInstance.collection('dqbank').findOne({
-      viva_uid: parseInt(viva),
-      network_name: admin
-    });
-
-    let existingViva, template;
-
-    if (qbankMatch) {
-      existingViva = qbankMatch;
-      template = 'admin/editViva'; // Render editViva.hbs if from qbank
-    } else if (dqbankMatch) {
-      existingViva = dqbankMatch;
-      template = 'admin/DeditViva'; // Render DeditViva.hbs if from dqbank
-    } else {
-      return res.status(404).send("Viva not found!");
-    }
-
-    // Normalize image paths for display
-    if (existingViva.questions && Array.isArray(existingViva.questions)) {
-      existingViva.questions.forEach(question => {
-        if (question.image && !question.image.startsWith('/uploads') && !question.image.startsWith('http')) {
-          question.image = `/uploads/${question.image}`;
-        }
-      });
-    } else {
-      existingViva.questions = []; // Ensure questions is an array
-    }
-
-    // Pass the data to the selected template
-    res.render(template, {
-      viva: existingViva,
-      vivaDataJSON: JSON.stringify(existingViva), // For safe JavaScript access
-      user: admin
-    });
-
-  } catch (error) {
-    console.error("Error fetching viva for edit:", error);
-    res.status(500).send("Error retrieving viva: " + error.message);
   }
 });
 
@@ -799,210 +755,341 @@ router.post('/dupdateViva', async (req, res) => {
 
 
 
-  router.post('/updateViva', async (req, res) => {
-    try {
-      console.log("==== FORM DATA DEBUG ====");
-      console.log("Request body:", req.body);
-      console.log("Request files:", req.files ? Object.keys(req.files) : "No files");
 
-      const { viva_id, network_name, viva_name,  } = req.body;
+router.get('/editViva', async (req, res) => {
+  try {
+    const { viva, admin } = req.query;
+    console.log("Editing Viva:", viva, admin);
 
-      console.log("Updating viva with ID:", viva_id);
+    // Validate input parameters
+    if (!viva || !admin) {
+      return res.status(400).send("Missing viva name or admin name");
+    }
 
-      if (!viva_id || !network_name || !viva_name ) {
-        return res.status(400).send("Missing required fields");
-      }
+    const dbInstance = db.get();
 
-      // Fetch existing viva data
-      const existingViva = await db.get().collection('qbank').findOne({ _id: new ObjectId(viva_id) });
+    // Search for viva in both collections
+    const qbankMatch = await dbInstance.collection('qbank').findOne({
+      viva_uid: parseInt(viva),
+      network_name: admin
+    });
 
-      if (!existingViva) {
-        return res.status(404).send("Viva not found");
-      }
+    const dqbankMatch = await dbInstance.collection('dqbank').findOne({
+      viva_uid: parseInt(viva),
+      network_name: admin
+    });
 
-      // Create a map of existing questions for easy lookup
-      const existingQuestionsMap = {};
-      if (existingViva.questions && Array.isArray(existingViva.questions)) {
-        existingViva.questions.forEach((question, idx) => {
-          existingQuestionsMap[idx] = question;
-        });
-      }
+    let existingViva, template;
 
-      // Extract question data from form fields
-      const questionsData = {};
-      const optionsData = {};
-      const correctAnswerData = {};
-      const existingImageData = {};
+    if (qbankMatch) {
+      existingViva = qbankMatch;
+      template = 'admin/editViva'; // Render editViva.hbs if from qbank
+    } else if (dqbankMatch) {
+      existingViva = dqbankMatch;
+      template = 'admin/DeditViva'; // Render DeditViva.hbs if from dqbank
+    } else {
+      return res.status(404).send("Viva not found!");
+    }
 
-      // Process existing_image fields first
-      Object.keys(req.body).forEach(key => {
-        if (key.startsWith('existing_image[')) {
-          const matches = key.match(/existing_image\[(\d+)\]/);
-          if (matches && matches[1]) {
-            const index = matches[1];
-            existingImageData[index] = req.body[key];
-          }
-        }
-      });
-
-      console.log("Existing image data:", existingImageData);
-
-      // Process other fields
-      Object.keys(req.body).forEach(key => {
-        // Extract question data
-        if (key.startsWith('questions[')) {
-          const indexMatch = key.match(/questions\[(\d+)\]/);
-          if (indexMatch && indexMatch[1]) {
-            const index = indexMatch[1];
-            questionsData[index] = req.body[key];
-          }
+    // Normalize image paths for display
+    if (existingViva.questions && Array.isArray(existingViva.questions)) {
+      existingViva.questions.forEach(question => {
+        // Normalize question image
+        if (question.image && !question.image.startsWith('/uploads') && !question.image.startsWith('http')) {
+          question.image = `/uploads/${question.image}`;
         }
 
-        // Extract options data
-        if (key.startsWith('options[')) {
-          const matches = key.match(/options\[(\d+)\]\[(\d+)\]/);
-          if (matches && matches[1] && matches[2]) {
-            const qIndex = matches[1];
-            const optIndex = matches[2];
-
-            if (!optionsData[qIndex]) {
-              optionsData[qIndex] = [];
+        // Normalize option images
+        if (question.option_images && Array.isArray(question.option_images)) {
+          question.option_images = question.option_images.map(img => {
+            if (img && !img.startsWith('/uploads') && !img.startsWith('http')) {
+              return `/uploads/${img}`;
             }
-
-            optionsData[qIndex][optIndex] = req.body[key];
-          }
-        }
-
-        // Extract correct answer data
-        if (key.startsWith('correct_answer[')) {
-          const indexMatch = key.match(/correct_answer\[(\d+)\]/);
-          if (indexMatch && indexMatch[1]) {
-            const index = indexMatch[1];
-            correctAnswerData[index] = parseInt(req.body[key]);
-          }
+            return img;
+          });
         }
       });
+    } else {
+      existingViva.questions = []; // Ensure questions is an array
+    }
 
-      console.log("Parsed questions data:", questionsData);
-      console.log("Parsed options data:", optionsData);
-      console.log("Parsed correct answers:", correctAnswerData);
+    // Pass the data to the selected template
+    res.render(template, {
+      viva: existingViva,
+      vivaDataJSON: JSON.stringify(existingViva), // For safe JavaScript access
+      user: admin
+    });
 
-      // Prepare updated questions array
-      const updatedQuestions = [];
-      // Track old images that should be deleted
-      const imagesToDelete = [];
+  } catch (error) {
+    console.error("Error fetching viva for edit:", error);
+    res.status(500).send("Error retrieving viva: " + error.message);
+  }
+});
+router.post('/updateViva', async (req, res) => {
+  try {
+    console.log("==== FORM DATA DEBUG ====");
+    console.log("Request body:", req.body);
+    console.log("Request files:", req.files ? Object.keys(req.files) : "No files");
 
-      // Process all question indices
-      const questionIndices = Object.keys(questionsData);
+    const { viva_id, network_name, viva_name, subject_name } = req.body;
 
-      for (const index of questionIndices) {
-        // Skip empty questions
-        if (!questionsData[index] || questionsData[index].trim() === '') {
-          continue;
+    console.log("Updating viva with ID:", viva_id);
+
+    if (!viva_id || !network_name || !viva_name) {
+      return res.status(400).send("Missing required fields");
+    }
+
+    // Fetch existing viva data
+    const existingViva = await db.get().collection('qbank').findOne({ _id: new ObjectId(viva_id) });
+
+    if (!existingViva) {
+      return res.status(404).send("Viva not found");
+    }
+
+    // Create a map of existing questions for easy lookup
+    const existingQuestionsMap = {};
+    if (existingViva.questions && Array.isArray(existingViva.questions)) {
+      existingViva.questions.forEach((question, idx) => {
+        existingQuestionsMap[idx] = question;
+      });
+    }
+
+    // Extract question data from form fields
+    const questionsData = {};
+    const optionsData = {};
+    const correctAnswerData = {};
+    const existingImageData = {};
+    const existingOptionImageData = {};
+
+    // Process existing_image fields first
+    Object.keys(req.body).forEach(key => {
+      // Process existing question images
+      if (key.startsWith('existing_image[')) {
+        const matches = key.match(/existing_image\[(\d+)\]/);
+        if (matches && matches[1]) {
+          const qIndex = matches[1];
+          existingImageData[qIndex] = req.body[key];
         }
+      }
 
-        // Prepare question object
-        const questionObj = {
-          question: questionsData[index],
-          options: optionsData[index] || ['', '', '', ''],
-          correct_answer: correctAnswerData[index] || 0
-        };
+      // Process existing option images
+      if (key.startsWith('existing_option_image[')) {
+        const matches = key.match(/existing_option_image\[(\d+)\]\[(\d+)\]/);
+        if (matches && matches[1] && matches[2]) {
+          const qIndex = matches[1];
+          const optIndex = matches[2];
 
-        // Get the original image path if it exists
-        const originalImagePath = existingQuestionsMap[index]?.image;
+          if (!existingOptionImageData[qIndex]) {
+            existingOptionImageData[qIndex] = {};
+          }
+          existingOptionImageData[qIndex][optIndex] = req.body[key];
+        }
+      }
+    });
 
-        // Process image:
-        // 1. First check if there's a new image upload
-        if (req.files && req.files[`question_image[${index}]`]) {
-          const file = req.files[`question_image[${index}]`];
+    console.log("Existing image data:", existingImageData);
+    console.log("Existing option image data:", existingOptionImageData);
+
+    // Process other fields
+    Object.keys(req.body).forEach(key => {
+      // Extract question data
+      if (key.startsWith('questions[')) {
+        const indexMatch = key.match(/questions\[(\d+)\]/);
+        if (indexMatch && indexMatch[1]) {
+          const index = indexMatch[1];
+          questionsData[index] = req.body[key];
+        }
+      }
+
+      // Extract options data
+      if (key.startsWith('options[')) {
+        const matches = key.match(/options\[(\d+)\]\[(\d+)\]/);
+        if (matches && matches[1] && matches[2]) {
+          const qIndex = matches[1];
+          const optIndex = matches[2];
+
+          if (!optionsData[qIndex]) {
+            optionsData[qIndex] = [];
+          }
+
+          optionsData[qIndex][optIndex] = req.body[key];
+        }
+      }
+
+      // Extract correct answer data
+      if (key.startsWith('correct_answer[')) {
+        const indexMatch = key.match(/correct_answer\[(\d+)\]/);
+        if (indexMatch && indexMatch[1]) {
+          const index = indexMatch[1];
+          correctAnswerData[index] = parseInt(req.body[key]);
+        }
+      }
+    });
+
+    console.log("Parsed questions data:", questionsData);
+    console.log("Parsed options data:", optionsData);
+    console.log("Parsed correct answers:", correctAnswerData);
+
+    // Prepare updated questions array
+    const updatedQuestions = [];
+    // Track old images that should be deleted
+    const imagesToDelete = [];
+
+    // Process all question indices
+    const questionIndices = Object.keys(questionsData);
+
+    for (const index of questionIndices) {
+      // Skip empty questions
+      if (!questionsData[index] || questionsData[index].trim() === '') {
+        continue;
+      }
+
+      // Prepare question object
+      const questionObj = {
+        question: questionsData[index],
+        options: optionsData[index] || ['', '', '', ''],
+        correct_answer: correctAnswerData[index] || 0,
+        option_images: [null, null, null, null] // Initialize option images array
+      };
+
+      // Get the original image path if it exists
+      const originalImagePath = existingQuestionsMap[index]?.image;
+      const originalOptionImages = existingQuestionsMap[index]?.option_images || [null, null, null, null];
+
+      // Process question image:
+      // 1. First check if there's a new image upload
+      if (req.files && req.files[`question_image[${index}]`]) {
+        const file = req.files[`question_image[${index}]`];
+        const timestamp = Date.now();
+        const filename = `question-${timestamp}-${file.name}`;
+        const uploadPath = path.join(__dirname, '../public/uploads/', filename);
+
+        await file.mv(uploadPath);
+        questionObj.image = `/uploads/${filename}`;
+        console.log(`New question image uploaded for question ${index}: ${questionObj.image}`);
+
+        // If there was an original image, mark it for deletion
+        if (originalImagePath) {
+          imagesToDelete.push(originalImagePath);
+          console.log(`Marking old question image for deletion: ${originalImagePath}`);
+        }
+      }
+      // 2. Then check if there's an existing image from the form
+      else if (existingImageData[index]) {
+        questionObj.image = existingImageData[index];
+        console.log(`Using existing question image from form for question ${index}: ${questionObj.image}`);
+      }
+      // 3. Finally check if there was an image in the original data
+      else if (originalImagePath) {
+        questionObj.image = originalImagePath;
+        console.log(`Preserving original question image for question ${index}: ${questionObj.image}`);
+      }
+
+      // Process option images
+      for (let optIndex = 0; optIndex < 4; optIndex++) {
+        const originalOptionImage = originalOptionImages[optIndex];
+
+        // 1. Check for new option image upload
+        if (req.files && req.files[`option_image[${index}][${optIndex}]`]) {
+          const file = req.files[`option_image[${index}][${optIndex}]`];
           const timestamp = Date.now();
-          const filename = `${timestamp}-${file.name}`;
+          const filename = `option-${timestamp}-${optIndex}-${file.name}`;
           const uploadPath = path.join(__dirname, '../public/uploads/', filename);
 
           await file.mv(uploadPath);
-          questionObj.image = `/uploads/${filename}`;
-          console.log(`New image uploaded for question ${index}: ${questionObj.image}`);
+          questionObj.option_images[optIndex] = `/uploads/${filename}`;
+          console.log(`New option image uploaded for question ${index}, option ${optIndex}: ${questionObj.option_images[optIndex]}`);
 
-          // If there was an original image, mark it for deletion
-          if (originalImagePath) {
-            imagesToDelete.push(originalImagePath);
-            console.log(`Marking old image for deletion: ${originalImagePath}`);
+          // If there was an original option image, mark it for deletion
+          if (originalOptionImage) {
+            imagesToDelete.push(originalOptionImage);
+            console.log(`Marking old option image for deletion: ${originalOptionImage}`);
           }
         }
-        // 2. Then check if there's an existing image from the form
-        else if (existingImageData[index]) {
-          questionObj.image = existingImageData[index];
-          console.log(`Using existing image from form for question ${index}: ${questionObj.image}`);
+        // 2. Check for existing option image from form
+        else if (existingOptionImageData[index] && existingOptionImageData[index][optIndex]) {
+          questionObj.option_images[optIndex] = existingOptionImageData[index][optIndex];
+          console.log(`Using existing option image from form for question ${index}, option ${optIndex}: ${questionObj.option_images[optIndex]}`);
         }
-        // 3. Finally check if there was an image in the original data
-        else if (originalImagePath) {
-          questionObj.image = originalImagePath;
-          console.log(`Preserving original image for question ${index}: ${questionObj.image}`);
-        }
-
-        updatedQuestions.push(questionObj);
-      }
-
-      console.log("Final Questions Count:", updatedQuestions.length);
-      console.log("First question sample:", updatedQuestions.length > 0 ? JSON.stringify(updatedQuestions[0]) : "No questions");
-      console.log("Images to delete:", imagesToDelete);
-
-      // Delete old images that were replaced
-      for (const imagePath of imagesToDelete) {
-        try {
-          // Remove the leading slash to get the correct path relative to public folder
-          const relativePath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
-          const fullPath = path.join(__dirname, '../public/', relativePath);
-
-          // Check if file exists before attempting to delete
-          if (fs.existsSync(fullPath)) {
-            fs.unlinkSync(fullPath);
-            console.log(`Successfully deleted old image: ${fullPath}`);
-          } else {
-            console.log(`File not found, couldn't delete: ${fullPath}`);
-          }
-        } catch (deleteError) {
-          console.error(`Error deleting image ${imagePath}:`, deleteError);
-          // Continue execution even if image deletion fails
+        // 3. Use original option image if it exists
+        else if (originalOptionImage) {
+          questionObj.option_images[optIndex] = originalOptionImage;
+          console.log(`Preserving original option image for question ${index}, option ${optIndex}: ${questionObj.option_images[optIndex]}`);
         }
       }
 
-      // Update the database
-      const updateData = {
-        network_name,
-        viva_name,   
-        questions: updatedQuestions,
-      };
-
-      const result = await db.get().collection('qbank').updateOne(
-        { _id: new ObjectId(viva_id) },
-        { $set: updateData }
-      );
-
-      if (result.matchedCount === 0) {
-        return res.status(404).send("Viva not found");
-      }
-
-      console.log(`Successfully updated viva: ${viva_name}`);
-      res.redirect('/Admin/home');
-    } catch (error) {
-      console.error("Error updating viva:", error);
-      res.status(500).send("Error updating viva: " + error.message);
+      updatedQuestions.push(questionObj);
     }
-  });
+
+    console.log("Final Questions Count:", updatedQuestions.length);
+    console.log("First question sample:", updatedQuestions.length > 0 ? JSON.stringify(updatedQuestions[0]) : "No questions");
+    console.log("Images to delete:", imagesToDelete);
+
+    // Delete old images that were replaced
+    for (const imagePath of imagesToDelete) {
+      try {
+        // Remove the leading slash to get the correct path relative to public folder
+        const relativePath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+        const fullPath = path.join(__dirname, '../public/', relativePath);
+
+        // Check if file exists before attempting to delete
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+          console.log(`Successfully deleted old image: ${fullPath}`);
+        } else {
+          console.log(`File not found, couldn't delete: ${fullPath}`);
+        }
+      } catch (deleteError) {
+        console.error(`Error deleting image ${imagePath}:`, deleteError);
+        // Continue execution even if image deletion fails
+      }
+    }
+
+    // Update the database
+    const updateData = {
+      network_name,
+      viva_name,
+      subject_name, // Add subject_name to update
+      questions: updatedQuestions,
+    };
+
+    const result = await db.get().collection('qbank').updateOne(
+      { _id: new ObjectId(viva_id) },
+      { $set: updateData }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).send("Viva not found");
+    }
+
+    console.log(`Successfully updated viva: ${viva_name}`);
+    res.redirect('/Admin/home');
+  } catch (error) {
+    console.error("Error updating viva:", error);
+    res.status(500).send("Error updating viva: " + error.message);
+  }
+});
 // In your router.js file
 // First, add this debugging code at the beginning of your updateViva route
 // to see exactly what's coming in the request:
 router.get('/delete-viva', (req, res) => {
   const networkName = req.query.admin;
   const vivaName = req.query.viva;
+
   console.log(`Deleting viva: ${vivaName} from network: ${networkName}`);
 
   AdminHelper.DeletViva(networkName, parseInt(vivaName))
-    .then(() => res.redirect('/Admin/home'))
+    .then(() => {
+      req.session.message = {
+        text: "Viva deleted successfully",
+
+      };
+
+      res.redirect('/Admin/home');
+    })
     .catch(err => {
       console.error("Error deleting viva:", err);
-      res.status(500).send("Failed to delete viva");
+      res.redirect('/Admin/home?error=delete_failed');
     });
 });
 
@@ -1026,79 +1113,79 @@ MongoClient.connect(uri, { useUnifiedTopology: true })
 // POST endpoint for /Admin/disubmit
 router.post('/disubmit', async (req, res) => {
   try {
-      console.log('Received data:', req.body); // Debugging
+    console.log('Received data:', req.body); // Debugging
 
-      const {
-          network_name,
-          subject_name,
-          viva_name,
-          student_name,
-          student_roll,
-          student_register,
-          class_name,
-          teacher_name,
-          viva_uid,
-          duration
-      } = req.body;
+    const {
+      network_name,
+      subject_name,
+      viva_name,
+      student_name,
+      student_roll,
+      student_register,
+      class_name,
+      teacher_name,
+      viva_uid,
+      duration
+    } = req.body;
 
-      // Validate required fields
-      if (!viva_uid || !student_name) {
-          return res.status(400).json({
-              success: false,
-              message: 'Missing required fields: viva_uid or student_name'
-          });
-      }
+    // Validate required fields
+    if (!viva_uid || !student_name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: viva_uid or student_name'
+      });
+    }
 
-      // Extract and structure answers
-      const answers = Object.keys(req.body)
-          .filter(key => key.startsWith('answers['))
-          .map(key => {
-              const index = key.match(/\d+/)[0]; // Extract index number
-              return {
-                  questionId: req.body[`questionIds[${index}]`] || index, // Use questionId if available, else fallback
-                  text: req.body[key] || ''
-              };
-          });
+    // Extract and structure answers
+    const answers = Object.keys(req.body)
+      .filter(key => key.startsWith('answers['))
+      .map(key => {
+        const index = key.match(/\d+/)[0]; // Extract index number
+        return {
+          questionId: req.body[`questionIds[${index}]`] || index, // Use questionId if available, else fallback
+          text: req.body[key] || ''
+        };
+      });
 
-      console.log('Parsed Answers:', answers);
+    console.log('Parsed Answers:', answers);
 
-      // Prepare the document to save (flattened structure)
-      const resultDocument = {
-          networkName: network_name || '',
-          subjectName: subject_name || '',
-          vivaName: viva_name || '',
-          studentName: student_name, 
-          studentRoll: student_roll || '',
-          studentRegister: student_register || '',
-          className: class_name || '',
-          teacherName: teacher_name || '',
-          vivaUid: viva_uid,
-          duration: parseInt(duration) || 0,
-          answers,  // Directly store the array of answers
-          submittedAt: new Date(),
-          status: 'submitted'
-      };
+    // Prepare the document to save (flattened structure)
+    const resultDocument = {
+      networkName: network_name || '',
+      subjectName: subject_name || '',
+      vivaName: viva_name || '',
+      studentName: student_name,
+      studentRoll: student_roll || '',
+      studentRegister: student_register || '',
+      className: class_name || '',
+      teacherName: teacher_name || '',
+      vivaUid: viva_uid,
+      duration: parseInt(duration) || 0,
+      answers,  // Directly store the array of answers
+      submittedAt: new Date(),
+      status: 'submitted'
+    };
 
-      // Insert into MongoDB
-      const collection = db.get().collection('dresult');
-      const insertResult = await collection.insertOne(resultDocument);
+    // Insert into MongoDB
+    const collection = db.get().collection('dresult');
+    const insertResult = await collection.insertOne(resultDocument);
 
-      // Render success page or return JSON
-      if (insertResult.insertedId) {
-        req.session.studentDetails=null;
+    // Render success page or return JSON
+    if (insertResult.insertedId) {
+      req.session.studentDetails = null;
 
-          res.render('admin/vivasuccess');
-      } else {
-          throw new Error('Failed to insert document');
-      }
+      res.render('admin/vivasuccess');
+    } else {
+      throw new Error('Failed to insert document');
+    }
 
   } catch (error) {
-      console.error('Error in /Admin/disubmit:', error);
-      return res.status(500).json({
-          success: false,
-          message: 'Internal server error',
-          error: error.message
-      });
+    console.error('Error in /Admin/disubmit:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
   }
 });
 
@@ -1114,288 +1201,288 @@ router.post('/disubmit', async (req, res) => {
 // GET endpoint to retrieve results and render disresult.hbs
 router.get('/dresult', async (req, res) => {
   try {
-      const { vivaUid, networkName } = req.query;
+    const { vivaUid, networkName } = req.query;
 
-      if (!vivaUid || !networkName) {
-          return res.status(400).render('error', { 
-              message: 'Both vivaUid and networkName are required' 
-          });
-      }
-
-      const collection = db.get().collection('dresult');
-
-      const results = await collection.aggregate([
-        // Match specific vivaUid and networkName
-        { 
-            $match: { 
-                vivaUid: vivaUid, 
-                networkName: networkName 
-            } 
-        },
-        // Group by className to organize data properly
-        {
-            $group: {
-                _id: "$className",
-                students: {
-                    $push: {
-                        name: "$studentName",
-                        roll: "$studentRoll",
-                        register: "$studentRegister",
-                        answers: "$answers",
-                        submittedAt: "$submittedAt",
-                        subjectName: "$subjectName",
-                        vivaName: "$vivaName",
-                        duration: "$duration"
-                    }
-                }
-            }
-        },
-        // Project the final output
-        { 
-            $project: { 
-                className: "$_id", 
-                students: 1, 
-                _id: 0 
-            } 
-        }
-    ]).toArray();
-    
-
-      console.log('Aggregation Results:', JSON.stringify(results, null, 2));
-
-      if (results.length === 0) {
-          return res.render('admin/disresult', {
-              vivaUid,
-              networkName,
-              classes: [],
-              message: 'No results found for the specified vivaUid and networkName'
-          });
-      }
-
-      // Render the template with the processed results
-      res.render('admin/disresult', {
-          vivaUid,
-          networkName,
-          classes: results
+    if (!vivaUid || !networkName) {
+      return res.status(400).render('error', {
+        message: 'Both vivaUid and networkName are required'
       });
+    }
+
+    const collection = db.get().collection('dresult');
+
+    const results = await collection.aggregate([
+      // Match specific vivaUid and networkName
+      {
+        $match: {
+          vivaUid: vivaUid,
+          networkName: networkName
+        }
+      },
+      // Group by className to organize data properly
+      {
+        $group: {
+          _id: "$className",
+          students: {
+            $push: {
+              name: "$studentName",
+              roll: "$studentRoll",
+              register: "$studentRegister",
+              answers: "$answers",
+              submittedAt: "$submittedAt",
+              subjectName: "$subjectName",
+              vivaName: "$vivaName",
+              duration: "$duration"
+            }
+          }
+        }
+      },
+      // Project the final output
+      {
+        $project: {
+          className: "$_id",
+          students: 1,
+          _id: 0
+        }
+      }
+    ]).toArray();
+
+
+    console.log('Aggregation Results:', JSON.stringify(results, null, 2));
+
+    if (results.length === 0) {
+      return res.render('admin/disresult', {
+        vivaUid,
+        networkName,
+        classes: [],
+        message: 'No results found for the specified vivaUid and networkName'
+      });
+    }
+
+    // Render the template with the processed results
+    res.render('admin/disresult', {
+      vivaUid,
+      networkName,
+      classes: results
+    });
 
   } catch (error) {
-      console.error('Error in /Admin/dresult/by-class:', error);
-      res.status(500).render('error', { message: 'Internal server error' });
+    console.error('Error in /Admin/dresult/by-class:', error);
+    res.status(500).render('error', { message: 'Internal server error' });
   }
 });
 
 // Route to display the scoring page
 router.get('/score-viva', async (req, res) => {
   try {
-      const { vivaUid, networkName } = req.query;
-      
-      if (!vivaUid || !networkName) {
-          return res.status(400).render('error', {
-              message: 'Both vivaUid and networkName are required'
-          });
-      }
-      
-      const collection = db.get().collection('dresult');
-      
-      const results = await collection.aggregate([
-          // Match specific vivaUid and networkName
-          {
-              $match: {
-                  vivaUid: vivaUid,
-                  networkName: networkName
-              }
-          },
-          // Group by className to organize data properly
-          {
-              $group: {
-                  _id: "$className",
-                  students: {
-                      $push: {
-                          name: "$studentName",
-                          roll: "$studentRoll",
-                          register: "$studentRegister",
-                          answers: "$answers",
-                          submittedAt: "$submittedAt",
-                          subjectName: "$subjectName",
-                          vivaName: "$vivaName",
-                          duration: "$duration"
-                      }
-                  }
-              }
-          },
-          // Project the final output
-          {
-              $project: {
-                  className: "$_id",
-                  students: 1,
-                  _id: 0
-              }
-          }
-      ]).toArray();
-      
-      console.log('Aggregation Results:', JSON.stringify(results, null, 2));
-      
-      if (results.length === 0) {
-          return res.render('admin/score-viva', {
-              vivaUid,
-              networkName,
-              classes: [],
-              message: 'No results found for the specified vivaUid and networkName'
-          });
-      }
-      
-      // Check if students already have scores in validatedResults collection
-      const validatedCollection = db.get().collection('validatedResults');
-      
-      // Get all student rolls from the results
-      const allStudentRolls = results.flatMap(cls => 
-          cls.students.map(student => student.roll)
-      );
-      
-      // Find existing validated scores
-      const existingScores = await validatedCollection.find({
+    const { vivaUid, networkName } = req.query;
+
+    if (!vivaUid || !networkName) {
+      return res.status(400).render('error', {
+        message: 'Both vivaUid and networkName are required'
+      });
+    }
+
+    const collection = db.get().collection('dresult');
+
+    const results = await collection.aggregate([
+      // Match specific vivaUid and networkName
+      {
+        $match: {
           vivaUid: vivaUid,
-          networkName: networkName,
-          studentRoll: { $in: allStudentRolls }
-      }).toArray();
-      
-      // Create a map of existing scores by student roll
-      const scoresByRoll = {};
-      existingScores.forEach(item => {
-          scoresByRoll[item.studentRoll] = item.scores;
+          networkName: networkName
+        }
+      },
+      // Group by className to organize data properly
+      {
+        $group: {
+          _id: "$className",
+          students: {
+            $push: {
+              name: "$studentName",
+              roll: "$studentRoll",
+              register: "$studentRegister",
+              answers: "$answers",
+              submittedAt: "$submittedAt",
+              subjectName: "$subjectName",
+              vivaName: "$vivaName",
+              duration: "$duration"
+            }
+          }
+        }
+      },
+      // Project the final output
+      {
+        $project: {
+          className: "$_id",
+          students: 1,
+          _id: 0
+        }
+      }
+    ]).toArray();
+
+    console.log('Aggregation Results:', JSON.stringify(results, null, 2));
+
+    if (results.length === 0) {
+      return res.render('admin/score-viva', {
+        vivaUid,
+        networkName,
+        classes: [],
+        message: 'No results found for the specified vivaUid and networkName'
       });
-      
-      // Merge existing scores into the results data
-      results.forEach(cls => {
-          cls.students.forEach(student => {
-              if (scoresByRoll[student.roll]) {
-                  // Add existing scores to each answer
-                  student.answers.forEach((answer, index) => {
-                      const existingScore = scoresByRoll[student.roll].find(
-                          s => s.questionId === answer.questionId
-                      );
-                      
-                      if (existingScore) {
-                          answer.score = existingScore.score;
-                          answer.comment = existingScore.comment;
-                      }
-                  });
-              }
+    }
+
+    // Check if students already have scores in validatedResults collection
+    const validatedCollection = db.get().collection('validatedResults');
+
+    // Get all student rolls from the results
+    const allStudentRolls = results.flatMap(cls =>
+      cls.students.map(student => student.roll)
+    );
+
+    // Find existing validated scores
+    const existingScores = await validatedCollection.find({
+      vivaUid: vivaUid,
+      networkName: networkName,
+      studentRoll: { $in: allStudentRolls }
+    }).toArray();
+
+    // Create a map of existing scores by student roll
+    const scoresByRoll = {};
+    existingScores.forEach(item => {
+      scoresByRoll[item.studentRoll] = item.scores;
+    });
+
+    // Merge existing scores into the results data
+    results.forEach(cls => {
+      cls.students.forEach(student => {
+        if (scoresByRoll[student.roll]) {
+          // Add existing scores to each answer
+          student.answers.forEach((answer, index) => {
+            const existingScore = scoresByRoll[student.roll].find(
+              s => s.questionId === answer.questionId
+            );
+
+            if (existingScore) {
+              answer.score = existingScore.score;
+              answer.comment = existingScore.comment;
+            }
           });
+        }
       });
-      
-      // Render the template with the processed results
-      res.render('admin/score-viva', {
-          vivaUid,
-          networkName,
-          classes: results
-      });
-      
+    });
+
+    // Render the template with the processed results
+    res.render('admin/score-viva', {
+      vivaUid,
+      networkName,
+      classes: results
+    });
+
   } catch (error) {
-      console.error('Error in /score-viva:', error);
-      res.status(500).render('error', { message: 'Internal server error' });
+    console.error('Error in /score-viva:', error);
+    res.status(500).render('error', { message: 'Internal server error' });
   }
 });
 
 // Route to handle score submission
 router.post('/submit-scores', async (req, res) => {
   try {
-      console.log('Received request body:', req.body);
-      
-      // Extract URL parameters from the referrer if available
-      const referrer = req.headers.referer || '';
-      const urlParams = new URL(referrer).searchParams;
-      
-      // Extract values with fallbacks (form data, then URL params, then default)
-      const vivaUid = req.body.vivaUid || urlParams.get('vivaUid') || '';
-      const networkName = req.body.networkName || urlParams.get('networkName') || '';
-      const className = req.body.className ||  urlParams.get('className') || '';
-      const studentName = req.body.studentName || '';
-      const studentRoll = req.body.studentRoll || '';
-      const studentRegister = req.body.studentRegister || '';
-      const subjectName = req.body.subjectName || '';
-      const vivaName = req.body.vivaName || '';
-      
-      // Check if we have the minimum required field
-      if (!studentRoll) {
-          return res.status(400).json({ 
-              success: false, 
-              message: 'Student roll number is required' 
-          });
-      }
-      
-      // Process scores
-      let scores = [];
-      let index = 0;
-      
-      // Keep looking for scores as long as we find score fields
-      while (req.body[`scores[${index}][score]`] !== undefined) {
-          scores.push({
-              questionId: req.body[`scores[${index}][questionId]`] || `question${index+1}`,
-              score: req.body[`scores[${index}][score]`] || "0",
-              comment: req.body[`scores[${index}][comment]`] || ""
-          });
-          index++;
-      }
-      
-      console.log('Processed scores:', scores);
-      
-      // Validate that we have scores
-      if (!scores || scores.length === 0) {
-          return res.status(400).json({ 
-              success: false, 
-              message: 'No score data found in request' 
-          });
-      }
-      
-      // Calculate total score
-      let totalScore = 0;
-      scores.forEach(score => {
-          totalScore += parseInt(score.score) || 0;
+    console.log('Received request body:', req.body);
+
+    // Extract URL parameters from the referrer if available
+    const referrer = req.headers.referer || '';
+    const urlParams = new URL(referrer).searchParams;
+
+    // Extract values with fallbacks (form data, then URL params, then default)
+    const vivaUid = req.body.vivaUid || urlParams.get('vivaUid') || '';
+    const networkName = req.body.networkName || urlParams.get('networkName') || '';
+    const className = req.body.className || urlParams.get('className') || '';
+    const studentName = req.body.studentName || '';
+    const studentRoll = req.body.studentRoll || '';
+    const studentRegister = req.body.studentRegister || '';
+    const subjectName = req.body.subjectName || '';
+    const vivaName = req.body.vivaName || '';
+
+    // Check if we have the minimum required field
+    if (!studentRoll) {
+      return res.status(400).json({
+        success: false,
+        message: 'Student roll number is required'
       });
-      
-      // Prepare document for insertion/update
-      const scoreDocument = {
-          vivaUid,
-          networkName,
-          className,
-          studentName,
-          studentRoll,
-          studentRegister,
-          subjectName,
-          vivaName,
-          scores,
-          totalScore,
-          validatedAt: new Date(),
-          validatedBy: req.session.user ? req.session.user.name : 'Unknown'
-      };
-      
-      console.log('Score document to be saved:', scoreDocument);
-      
-      // Create a query that uses available fields for identifying the document
-      const query = { studentRoll };
-      if (vivaUid) query.vivaUid = vivaUid;
-      if (networkName) query.networkName = networkName;
-      
-      // Insert or update in validatedResults collection
-      const collection = db.get().collection('validatedResults');
-      
-      await collection.updateOne(
-          query,
-          { $set: scoreDocument },
-          { upsert: true }
-      );
-      
-      res.json({ success: true, message: 'Scores submitted successfully' });
-      
+    }
+
+    // Process scores
+    let scores = [];
+    let index = 0;
+
+    // Keep looking for scores as long as we find score fields
+    while (req.body[`scores[${index}][score]`] !== undefined) {
+      scores.push({
+        questionId: req.body[`scores[${index}][questionId]`] || `question${index + 1}`,
+        score: req.body[`scores[${index}][score]`] || "0",
+        comment: req.body[`scores[${index}][comment]`] || ""
+      });
+      index++;
+    }
+
+    console.log('Processed scores:', scores);
+
+    // Validate that we have scores
+    if (!scores || scores.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No score data found in request'
+      });
+    }
+
+    // Calculate total score
+    let totalScore = 0;
+    scores.forEach(score => {
+      totalScore += parseInt(score.score) || 0;
+    });
+
+    // Prepare document for insertion/update
+    const scoreDocument = {
+      vivaUid,
+      networkName,
+      className,
+      studentName,
+      studentRoll,
+      studentRegister,
+      subjectName,
+      vivaName,
+      scores,
+      totalScore,
+      validatedAt: new Date(),
+      validatedBy: req.session.user ? req.session.user.name : 'Unknown'
+    };
+
+    console.log('Score document to be saved:', scoreDocument);
+
+    // Create a query that uses available fields for identifying the document
+    const query = { studentRoll };
+    if (vivaUid) query.vivaUid = vivaUid;
+    if (networkName) query.networkName = networkName;
+
+    // Insert or update in validatedResults collection
+    const collection = db.get().collection('validatedResults');
+
+    await collection.updateOne(
+      query,
+      { $set: scoreDocument },
+      { upsert: true }
+    );
+
+    res.json({ success: true, message: 'Scores submitted successfully' });
+
   } catch (error) {
-      console.error('Error in /submit-scores:', error);
-      res.status(500).json({ 
-          success: false, 
-          message: 'Error submitting scores', 
-          error: error.message 
-      });
+    console.error('Error in /submit-scores:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error submitting scores',
+      error: error.message
+    });
   }
 });
 // routes/validatedResults.js
@@ -1423,7 +1510,7 @@ router.get('/ddresult', async (req, res) => {
     // ✅ Fix: This line was inside the if block and unreachable
     const classNames = [...new Set(validatedResults.map(result => result.className))];
 
-    res.render('Admin/dfinalscore', { 
+    res.render('Admin/dfinalscore', {
       results: validatedResults,
       classNames,
       hasResults: true
@@ -1431,7 +1518,7 @@ router.get('/ddresult', async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching results:', error);
-    res.status(500).render('error', { 
+    res.status(500).render('error', {
       message: 'Failed to fetch results',
       error
     });
@@ -1446,15 +1533,11 @@ function generateUniqueVivaCode() {
 router.get('/stateviva', async (req, res) => {
   try {
     // Get list of teachers for the dropdown
-    const teachers = "namedydy"
+    const teacher = req.session.user.name
+
     
-    // Get list of subjects for the dropdown
-    const subjects = "es"
-    const uniqueCode = Math.floor(1000 + Math.random() * 9000);
-    // Generate a unique viva code
-    const vivaCode = generateUniqueVivaCode();
-    
-    res.render('admin/createstateviva',);
+
+    res.render('admin/createstateviva', { teacher });
   } catch (error) {
     console.error('Error preparing viva creation page:', error);
     res.status(500).send('Error loading viva creation page');
@@ -1509,11 +1592,11 @@ router.post('/add-question', async (req, res) => {
 
 router.get('/edit-question', async (req, res) => {
   console.log("everyhting ehre");
-  
+
   const vivaUID = 2002
   try {
     const question = await db.get().collection('qstatemcq').findOne({ vivaUID: vivaUID });
-console.log(question);
+    console.log(question);
 
     if (!question) {
       return res.send("❌ No question found with that UID.");
@@ -1526,6 +1609,82 @@ console.log(question);
   }
 });
 router.post('/edit-question/:vivaUID', async (req, res) => {
+  const vivaUID = req.params.vivaUID;
+  const { teacherName, subject, vivaName, examType, ...formData } = req.body;
+
+  try {
+    // Extract all questions from form data
+    const questions = [];
+    let questionIndex = 1;
+
+    while (formData[`question${questionIndex}`]) {
+      const questionText = formData[`question${questionIndex}`];
+
+      // Extract options for this question
+      const options = [];
+      for (let optionIndex = 1; optionIndex <= 4; optionIndex++) {
+        const optionText = formData[`option${questionIndex}_${optionIndex}`];
+        const optionScore = parseInt(formData[`score${questionIndex}_${optionIndex}`]) || 0;
+
+        if (optionText) {
+          options.push({
+            text: optionText,
+            score: optionScore
+          });
+        }
+      }
+
+      // Calculate total score for this question
+      const totalScore = options.reduce((sum, opt) => sum + opt.score, 0);
+
+      questions.push({
+        question: questionText,
+        options: options,
+        totalScore: totalScore
+      });
+
+      questionIndex++;
+    }
+
+    // Validate that we have at least one question
+    if (questions.length === 0) {
+      return res.status(400).send("❌ No questions found to update.");
+    }
+
+    // Validate each question has at least one option with score > 0
+    for (let i = 0; i < questions.length; i++) {
+      const hasValidScore = questions[i].options.some(opt => opt.score > 0);
+      if (!hasValidScore) {
+        return res.status(400).send(`❌ Question ${i + 1} must have at least one option with score > 0.`);
+      }
+    }
+
+    // Update the document
+    await db.get().collection('qstatemcq').updateOne(
+      { vivaUID: parseInt(vivaUID) },
+      {
+        $set: {
+          teacherName,
+          subject,
+          vivaName,
+          examType,
+          questions: questions, // Store as array of questions
+          totalQuestions: questions.length,
+          lastUpdated: new Date()
+        }
+      }
+    );
+
+    res.send(`✅ Successfully updated ${questions.length} question(s)!`);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("❌ Failed to update questions.");
+  }
+});
+
+// Alternative: If you want to keep the single question format and handle multiple questions differently
+router.post('/edit-question-single/:vivaUID', async (req, res) => {
   const vivaUID = req.params.vivaUID;
   const {
     teacherName,
@@ -1559,7 +1718,8 @@ router.post('/edit-question/:vivaUID', async (req, res) => {
           examType,
           question,
           options,
-          totalScore
+          totalScore,
+          lastUpdated: new Date()
         }
       }
     );
@@ -1569,53 +1729,288 @@ router.post('/edit-question/:vivaUID', async (req, res) => {
     res.status(500).send("❌ Failed to update question.");
   }
 });
-//state viva posted by student
-router.post('/attend/:viva_uid', async (req, res) => {
-  const viva_uid = parseInt(req.params.viva_uid);
-  const questions = await db.get().collection('qstatemcq').find({ vivaUID: viva_uid }).toArray();
 
-  const { name, rollNumb, department, vivaName, teacherName } = req.body;
-  let score = 0;
-  const answers = [];
+// Helper function to parse multiple questions from form data
+function parseQuestionsFromFormData(formData) {
+  const questions = [];
+  let questionIndex = 1;
 
-  questions.forEach((q, i) => {
-    const answerKey = `answer${i}`;
-    const selectedText = req.body[answerKey];
+  while (formData[`question${questionIndex}`]) {
+    const questionText = formData[`question${questionIndex}`];
 
-    const matchedOption = q.options.find(opt => opt.text === selectedText);
-    const optionScore = matchedOption ? matchedOption.score : 0;
-    score += optionScore;
+    const options = [];
+    for (let optionIndex = 1; optionIndex <= 4; optionIndex++) {
+      const optionText = formData[`option${questionIndex}_${optionIndex}`];
+      const optionScore = parseInt(formData[`score${questionIndex}_${optionIndex}`]) || 0;
 
-    answers.push({
-      question: q.question,
-      selected: selectedText,
-      score: optionScore
+      if (optionText) {
+        options.push({
+          text: optionText,
+          score: optionScore
+        });
+      }
+    }
+
+    const totalScore = options.reduce((sum, opt) => sum + opt.score, 0);
+
+    questions.push({
+      question: questionText,
+      options: options,
+      totalScore: totalScore
     });
-  });
 
-  await db.get().collection('stateresults').insertOne({
-    viva_uid,
-    name,
-    rollNumb,
-    department,
-    vivaName,
-    teacherName,
-    answers,
-    score
-  });
+    questionIndex++;
+  }
 
-  res.send(`Submitted. Score: ${score}`);
+  return questions;
+}
+
+// You might also want to add a route specifically for adding multiple questions
+router.post('/add-multiple-questions', async (req, res) => {
+  const { teacherName, subject, vivaName, examType, ...formData } = req.body;
+
+  try {
+    const questions = parseQuestionsFromFormData(formData);
+
+    if (questions.length === 0) {
+      return res.status(400).send("❌ No questions found to add.");
+    }
+
+    // Validate each question
+    for (let i = 0; i < questions.length; i++) {
+      const hasValidScore = questions[i].options.some(opt => opt.score > 0);
+      if (!hasValidScore) {
+        return res.status(400).send(`❌ Question ${i + 1} must have at least one option with score > 0.`);
+      }
+    }
+
+    // Generate a unique vivaUID for this set of questions
+    const vivaUID = Math.floor(1000 + Math.random() * 9000);
+
+    // Insert into database
+    await db.get().collection('qstatemcq').insertOne({
+      viva_uid: vivaUID,
+      network_name: teacherName,
+      subject_name: subject,
+      viva_name: vivaName,
+      type: examType,
+      questions: questions,
+      totalQuestions: questions.length,
+      createdAt: new Date(),
+      lastUpdated: new Date()
+    });
+    req.session.message = {
+      text: "✅ Questions added successfully!",
+    }
+    res.redirect('/Admin/home'); // Redirect to the viva creation page or another page after successful addition
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("❌ Failed to add questions.");
+  }
 });
-
-router.get('/result/:viva_uid', async (req, res) => {
-  const viva_uid = parseInt(req.params.viva_uid);
+router.post('/attend/:viva_uid', async (req, res) => {
+  try {
+    const viva_uid = parseInt(req.params.viva_uid);
+    console.log("reached here");
+    
+    // Validate viva_uid
+    if (isNaN(viva_uid)) {
+      return res.status(400).json({ 
+        error: 'Invalid viva ID' 
+      });
+    }
+    
+    // Check database connection
+    if (!db.get()) {
+      return res.status(500).json({ 
+        error: 'Database connection not available' 
+      });
+    }
+    
+    // Get viva document for this viva_uid
+    const vivaDoc = await db.get().collection('qstatemcq').findOne({ viva_uid: viva_uid });
+    
+    if (!vivaDoc) {
+      return res.status(404).json({ 
+        error: 'No viva found for this ID' 
+      });
+    }
+    
+    // Extract questions from the viva document
+    const questions = vivaDoc.questions || [];
+    
+    if (questions.length === 0) {
+      return res.status(404).json({ 
+        error: 'No questions found for this viva' 
+      });
+    }
+    
+    // Validate questions structure
+    const invalidQuestions = questions.filter(q => !q.options || !Array.isArray(q.options) || q.options.length === 0);
+    if (invalidQuestions.length > 0) {
+      console.error('Invalid questions found:', invalidQuestions);
+      return res.status(500).json({
+        error: 'Invalid question structure in database'
+      });
+    }
+    
+    // Extract and validate required fields
+    const { name, roll, register, className, duration, pcIP } = req.body;
+    const missingFields = [];
+    
+    if (!name || name.trim() === '') missingFields.push('name');
+    if (!roll || roll.trim() === '') missingFields.push('roll');
+    if (!register || register.trim() === '') missingFields.push('register');
+    if (!className || className.trim() === '') missingFields.push('className');
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        missingFields
+      });
+    }
+    
+    // Check for duplicate submission
+    const existingResult = await db.get().collection('stateresults').findOne({
+      viva_uid: viva_uid,
+      'studentInfo.roll': roll.trim(),
+      'studentInfo.register': register.trim()
+    });
+    
+    if (existingResult) {
+      return res.status(400).json({
+        error: 'Student has already submitted answers for this viva'
+      });
+    }
+    
+    // Validate that all questions are answered
+    const unansweredQuestions = [];
+    questions.forEach((q, i) => {
+      const answerKey = `answer${i}`;
+      if (!req.body[answerKey] || req.body[answerKey].trim() === '') {
+        unansweredQuestions.push(i + 1);
+      }
+    });
+    
+    if (unansweredQuestions.length > 0) {
+      return res.status(400).json({
+        error: 'Not all questions answered',
+        unansweredQuestions
+      });
+    }
+    
+    // Calculate score and collect answers
+    let score = 0;
+    const answers = [];
+    let maxScore = 0;
+    
+    questions.forEach((q, i) => {
+      const answerKey = `answer${i}`;
+      const selectedText = req.body[answerKey];
+      
+      // Ensure options exist and is an array
+      const options = Array.isArray(q.options) ? q.options : [];
+      
+      // Find the matching option
+      const matchedOption = options.find(opt => opt && opt.text === selectedText);
+      const optionScore = matchedOption && typeof matchedOption.score === 'number' ? matchedOption.score : 0;
+      const isCorrect = matchedOption && matchedOption.isCorrect === true;
+      
+      // Calculate max possible score for this question
+      const questionMaxScore = options.reduce((max, opt) => {
+        const optScore = opt && typeof opt.score === 'number' ? opt.score : 0;
+        return Math.max(max, optScore);
+      }, 0);
+      
+      score += optionScore;
+      maxScore += questionMaxScore;
+      
+      // Find correct answer
+      const correctOption = options.find(opt => opt && opt.isCorrect === true);
+      const correctAnswer = correctOption ? correctOption.text : null;
+      
+      answers.push({
+        questionIndex: i,
+        question: q.question || '',
+        selectedOption: selectedText,
+        score: optionScore,
+        isCorrect: isCorrect,
+        correctAnswer: correctAnswer
+      });
+    });
+    
+    // Calculate percentage
+    const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+    
+    // Prepare result document
+    const resultDoc = {
+      viva_uid,
+      vivaInfo: {
+        viva_name: vivaDoc.viva_name || null,
+        subject_name: vivaDoc.subject_name || null,
+        network_name: vivaDoc.network_name || null,
+        type: vivaDoc.type || null
+      },
+      studentInfo: {
+        name: name.trim(),
+        roll: roll.trim(),
+        register: register.trim(),
+        className: className.trim(),
+        duration: duration || null,
+        pcIP: pcIP || null
+      },
+      vivaDetails: {
+        vivaName: req.body.vivaName || vivaDoc.viva_name || null,
+        teacherName: req.body.teacherName || null,
+        subject: req.body.subject || vivaDoc.subject_name || null
+      },
+      answers,
+      totalQuestions: questions.length,
+      score,
+      maxScore,
+      percentage,
+      submittedAt: new Date(),
+      ipAddress: req.ip || req.connection.remoteAddress || null
+    };
+    
+    // Insert result into database
+    const insertResult = await db.get().collection('stateresults').insertOne(resultDoc);
+    
+    if (!insertResult.acknowledged) {
+      throw new Error('Failed to save result to database');
+    }
+    
+    console.log('Result saved successfully:', insertResult.insertedId);
+    
+    // Send success response
+    res.render('admin/vivasuccess', { 
+      result: {
+        score,
+        maxScore,
+        percentage,
+        totalQuestions: questions.length
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error in /attend/:viva_uid:', error);
+    
+    // Send error response
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Something went wrong while processing your submission'
+    });
+  }
+});
+router.get('/stateresult', async (req, res) => {
+   const { vivaUid, networkName } = req.query; 
 
   const results = await db.get().collection('stateresults')
-    .find({ viva_uid })
+    .find({ viva_uid:vivaUid,  })
     .toArray();
-console.log("res",results);
+  console.log("res", results);
 
-  res.render('admin/stateresult', { viva_uid, results });
+  res.render('admin/stateresult', { vivaUid, results });
 });
 
 

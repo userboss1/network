@@ -3,412 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Quiz</title>
+    <title>Edit Viva - {{viva.viva_name}}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 800px;
-            overflow-y: auto;
-            max-height: 90vh;
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        .input-group label {
-            font-weight: bold;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .question-block {
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            background: #f9f9f9;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
-            position: relative;
-        }
-        .option {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .option input[type="text"] {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-right: 10px;
-        }
-        .option input[type="radio"] {
-            accent-color: #007BFF;
-            cursor: pointer;
-        }
-        .submit-btn, .add-btn {
-            background: #007BFF;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            cursor: pointer;
+        .question-card {
+            margin-bottom: 30px;
+            border: 1px solid #dee2e6;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            transition: 0.3s;
-            display: block;
-            margin: 20px auto 0;
+            padding: 20px;
+            background-color: #f8f9fa;
         }
-        .submit-btn:hover, .add-btn:hover {
-            background: #0056b3;
-        }
-        .remove-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: red;
+        .question-header {
+            background-color: #007bff;
             color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
+            padding: 10px 15px;
             border-radius: 5px;
-            font-size: 14px;
+            margin-bottom: 20px;
         }
-        .preview-container {
-            margin-top: 10px;
-        }
-        .image-preview, .current-image {
+        .image-preview {
             max-width: 200px;
             max-height: 150px;
+            object-fit: cover;
             border-radius: 5px;
-            display: block;
-            margin-top: 10px;
+            margin: 10px 0;
         }
-        .error-message {
-            color: red;
-            font-size: 14px;
-            margin-top: 5px;
-            display: none;
+        .option-row {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+        }
+        .correct-answer-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .remove-question-btn {
+            background-color: #dc3545;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        .file-input-label {
+            background-color: #6c757d;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .file-input-label:hover {
+            background-color: #5a6268;
+        }
+        .add-question-btn {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Edit Quiz</h2>
-        <form id="quizForm" action="/Admin/updateViva" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="viva_id" value="{{viva._id}}">
-            <div class="input-group">
-                <label for="network-name">Network Name:</label>
-                <input type="text" id="network-name" value="{{user}}" readonly>
-                <input type="hidden" name="network_name" value="{{user}}">
-            </div>
-            <div class="input-group">
-                <label for="viva-name">Viva Name:</label>
-                <input type="text" id="viva-name" name="viva_name" value="{{viva.viva_name}}" required>
-            </div>
-          
-            <div id="questions-container">
-                <!-- Questions will be loaded here by JavaScript -->
-            </div>
-            <button type="button" class="add-btn" onclick="addQuestion()">+ Add Question</button>
-            <button type="submit" class="submit-btn">Update Quiz</button>
-        </form>
-    </div>
-
-    <script>
-        let questionIndex = 0;
-        let existingQuestions = [];
-        
-        try {
-            // Parse the existing questions data
-            existingQuestions = {{{vivaDataJSON}}}.questions || [];
-            console.log("Loaded questions:", existingQuestions);
-        } catch (error) {
-            console.error("Error parsing questions:", error);
-            existingQuestions = [];
-        }
-        
-        // Load existing questions when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            loadExistingQuestions();
-        });
-        
-        function loadExistingQuestions() {
-            const container = document.getElementById("questions-container");
-            container.innerHTML = ''; // Clear container
-            
-            if (existingQuestions && existingQuestions.length > 0) {
-                existingQuestions.forEach((question, index) => {
-                    addExistingQuestion(question, index);
-                });
-                questionIndex = existingQuestions.length;
-            } else {
-                // If no questions, add an empty one
-                addQuestion();
-            }
-            
-            // Update question numbers
-            updateQuestionNumbers();
-        }
-        
-        function addExistingQuestion(questionData, index) {
-            const container = document.getElementById("questions-container");
-            const questionBlock = document.createElement("div");
-            questionBlock.classList.add("question-block");
-            questionBlock.dataset.index = index;
-            
-            // Ensure options array exists and has 4 elements
-            const options = questionData.options || ['', '', '', ''];
-            while (options.length < 4) options.push('');
-            
-            let optionsHTML = '';
-            for (let i = 0; i < 4; i++) {
-                const optionValue = options[i] || '';
-                optionsHTML += `
-                    <div class="option">
-                        <input type="text" name="options[${index}][${i}]" value="${escapeHtml(optionValue)}" required placeholder="Option ${i + 1}">
-                        <input type="radio" name="correct_answer[${index}]" value="${i}" ${i === (questionData.correct_answer || 0) ? 'checked' : ''} required>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3><i class="fas fa-edit"></i> Edit Viva: {{viva.viva_name}}</h3>
+                        <p class="mb-0">Subject: {{viva.subject_name}} | Network: {{viva.network_name}}</p>
                     </div>
-                `;
-            }
-            
-            let imageHTML = '';
-            if (questionData.image) {
-                imageHTML = `
-                    <div class="image-upload" style="margin-top: 10px;">
-                        <label>Current Image:</label>
-                        <img src="${questionData.image}" class="current-image" onerror="this.style.display='none'; document.getElementById('img-error-${index}').style.display='block';">
-                        <div id="img-error-${index}" class="error-message">Image could not be loaded. You may want to upload a new one.</div>
-                        <input type="hidden" name="existing_image[${index}]" value="${questionData.image}">
-                        <br>
-                        <label for="image-${index}">Change Image (Optional):</label>
-                        <input type="file" id="image-${index}" name="question_image[${index}]" 
-                               accept="image/*" onchange="previewImage(this, ${index})">
-                        <div class="preview-container">
-                            <img id="preview-${index}" class="image-preview" style="display: none;">
-                        </div>
+                    <div class="card-body">
+                        <form action="/Admin/updateViva" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="viva_id" value="{{viva._id}}">
+                            <input type="hidden" name="network_name" value="{{viva.network_name}}">
+                            
+                            <!-- Basic Viva Info -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="viva_name" class="form-label">Viva Name</label>
+                                    <input type="text" class="form-control" id="viva_name" name="viva_name" value="{{viva.viva_name}}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="subject_name" class="form-label">Subject Name</label>
+                                    <input type="text" class="form-control" id="subject_name" name="subject_name" value="{{viva.subject_name}}" required>
+                                </div>
+                            </div>
+
+                            <!-- Questions Container -->
+                            <div id="questions-container">
+                                {{#each viva.questions}}
+                                <div class="question-card" data-question-index="{{@index}}">
+                                    <div class="question-header">
+                                        <h5>Question {{add @index 1}}</h5>
+                                        <button type="button" class="remove-question-btn float-end" onclick="removeQuestion(this)">
+                                            <i class="fas fa-trash"></i> Remove
+                                        </button>
+                                    </div>
+
+                                    <!-- Question Text -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Question Text</label>
+                                        <textarea class="form-control" name="questions[{{@index}}]" rows="3" required>{{this.question}}</textarea>
+                                    </div>
+
+                                    <!-- Question Image -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Question Image</label>
+                                        {{#if this.image}}
+                                        <div class="mb-2">
+                                            <img src="{{this.image}}" alt="Question Image" class="image-preview">
+                                            <input type="hidden" name="existing_image[{{@index}}]" value="{{this.image}}">
+                                        </div>
+                                        {{/if}}
+                                        <div class="file-input-wrapper">
+                                            <input type="file" id="question_image_{{@index}}" name="question_image[{{@index}}]" accept="image/*" onchange="previewImage(this, 'question_preview_{{@index}}')">
+                                            <label for="question_image_{{@index}}" class="file-input-label">
+                                                <i class="fas fa-upload"></i> {{#if this.image}}Change Image{{else}}Upload Image{{/if}}
+                                            </label>
+                                        </div>
+                                        <div id="question_preview_{{@index}}" class="mt-2"></div>
+                                    </div>
+
+                                    <!-- Options -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Options</label>
+                                        {{#each this.options}}
+                                        <div class="option-row">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-1">
+                                                    <input type="radio" name="correct_answer[{{@../index}}]" value="{{@index}}" {{#if (eq @index ../correct_answer)}}checked{{/if}}>
+                                                    <label class="form-label">{{add @index 1}}</label>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <input type="text" class="form-control" name="options[{{@../index}}][{{@index}}]" value="{{this}}" placeholder="Option {{add @index 1}}">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    {{#if (lookup ../option_images @index)}}
+                                                    <div class="mb-2">
+                                                        <img src="{{lookup ../option_images @index}}" alt="Option {{add @index 1}} Image" class="image-preview" style="max-width: 100px; max-height: 80px;">
+                                                        <input type="hidden" name="existing_option_image[{{@../index}}][{{@index}}]" value="{{lookup ../option_images @index}}">
+                                                    </div>
+                                                    {{/if}}
+                                                    <div class="file-input-wrapper">
+                                                        <input type="file" id="option_image_{{@../index}}_{{@index}}" name="option_image[{{@../index}}][{{@index}}]" accept="image/*" onchange="previewImage(this, 'option_preview_{{@../index}}_{{@index}}')">
+                                                        <label for="option_image_{{@../index}}_{{@index}}" class="file-input-label">
+                                                            <i class="fas fa-image"></i> {{#if (lookup ../option_images @index)}}Change{{else}}Add{{/if}}
+                                                        </label>
+                                                    </div>
+                                                    <div id="option_preview_{{@../index}}_{{@index}}" class="mt-1"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{/each}}
+                                    </div>
+
+                                    {{#if (eq @index ../correct_answer)}}
+                                    <div class="mb-2">
+                                        <span class="correct-answer-badge">Correct Answer: Option {{add correct_answer 1}}</span>
+                                    </div>
+                                    {{/if}}
+                                </div>
+                                {{/each}}
+                            </div>
+
+                            <!-- Add Question Button -->
+                            <button type="button" class="add-question-btn" onclick="addQuestion()">
+                                <i class="fas fa-plus"></i> Add New Question
+                            </button>
+
+                            <!-- Submit Buttons -->
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="/Admin/home" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Home
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save"></i> Update Viva
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                `;
-            } else {
-                imageHTML = `
-                    <div class="image-upload" style="margin-top: 10px;">
-                        <label for="image-${index}">Add Image (Optional):</label>
-                        <input type="file" id="image-${index}" name="question_image[${index}]" 
-                               accept="image/*" onchange="previewImage(this, ${index})">
-                        <div class="preview-container">
-                            <img id="preview-${index}" class="image-preview" style="display: none;">
-                        </div>
-                    </div>
-                `;
-            }
-            
-            questionBlock.innerHTML = `
-              <button type="button" class="remove-btn" onclick="removeQuestion(this, ${index})" style="background-color: red; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">X</button>
-<h3 style="font-size: 1.2rem; color: #333; margin-bottom: 10px;">Question ${index + 1}</h3>
-<input type="text" name="questions[${index}]" value="${escapeHtml(questionData.question || '')}" placeholder="Enter your question" required 
-    style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; margin-bottom: 10px;">
-
-${imageHTML}
-
-<h4 style="font-size: 1rem; color: #555; margin-top: 10px;">Options:</h4>
-<div class="options-container" style="display: flex; flex-direction: column; gap: 8px;">
-    ${optionsHTML}
-</div>
-
-            `;
-            
-            container.appendChild(questionBlock);
-        }
-        
-        function addQuestion() {
-            const container = document.getElementById("questions-container");
-            const questionBlock = document.createElement("div");
-            questionBlock.classList.add("question-block");
-            questionBlock.dataset.index = questionIndex;
-            
-            questionBlock.innerHTML = `
-               <button type="button" class="remove-btn" onclick="removeQuestion(this, ${questionIndex})" 
-        style="background-color: red; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 14px;">
-    X
-</button>
-
-<h3 style="font-size: 1.2rem; color: #333; margin-bottom: 10px;">Question ${questionIndex + 1}</h3>
-
-<input type="text" name="questions[${questionIndex}]" placeholder="Enter your question" required 
-       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; margin-bottom: 10px;">
-
-<div class="image-upload" style="margin-top: 10px;">
-    <label for="image-${questionIndex}" style="display: block; font-size: 0.9rem; color: #555; margin-bottom: 5px;">Add Image (Optional):</label>
-    <input type="file" id="image-${questionIndex}" name="question_image[${questionIndex}]" 
-           accept="image/*" onchange="previewImage(this, ${questionIndex})"
-           style="padding: 6px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.9rem;">
-    <div class="preview-container" style="margin-top: 8px;">
-        <img id="preview-${questionIndex}" class="image-preview" style="display: none; max-width: 100%; height: auto; border-radius: 5px;">
-    </div>
-</div>
-
-<h4 style="font-size: 1rem; color: #555; margin-top: 15px;">Options:</h4>
-<div class="options-container" style="display: flex; flex-direction: column; gap: 10px;">
-    ${[0, 1, 2, 3].map(i => `
-        <div class="option" style="display: flex; align-items: center; gap: 10px;">
-            <input type="text" name="options[${questionIndex}][${i}]" required placeholder="Option ${i + 1}"
-                   style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem;">
-            <input type="radio" name="correct_answer[${questionIndex}]" value="${i}" required ${i === 0 ? 'checked' : ''}
-                   style="transform: scale(1.2);">
+                </div>
+            </div>
         </div>
-    `).join('')}
-</div>
+    </div>
 
-            `;
-            
-            container.appendChild(questionBlock);
-            questionIndex++;
-            
-            // Update all question numbers
-            updateQuestionNumbers();
-        }
-        
-        function removeQuestion(button, index) {
-            const container = document.getElementById("questions-container");
-            const questionBlocks = container.querySelectorAll('.question-block');
-            
-            // Don't remove if it's the last question
-            if (questionBlocks.length <= 1) {
-                alert("You must have at least one question.");
-                return;
-            }
-            
-            button.parentElement.remove();
-            
-            // Update all question numbers
-            updateQuestionNumbers();
-        }
-        
-        function updateQuestionNumbers() {
-            const questionBlocks = document.querySelectorAll('.question-block');
-            questionBlocks.forEach((block, index) => {
-                const heading = block.querySelector('h3');
-                heading.textContent = `Question ${index + 1}`;
-            });
-        }
-        
-        function previewImage(input, index) {
-            const preview = document.getElementById(`preview-${index}`);
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let questionIndex = {{viva.questions.length}};
+
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            preview.innerHTML = '';
             
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                
                 reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                }
-                
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'image-preview';
+                    img.style.maxWidth = '150px';
+                    img.style.maxHeight = '100px';
+                    preview.appendChild(img);
+                };
                 reader.readAsDataURL(input.files[0]);
-            } else {
-                preview.style.display = 'none';
             }
         }
-        
-        // Helper function to escape HTML special characters
-        function escapeHtml(text) {
-            if (!text) return '';
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-        
-        // Validate form before submission
-        document.getElementById('quizForm').addEventListener('submit', function(event) {
-            const questionBlocks = document.querySelectorAll('.question-block');
-            
-            if (questionBlocks.length === 0) {
-                alert('Please add at least one question to the quiz.');
-                event.preventDefault();
-                return false;
+
+        function removeQuestion(button) {
+            if (confirm('Are you sure you want to remove this question?')) {
+                const questionCard = button.closest('.question-card');
+                questionCard.remove();
+                updateQuestionNumbers();
             }
+        }
+
+        function addQuestion() {
+            const container = document.getElementById('questions-container');
+            const newQuestion = document.createElement('div');
+            newQuestion.className = 'question-card';
+            newQuestion.setAttribute('data-question-index', questionIndex);
             
-            // Ensure all required fields are filled
-            let isValid = true;
-            questionBlocks.forEach((block) => {
-                const index = block.dataset.index;
-                const questionInput = block.querySelector(`input[name="questions[${index}]"]`);
-                const options = block.querySelectorAll(`.option input[type="text"]`);
-                
-                if (!questionInput.value.trim()) {
-                    questionInput.focus();
-                    isValid = false;
+            newQuestion.innerHTML = `
+                <div class="question-header">
+                    <h5>Question ${questionIndex + 1}</h5>
+                    <button type="button" class="remove-question-btn float-end" onclick="removeQuestion(this)">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Question Text</label>
+                    <textarea class="form-control" name="questions[${questionIndex}]" rows="3" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Question Image</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="question_image_${questionIndex}" name="question_image[${questionIndex}]" accept="image/*" onchange="previewImage(this, 'question_preview_${questionIndex}')">
+                        <label for="question_image_${questionIndex}" class="file-input-label">
+                            <i class="fas fa-upload"></i> Upload Image
+                        </label>
+                    </div>
+                    <div id="question_preview_${questionIndex}" class="mt-2"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Options</label>
+                    ${generateOptionsHTML(questionIndex)}
+                </div>
+            `;
+            
+            container.appendChild(newQuestion);
+            questionIndex++;
+            updateQuestionNumbers();
+        }
+
+        function generateOptionsHTML(qIndex) {
+            let html = '';
+            for (let i = 0; i < 4; i++) {
+                html += `
+                    <div class="option-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-1">
+                                <input type="radio" name="correct_answer[${qIndex}]" value="${i}" ${i === 0 ? 'checked' : ''}>
+                                <label class="form-label">${i + 1}</label>
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text" class="form-control" name="options[${qIndex}][${i}]" placeholder="Option ${i + 1}">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="file-input-wrapper">
+                                    <input type="file" id="option_image_${qIndex}_${i}" name="option_image[${qIndex}][${i}]" accept="image/*" onchange="previewImage(this, 'option_preview_${qIndex}_${i}')">
+                                    <label for="option_image_${qIndex}_${i}" class="file-input-label">
+                                        <i class="fas fa-image"></i> Add
+                                    </label>
+                                </div>
+                                <div id="option_preview_${qIndex}_${i}" class="mt-1"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            return html;
+        }
+
+        function updateQuestionNumbers() {
+            const questions = document.querySelectorAll('.question-card');
+            questions.forEach((question, index) => {
+                const header = question.querySelector('.question-header h5');
+                header.textContent = `Question ${index + 1}`;
+            });
+        }
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const questions = document.querySelectorAll('textarea[name^="questions"]');
+            let hasValidQuestion = false;
+            
+            questions.forEach(question => {
+                if (question.value.trim() !== '') {
+                    hasValidQuestion = true;
                 }
-                
-                options.forEach(option => {
-                    if (!option.value.trim()) {
-                        option.focus();
-                        isValid = false;
-                    }
-                });
             });
             
-            if (!isValid) {
-                alert('Please fill in all required fields.');
-                event.preventDefault();
-                return false;
+            if (!hasValidQuestion) {
+                e.preventDefault();
+                alert('Please add at least one question before submitting.');
             }
         });
-        // Add this to the script section of your editViva.html
-function validateAndSubmitForm() {
-    const form = document.getElementById('quizForm');
-    
-    // Before submitting, ensure all existing images are properly included
-    const questionBlocks = document.querySelectorAll('.question-block');
-    
-    questionBlocks.forEach((block, index) => {
-        const currentImageElement = block.querySelector('.current-image');
-        const existingImageInput = block.querySelector(`input[name="existing_image[${index}]"]`);
-        const fileInput = block.querySelector(`input[name="question_image[${index}]"]`);
-        
-        // If there's an image and no new file is selected, ensure the hidden input has the path
-        if (currentImageElement && currentImageElement.src && 
-            (!fileInput.files || fileInput.files.length === 0)) {
-            
-            // If the hidden input doesn't exist, create one
-            if (!existingImageInput) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = `existing_image[${index}]`;
-                input.value = currentImageElement.src;
-                block.appendChild(input);
-            }
-        }
-    });
-    
-    // Now submit the form
-    return true;
-}
-
-// Modify your form to use this function
-document.getElementById('quizForm').onsubmit = validateAndSubmitForm;
     </script>
 </body>
 </html>

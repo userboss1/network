@@ -195,6 +195,7 @@ router.get('/attend/:viva_uid', async (req, res) => {
     const viva_uid = parseInt(req.params.viva_uid);
     const questions = await db.get().collection('qstatemcq').find({ vivaUID:viva_uid }).toArray();
   
+  
     if (!questions.length) return res.send("❌ No questions found.");
   
     res.render('guest/statemcq', { viva_uid, questions });
@@ -207,14 +208,27 @@ router.get('/attendviva', isLoggedIn, (req, res) => {
         viva_uid: req.session.studentDetails.viva_uid
     })
     .then((response) => {
-        console.log(response);
+        console.log(JSON.stringify(response));
         
         // Render different views based on which collection the data came from
         if (response.source === 'qbank') {
+            console.log("here loged mcq");
+            
             res.render('guest/viva', { response: response.data, student: req.session.studentDetails });
         } else if (response.source === 'dqbank') {
+            console.log("here loged discro");
+            
             res.render('guest/discript', { response: response.data, student: req.session.studentDetails });
         }
+        else if (response.source === 'qstatemcq') {
+            console.log("here loged state viva");
+            
+// Fix the rendering - access the first element of the data array
+res.render('guest/statemcq', {
+    questions: response.data[0].questions,  // Access first element then questions
+    response: response.data[0],             // Pass the viva object
+    student: req.session.studentDetails 
+});        }
     })
     .catch((err) => {
         console.error("Error fetching questions:", err);

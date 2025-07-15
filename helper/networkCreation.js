@@ -148,69 +148,83 @@ return new Promise((resolve,reject)=>{
             }
         },
         
-          getVivaDetailsAndLogs: async (userData) => { 
-            try {
-                console.log("useenMEEE",userData);
-                
-                // Step 1: Get user's viva details from both qbank and dqbank collections
-                const [qbankVivaList, dqbankVivaList] = await Promise.all([
-                    db.get().collection('qbank').find(
-                        { network_name: userData }, // Filter by user_id
-                        { projection: { viva_uid: 1, viva_name: 1, subject_name: 1, type: 1, _id: 0 } } // Include type
-                    ).toArray(),
-                    
-                    db.get().collection('dqbank').find(
-                        { network_name: userData }, // Filter by user_id
-                        { projection: { viva_uid: 1, viva_name: 1, subject_name: 1, type: 1, _id: 0 } } // Include type
-                    ).toArray()
-                ]);
-                
-                // Combine results from both collections
-                const vivaDetailsList = [...qbankVivaList, ...dqbankVivaList];
-                
-                if (!vivaDetailsList.length) { 
-                    console.log(`No viva records found for user: ${userData.user_id}`); 
-                    return []; 
-                } 
-        
-                // Step 2: Fetch Logs for Each Viva UID
-                const results = await Promise.all(vivaDetailsList.map(async (viva) => { 
-                    const { viva_uid, viva_name, subject_name, type } = viva; // Include type
-        
-                    // Fetch logs from `logIn` matching this viva_uid 
-                    const logEntries = await db.get().collection('logIn').find({ viva_uid }).toArray(); 
-        
-                    if (!logEntries.length) return { viva_uid, viva_name, subject_name, type, logs: [] }; 
-        
-                    // Process Each Log Entry to Extract Class Name & Roll Number Range 
-                    const formattedLogs = logEntries.map(log => { 
-                        const rollNumbers = log.students.map(student => student.roll); 
-                        const minRoll = Math.min(...rollNumbers); 
-                        const maxRoll = Math.max(...rollNumbers); 
-                        return { 
-                            uniqueId: log.uniqueId, 
-                            className: log.className,
-                            rollRange: `${minRoll}-${maxRoll}` 
-                        }; 
-                    }); 
-        
-                    return { 
-                        viva_uid, 
-                        viva_name,
-                        subject_name,
-                        type, // Include type in the final result
-                        logs: formattedLogs 
-                    }; 
-                })); 
-        
-                return results; 
-        
-            } catch (error) { 
-                console.error("Database error:", error); 
-                return []; 
-            } 
-        },
-        
+getVivaDetailsAndLogs: async (userData) => {
+    try {
+        console.log("useenMEEE", userData);
+
+        // Step 1: Get user's viva details from qbank, dqbank, and qstatemcq collections
+        const [qbankVivaList, dqbankVivaList, qstatemcqVivaList] = await Promise.all([
+            db.get().collection('qbank').find(
+                { network_name: userData },
+                { projection: { viva_uid: 1, viva_name: 1, subject_name: 1, type: 1, _id: 0 } }
+            ).toArray(),
+
+            db.get().collection('dqbank').find(
+                { network_name: userData },
+                { projection: { viva_uid: 1, viva_name: 1, subject_name: 1, type: 1, _id: 0 } }
+            ).toArray(),
+
+            db.get().collection('qstatemcq').find(
+                { network_name: userData },
+                { projection: { viva_uid: 1, viva_name: 1, subject_name: 1, type: 1, _id: 0 } }
+            ).toArray()
+        ]);
+
+        // Combine results from all three collections
+        const vivaDetailsList = [...qbankVivaList, ...dqbankVivaList, ...qstatemcqVivaList];
+
+        if (!vivaDetailsList.length) {
+            console.log(`No viva records found for user: ${userData}`);
+            return [];
+        }
+
+        // Step 2: Fetch logs for each viva_uid
+        const results = await Promise.all(vivaDetailsList.map(async (viva) => {
+            const { viva_uid, viva_name, subject_name, type } = viva;
+
+            // Fetch logs from 'logIn' collection for this viva_uid
+            const logEntries = await db.get().collection('logIn').find({ viva_uid }).toArray();
+
+            if (!logEntries.length) {
+                return {
+                    viva_uid,
+                    viva_name,
+                    subject_name,
+                    type,
+                    logs: []
+                };
+            }
+
+            // Format logs: extract className and roll number range
+            const formattedLogs = logEntries.map(log => {
+                const rollNumbers = log.students.map(student => student.roll);
+                const minRoll = Math.min(...rollNumbers);
+                const maxRoll = Math.max(...rollNumbers);
+
+                return {
+                    uniqueId: log.uniqueId,
+                    className: log.className,
+                    rollRange: `${minRoll}-${maxRoll}`
+                };
+            });
+
+            return {
+                viva_uid,
+                viva_name,
+                subject_name,
+                type,
+                logs: formattedLogs
+            };
+        }));
+
+        return results;
+
+    } catch (error) {
+        console.error("Database error:", error);
+        return [];
+    }
+}
+,
         getClasses: () => {
             return new Promise(async (resolve, reject) => {
                 try {

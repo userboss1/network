@@ -1,20 +1,421 @@
-<form method="POST" action="/Admin/attend/{{viva_uid}}">
-  <input type="text" name="name" required>
-  <input type="text" name="rollNumb" required>
-  <input type="text" name="department" required>
-  <input type="text" name="vivaName" required>
-  <input type="text" name="teacherName" required>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{response.viva_name}} - STATEMCQ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  {{#each questions}}
-    <p>Q{{@index}}: {{this.question}}</p>
-    {{#each this.options}}
-      <label>
-        <input type="radio" name="answer{{@../index}}" value="{{this.text}}" required>
-        {{this.text}} 
-      </label><br>
-    {{/each}}
-    <br>
-  {{/each}}
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 15px;
+            color: #333;
+        }
 
-  <button type="submit">Submit</button>
-</form>
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .student-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .student-info h3 {
+            color: #495057;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .info-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 8px;
+        }
+
+        .info-item {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .info-item label {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.85em;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .info-item span {
+            display: block;
+            padding: 6px 8px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .questions-section {
+            padding: 20px;
+        }
+
+        .questions-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .questions-header h3 {
+            color: #495057;
+            font-size: 1.3em;
+            margin-bottom: 8px;
+        }
+
+        .question-count {
+            background: #2563eb;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            display: inline-block;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            background: #2563eb;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-block {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-left: 3px solid #2563eb;
+        }
+
+        .question-title {
+            font-size: 1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .option:hover {
+            border-color: #2563eb;
+            background: #f0f4ff;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .option label {
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #333;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin: 0;
+        }
+
+        .option input[type="radio"]:checked + label {
+            color: #2563eb;
+            font-weight: 500;
+        }
+
+        .option:has(input[type="radio"]:checked) {
+            border-color: #2563eb;
+            background: #f0f4ff;
+        }
+
+        .submit-section {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .submit-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1em;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .submit-btn:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 6px;
+            }
+
+            .header {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .info-item {
+                min-width: 150px;
+            }
+
+            .questions-section {
+                padding: 15px;
+            }
+
+            .question-block {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>{{response.viva_name}}</h1>
+            <p>{{response.subject_name}} • {{response.network_name}}</p>
+        </div>
+
+        <!-- Student Information -->
+        <div class="student-info">
+            <h3>Student Details</h3>
+            <div class="info-row">
+                <div class="info-item">
+                    <label>Name:</label>
+                    <span>{{student.name}}</span>
+                </div>
+                <div class="info-item">
+                    <label>Roll Number:</label>
+                    <span>{{student.roll}}</span>
+                </div>
+                <div class="info-item">
+                    <label>Register Number:</label>
+                    <span>{{student.register}}</span>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-item">
+                    <label>Class:</label>
+                    <span>{{student.className}}</span>
+                </div>
+                <div class="info-item">
+                    <label>Duration:</label>
+                    <span>{{student.duration}} minutes</span>
+                </div>
+                <div class="info-item">
+                    <label>PC IP:</label>
+                    <span>{{student.pcIP}}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions Form -->
+        <form method="POST" action="/Admin/attend/{{student.viva_uid}}" id="examForm">
+            <!-- Hidden fields for student info -->
+            <input type="hidden" name="name" value="{{student.name}}">
+            <input type="hidden" name="roll" value="{{student.roll}}">
+            <input type="hidden" name="register" value="{{student.register}}">
+            <input type="hidden" name="className" value="{{student.className}}">
+            <input type="hidden" name="duration" value="{{student.duration}}">
+            <input type="hidden" name="pcIP" value="{{student.pcIP}}">
+            
+            <!-- Hidden fields for viva details -->
+            <input type="hidden" name="vivaName" value="{{response.viva_name}}">
+            <input type="hidden" name="teacherName" value="{{response.teacher_name}}">
+            <input type="hidden" name="subject" value="{{response.subject_name}}">
+
+            <div class="questions-section">
+                <div class="questions-header">
+                    <h3>Questions</h3>
+                    <div class="question-count">
+                        {{response.totalQuestions}} Questions
+                    </div>
+                </div>
+
+                <div class="progress-text">
+                    <span id="progressText">0 of {{response.totalQuestions}} questions answered</span>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                {{#each questions}}
+                <div class="question-block">
+                    <div class="question-title">
+                        {{add @index 1}}. {{this.question}}
+                    </div>
+                    <div class="options-container">
+                        {{#each this.options}}
+                        <div class="option">
+                            <input type="radio" name="answer{{@../index}}" value="{{this.text}}" id="q{{@../index}}_option{{@index}}" required>
+                            <label for="q{{@../index}}_option{{@index}}">{{this.text}}</label>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+
+            <div class="submit-section">
+                <button type="submit" class="submit-btn" id="submitBtn">Submit Answers</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Get total questions from template
+        const totalQuestions = parseInt('{{response.totalQuestions}}') || 0;
+        
+        // Progress tracking
+        function updateProgress() {
+            const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
+            const progress = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
+            
+            // Update progress bar
+            const progressFill = document.getElementById('progressFill');
+            if (progressFill) {
+                progressFill.style.width = progress + '%';
+            }
+            
+            // Update progress text
+            const progressText = document.getElementById('progressText');
+            if (progressText) {
+                progressText.textContent = answeredQuestions + ' of ' + totalQuestions + ' questions answered';
+            }
+            
+            // Enable/disable submit button
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = (answeredQuestions !== totalQuestions);
+            }
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to radio buttons
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach(function(radio) {
+                radio.addEventListener('change', updateProgress);
+            });
+
+            // Form submission confirmation
+            const examForm = document.getElementById('examForm');
+            if (examForm) {
+                examForm.addEventListener('submit', function(e) {
+                    const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
+                    
+                    if (answeredQuestions < totalQuestions) {
+                        e.preventDefault();
+                        alert('Please answer all questions. You have answered ' + answeredQuestions + ' out of ' + totalQuestions + ' questions.');
+                        return false;
+                    }
+                    
+                    const confirmSubmit = confirm('Are you sure you want to submit your answers? This action cannot be undone.');
+                    if (!confirmSubmit) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    // Disable submit button to prevent double submission
+                    const submitBtn = document.getElementById('submitBtn');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = 'Submitting...';
+                    }
+                });
+            }
+
+            // Initialize progress
+            updateProgress();
+        });
+
+        // Prevent form resubmission on page refresh
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    </script>
+</body>
+</html>

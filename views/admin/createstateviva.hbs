@@ -1,50 +1,459 @@
-<h2>Add a New Question</h2>
-<form action="/Admin/add-question" method="POST">
-  <label>Viva UID (auto-generated 4-digit ID):</label><br>
-  <input type="text" name="vivaUID" id="vivaUID" readonly required><br><br>
-<h1>{{teacher}}idu</h1>
-  <label>Teacher Name:</label><br>
-  <input type="text" name="teacherName" value="{{teacher}}" required><br><br>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Questions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <label>Subject Name:</label><br>
-  <input type="text" name="subject" required><br><br>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+            line-height: 1.5;
+        }
 
-  <label>Viva Name:</label><br>
-  <input type="text" name="vivaName" required><br><br>
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
 
-  <label>Exam Type:</label><br>
-  <input type="text" name="examType" value="MCQ" required><br><br>
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
 
-  <label>Question:</label><br>
-  <input type="text" name="question" required><br><br>
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
 
-  {{!-- Option 1 --}}
-  <label>Option 1:</label>
-  <input type="text" name="option1" required>
-  Score: <input type="number" name="score1" required><br><br>
+        .form-container {
+            padding: 30px;
+        }
 
-  {{!-- Option 2 --}}
-  <label>Option 2:</label>
-  <input type="text" name="option2" required>
-  Score: <input type="number" name="score2" required><br><br>
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-  {{!-- Option 3 --}}
-  <label>Option 3:</label>
-  <input type="text" name="option3" required>
-  Score: <input type="number" name="score3" required><br><br>
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
 
-  {{!-- Option 4 --}}
-  <label>Option 4:</label>
-  <input type="text" name="option4" required>
-  Score: <input type="number" name="score4" required><br><br>
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
 
-  <button type="submit">Submit Question</button>
-</form>
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
 
-<script>
-  function generate4DigitUID() {
-    return Math.floor(1000 + Math.random() * 9000);
-  }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
 
-  document.getElementById("vivaUID").value = generate4DigitUID();
-</script>
+        input[readonly] {
+            background: #f9fafb;
+            color: #6b7280;
+        }
+
+        .questions-container {
+            border-top: 2px solid #e5e7eb;
+            padding-top: 30px;
+            margin-top: 30px;
+        }
+
+        .questions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .questions-header h2 {
+            font-size: 1.3rem;
+            color: #1f2937;
+        }
+
+        .add-question-btn {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .add-question-btn:hover {
+            background: #047857;
+        }
+
+        .question-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fafafa;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .question-number {
+            background: #2563eb;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .remove-question-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .remove-question-btn:hover {
+            background: #b91c1c;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .option-label {
+            background: #2563eb;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .option-input {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .score-input {
+            width: 80px;
+            flex-shrink: 0;
+        }
+
+        .score-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 2px;
+            text-align: center;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        .submit-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .info-text {
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .option-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .option-label {
+                align-self: flex-start;
+                margin-bottom: 5px;
+            }
+            
+            .option-input {
+                margin-right: 0;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Add New Questions</h1>
+        </div>
+
+        <div class="form-container">
+            <form action="/Admin/add-multiple-questions" method="POST">
+                <!-- Basic Information -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="vivaUID">Viva UID:</label>
+                        <input type="text" name="vivaUID" id="vivaUID" readonly required>
+                        <div class="info-text">Auto-generated 4-digit ID</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="teacherName">Teacher Name:</label>
+                        <input type="text" name="teacherName" id="teacherName" value="{{teacher}}" readonly required>
+                        <div class="info-text">Current user</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="subject">Subject Name:</label>
+                        <input type="text" name="subject" id="subject" placeholder="Enter subject name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="vivaName">Viva Name:</label>
+                        <input type="text" name="vivaName" id="vivaName" placeholder="Enter viva name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="examType">Exam Type:</label>
+                    <input type="text" name="examType" id="examType" value="STATEMCQ" readonly required>
+                    <div class="info-text">Fixed exam type</div>
+                </div>
+
+                <!-- Questions Section -->
+                <div class="questions-container">
+                    <div class="questions-header">
+                        <h2>Questions</h2>
+                        <button type="button" class="add-question-btn" onclick="addQuestion()">+ Add Question</button>
+                    </div>
+
+                    <div id="questions-list">
+                        <!-- Questions will be added here -->
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Submit All Questions</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let questionCount = 0;
+
+        // Generate 4-digit UID
+        function generate4DigitUID() {
+            return Math.floor(1000 + Math.random() * 9000);
+        }
+
+        // Set the UID when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById("vivaUID").value = generate4DigitUID();
+            addQuestion(); // Add first question automatically
+        });
+
+        function addQuestion() {
+            questionCount++;
+            const questionsList = document.getElementById('questions-list');
+            
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-item';
+            questionDiv.id = `question-${questionCount}`;
+            
+            questionDiv.innerHTML = `
+                <div class="question-header">
+                    <span class="question-number">Question ${questionCount}</span>
+                    <button type="button" class="remove-question-btn" onclick="removeQuestion(${questionCount})">Remove</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="question${questionCount}">Question:</label>
+                    <textarea name="question${questionCount}" id="question${questionCount}" 
+                              rows="3" placeholder="Enter your question here..." required 
+                              style="resize: vertical;"></textarea>
+                </div>
+
+                <div class="options-grid">
+                    <div class="option-group">
+                        <span class="option-label">A</span>
+                        <input type="text" name="option${questionCount}_1" placeholder="Enter option A" required class="option-input">
+                        <div class="score-input">
+                            <div class="score-label">Score</div>
+                            <input type="number" name="score${questionCount}_1" min="0" max="100" value="0" required>
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <span class="option-label">B</span>
+                        <input type="text" name="option${questionCount}_2" placeholder="Enter option B" required class="option-input">
+                        <div class="score-input">
+                            <div class="score-label">Score</div>
+                            <input type="number" name="score${questionCount}_2" min="0" max="100" value="0" required>
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <span class="option-label">C</span>
+                        <input type="text" name="option${questionCount}_3" placeholder="Enter option C" required class="option-input">
+                        <div class="score-input">
+                            <div class="score-label">Score</div>
+                            <input type="number" name="score${questionCount}_3" min="0" max="100" value="0" required>
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <span class="option-label">D</span>
+                        <input type="text" name="option${questionCount}_4" placeholder="Enter option D" required class="option-input">
+                        <div class="score-input">
+                            <div class="score-label">Score</div>
+                            <input type="number" name="score${questionCount}_4" min="0" max="100" value="0" required>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            questionsList.appendChild(questionDiv);
+        }
+
+        function removeQuestion(questionId) {
+            const questionElement = document.getElementById(`question-${questionId}`);
+            if (questionElement) {
+                questionElement.remove();
+            }
+            
+            // Prevent removing the last question
+            const remainingQuestions = document.querySelectorAll('.question-item');
+            if (remainingQuestions.length === 0) {
+                addQuestion();
+            }
+            
+            // Update question numbers
+            updateQuestionNumbers();
+        }
+
+        function updateQuestionNumbers() {
+            const questions = document.querySelectorAll('.question-item');
+            questions.forEach((question, index) => {
+                const questionNumber = question.querySelector('.question-number');
+                if (questionNumber) {
+                    questionNumber.textContent = `Question ${index + 1}`;
+                }
+            });
+        }
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const questions = document.querySelectorAll('.question-item');
+            
+            if (questions.length === 0) {
+                e.preventDefault();
+                alert('Please add at least one question!');
+                return;
+            }
+
+            let hasError = false;
+            
+            questions.forEach((question, index) => {
+                const questionText = question.querySelector('textarea').value.trim();
+                if (!questionText) {
+                    hasError = true;
+                    alert(`Question ${index + 1}: Please enter a question!`);
+                    return;
+                }
+                
+                const options = question.querySelectorAll('.option-input');
+                const scores = question.querySelectorAll('input[type="number"]');
+                
+                // Check if all options are filled
+                let emptyOptions = 0;
+                options.forEach(option => {
+                    if (!option.value.trim()) {
+                        emptyOptions++;
+                    }
+                });
+                
+                if (emptyOptions > 0) {
+                    hasError = true;
+                    alert(`Question ${index + 1}: Please fill all option fields!`);
+                    return;
+                }
+                
+                const scoreValues = Array.from(scores).map(input => parseInt(input.value) || 0);
+                const hasValidScore = scoreValues.some(score => score > 0);
+                
+                if (!hasValidScore) {
+                    hasError = true;
+                    alert(`Question ${index + 1}: At least one option must have a score greater than 0!`);
+                    return;
+                }
+            });
+
+            if (hasError) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

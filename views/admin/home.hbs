@@ -468,13 +468,54 @@
     <div class="admin-profile">
       <div class="profile-icon">👤</div>
       <span class="admin-name">{{adminName}}</span>
-          <form action="/Admin  /logout" method="POST">
+          <form action="/Admin/logout" method="POST">
       <button type="submit" class="logout-btn">Log Out</button>
     </form>
     </div>
 
   </div>
 </header>
+<div style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+  {{#if message.text}}
+    <div style="
+      background-color: #22c55e;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.3s ease-out, fadeOut 0.5s ease-out 3s forwards;
+    ">
+      ✔️  {{message.text}} 
+    </div>
+  {{/if}}
+
+  {{#if message.terror}}
+    <div style="
+      background-color: #ef4444;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.3s ease-out, fadeOut 0.5s ease-out 3s forwards;
+    ">
+      ❌ {{message.terror}}
+    </div>
+  {{/if}}
+</div>
+
+<!-- Add this animation style block somewhere in your <head> -->
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; transform: translateY(-10px); }
+}
+</style>
 
 
     <div class="main-content">
@@ -515,6 +556,7 @@
                         <span class="viva-info-label">Viva UUID:</span>
                         <span class="viva-info-value">{{this.viva_uid}}</span>
                     </div>
+                    
 
                     <div class="actions">
                         <a href="/Admin/assign?viva={{this.viva_uid}}" class="action-btn assign">
@@ -530,31 +572,46 @@
                             </svg>
                             Edit Details
                         </a>
-                        
-                        {{#if (eq this.type "MCQ")}}
-                        <a href="/Admin/result?viva_uid={{this.viva_uid}}&network_name={{../adminName}}" class="action-btn results">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 3v18h18"></path>
-                                <path d="m19 9-5 5-4-4-3 3"></path>
-                            </svg>
-                            Check Results
-                        </a>
-                        {{else}}
-                                   <a class="action-btn results" href="/Admin/score-viva?vivaUid={{this.viva_uid}}&networkName={{../adminName}}">    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 3v18h18"></path>
-                                <path d="m19 9-5 5-4-4-3 3"></path>
-                                
-                            </svg>
-                            Validate Results</a>
-                        <a href="/Admin/ddresult?vivaUid={{this.viva_uid}}&networkName={{../adminName}}" class="action-btn results">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 3v18h18"></path>
-                                <path d="m19 9-5 5-4-4-3 3"></path>
-                                
-                            </svg>
-                            Check Results
-                        </a>
-                        {{/if}}
+                   
+                   {{#if (eq this.type "DISCRIPTIVE")}}
+  <!-- DISCRIPTIVE: Validate + Check -->
+  <a class="action-btn results" href="/Admin/score-viva?vivaUid={{this.viva_uid}}&networkName={{../adminName}}">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 3v18h18"></path>
+      <path d="m19 9-5 5-4-4-3 3"></path>
+    </svg>
+    Validate Results
+  </a>
+
+  <a href="/Admin/ddresult?vivaUid={{this.viva_uid}}&networkName={{../adminName}}" class="action-btn results">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 3v18h18"></path>
+      <path d="m19 9-5 5-4-4-3 3"></path>
+    </svg>
+    Check Results
+  </a>
+
+{{else if (eq this.type "STATEMCQ")}}
+  <!-- STATEMCQ: Only Check Results -->
+  <a href="/Admin/stateresult?vivaUid={{this.viva_uid}}&networkName={{../adminName}}" class="action-btn results">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 3v18h18"></path>
+      <path d="m19 9-5 5-4-4-3 3"></path>
+    </svg>
+    Check Results
+  </a>
+
+{{else}}
+  <!-- Other types (like MCQ): default result -->
+  <a href="/Admin/result?viva_uid={{this.viva_uid}}&network_name={{../adminName}}" class="action-btn results">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 3v18h18"></path>
+      <path d="m19 9-5 5-4-4-3 3"></path>
+    </svg>
+    Check Results
+  </a>
+{{/if}}
+
                         
                         <a href="/Admin/delete-viva?admin={{../adminName}}&viva={{this.viva_uid}}" class="action-btn delete">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

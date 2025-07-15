@@ -10,11 +10,28 @@ var superadminRouter = require('./routes/superadmin')
 const session = require('express-session')
 var fileUpload = require('express-fileupload')
 var app = express();
+// Register Handlebars helpers
 
+ 
 // Handlebars helper registration
 const hbs = require('hbs');  // Use 'hbs' instead of 'handlebars'
 hbs.registerHelper('eq', function(a, b) {
     return a === b;
+});
+hbs.registerHelper('lookup', function(array, index) {
+  if (array && array[index] !== undefined) {
+    return array[index];
+  }
+  return null;
+});
+
+// Helper for conditional rendering
+hbs.registerHelper('if_eq', function(a, b, options) {
+  if (a === b) {
+    return options.fn(this);
+  } else {
+    return options.inverse(this);
+  }
 });
 hbs.registerHelper('json', function(context) {
    return JSON.stringify(context);
@@ -26,6 +43,9 @@ app.use((req, res, next) => {
  });
  hbs.registerHelper('inc', function(value) {
    return parseInt(value) + 1;
+ });
+ hbs.registerHelper('add', function(a, b) {
+   return a + b;
  });
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

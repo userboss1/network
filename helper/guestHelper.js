@@ -59,12 +59,11 @@ module.exports={
     
 ,    
 
-
 getQ: (userData) => {
     return new Promise((resolve, reject) => {
         console.log("Received userData:", userData);
-        
-        // First try to find in qbank
+
+        // First: Try qbank
         db.get().collection('qbank')
             .find({ 
                 network_name: userData.network_name, 
@@ -72,7 +71,6 @@ getQ: (userData) => {
             })
             .toArray()
             .then((qbankResults) => {
-                // If we found results in qbank, return them with source info
                 if (qbankResults && qbankResults.length > 0) {
                     console.log("Fetched Questions from qbank:", qbankResults);
                     resolve({
@@ -80,7 +78,7 @@ getQ: (userData) => {
                         data: qbankResults
                     });
                 } else {
-                    // If not found in qbank, try dqbank
+                    // Second: Try dqbank
                     db.get().collection('dqbank')
                         .find({ 
                             network_name: userData.network_name, 
@@ -88,24 +86,55 @@ getQ: (userData) => {
                         })
                         .toArray()
                         .then((dqbankResults) => {
-                            console.log("Fetched Questions from dqbank:", dqbankResults);
-                            resolve({
-                                source: 'dqbank',
-                                data: dqbankResults
-                            });
+                            if (dqbankResults && dqbankResults.length > 0) {
+                                console.log("Fetched Questions from dqbank:", dqbankResults);
+                                resolve({
+                                    source: 'dqbank',
+                                    data: dqbankResults
+                                });
+                            } else {
+                                // Third: Try qstatemcq
+                                db.get().collection('qstatemcq')
+                                    .find({ 
+                                        network_name: userData.network_name, 
+                                        viva_uid: userData.viva_uid 
+                                    })
+                                    .toArray()
+                                    .then((qstatemcqResults) => {
+                                        if (qstatemcqResults && qstatemcqResults.length > 0) {
+                                            console.log("Fetched Questions from qstatemcq:");
+                                            resolve({
+                                                source: 'qstatemcq',
+                                                data: qstatemcqResults
+                                            });
+                                        } else {
+                                            // Not found in any collection
+                                            console.log("No questions found in qbank, dqbank, or qstatemcq.");
+                                            resolve({
+                                                source: 'none',
+                                                data: []
+                                            });
+                                        }
+                                    })
+                                    .catch((error) => {
+                                        console.error("Error fetching from qstatemcq:", error);
+                                        reject(error);
+                                    });
+                            }
                         })
                         .catch((error) => {
-                            console.error("Error fetching questions from dqbank:", error);
+                            console.error("Error fetching from dqbank:", error);
                             reject(error);
                         });
                 }
             })
             .catch((error) => {
-                console.error("Error fetching questions from qbank:", error);
+                console.error("Error fetching from qbank:", error);
                 reject(error);
             });
     });
 }
+
 
 }//git add .
 //git commit -m "Updated feature XYZ"
