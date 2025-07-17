@@ -3,323 +3,424 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <title>{{response.viva_name}} - STATEMCQ</title>
     <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-light: #f9fafb;
+            --bg-white: #ffffff;
+            --border-color: #e5e7eb;
+            --success-color: #10b981;
+            --font-family: 'Inter', sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-            padding: 15px;
-            color: #333;
+        html {
+            scroll-behavior: smooth;
         }
 
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-light);
+            color: var(--text-primary);
+            padding-top: 80px; /* Space for the sticky header */
+            padding-bottom: 90px; /* Space for the sticky footer */
+        }
+
+        /* --- Sticky Header --- */
+        .exam-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .exam-header .title h1 {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .exam-header .title p {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+        
         .container {
-            max-width: 700px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 20px auto;
+            background: var(--bg-white);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
             overflow: hidden;
         }
-
-        .header {
-            background: #2563eb;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 1.8em;
-            margin-bottom: 5px;
-        }
-
-        .header p {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-
+        
         .student-info {
-            background: #f8f9fa;
-            padding: 20px;
-            border-bottom: 1px solid #e9ecef;
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-light);
         }
 
         .student-info h3 {
-            color: #495057;
-            margin-bottom: 12px;
-            font-size: 1.1em;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: var(--text-primary);
         }
 
-        .info-row {
-            display: flex;
-            flex-wrap: wrap;
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 15px;
-            margin-bottom: 8px;
-        }
-
-        .info-item {
-            flex: 1;
-            min-width: 200px;
         }
 
         .info-item label {
-            font-weight: 600;
-            color: #666;
+            font-weight: 500;
+            color: var(--text-secondary);
             font-size: 0.85em;
             display: block;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
         }
 
         .info-item span {
             display: block;
-            padding: 6px 8px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 8px 12px;
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             font-size: 0.9em;
+            font-weight: 500;
         }
 
         .questions-section {
-            padding: 20px;
+            padding: 10px 30px 30px 30px;
         }
 
-        .questions-header {
-            text-align: center;
+        .progress-section {
+            padding: 20px 0;
             margin-bottom: 20px;
-        }
-
-        .questions-header h3 {
-            color: #495057;
-            font-size: 1.3em;
-            margin-bottom: 8px;
-        }
-
-        .question-count {
-            background: #2563eb;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            display: inline-block;
-        }
-
-        .progress-bar {
-            background: #e9ecef;
-            height: 4px;
-            border-radius: 2px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .progress-fill {
-            background: #2563eb;
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .question-block {
-            background: #f8f9fa;
-            border-radius: 6px;
-            padding: 18px;
-            margin-bottom: 15px;
-            border-left: 3px solid #2563eb;
-        }
-
-        .question-title {
-            font-size: 1em;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
-        .options-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .option {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .option:hover {
-            border-color: #2563eb;
-            background: #f0f4ff;
-        }
-
-        .option input[type="radio"] {
-            margin-right: 8px;
-            cursor: pointer;
-        }
-
-        .option label {
-            cursor: pointer;
-            font-size: 0.9em;
-            color: #333;
-            display: flex;
-            align-items: center;
-            width: 100%;
-            margin: 0;
-        }
-
-        .option input[type="radio"]:checked + label {
-            color: #2563eb;
-            font-weight: 500;
-        }
-
-        .option:has(input[type="radio"]:checked) {
-            border-color: #2563eb;
-            background: #f0f4ff;
-        }
-
-        .submit-section {
-            text-align: center;
-            padding: 20px;
-            background: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .submit-btn {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1em;
-            font-weight: 500;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .submit-btn:hover {
-            background: #1d4ed8;
-        }
-
-        .submit-btn:disabled {
-            background: #6b7280;
-            cursor: not-allowed;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .progress-text {
             text-align: center;
             margin-bottom: 10px;
             font-size: 0.9em;
-            color: #666;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            background: #e5e7eb;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: var(--primary-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease-in-out;
+            border-radius: 4px;
+        }
+
+        .question-block {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .question-block:focus-within {
+            box-shadow: 0 0 0 2px var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .question-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            line-height: 1.6; /* Increased line-height for long questions */
+        }
+        
+        /* --- Custom Radio Buttons --- */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            position: relative;
+        }
+        
+        .option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .option label {
+            display: block;
+            background: var(--bg-light);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 15px 12px 50px; /* Increased left padding for radio circle */
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            line-height: 1.6; /* More space for multi-line options */
+        }
+
+        /* Custom circle for the radio button */
+        .option label::before {
+            content: '';
+            position: absolute;
+            left: 18px;
+            /* Aligned to the top for consistency with multi-line text */
+            top: 16px; 
+            width: 20px;
+            height: 20px;
+            border: 2px solid #adb5bd;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        /* Inner dot for the selected radio */
+        .option label::after {
+            content: '';
+            position: absolute;
+            left: 23px;
+             /* Aligned to the top for consistency with multi-line text */
+            top: 21px;
+            transform: scale(0);
+            width: 10px;
+            height: 10px;
+            background: var(--bg-white);
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+        
+        .option:hover label {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+        
+        .option input[type="radio"]:checked + label {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .option input[type="radio"]:checked + label::before {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .option input[type="radio"]:checked + label::after {
+            transform: scale(1);
+        }
+
+        /* --- Sticky Footer / Submit Area --- */
+        .submit-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            z-index: 100;
+        }
+
+        .submit-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* --- Confirmation Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-dialog {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            text-align: center;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.show .modal-dialog {
+            transform: scale(1);
+        }
+
+        .modal-dialog h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .modal-dialog p {
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: background 0.2s ease;
+        }
+        .modal-btn.cancel {
+            background: #fff;
+            color: var(--text-primary);
+        }
+        .modal-btn.cancel:hover {
+            background: var(--bg-light);
+        }
+        .modal-btn.confirm {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .modal-btn.confirm:hover {
+            background: var(--primary-hover);
         }
 
         @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                border-radius: 6px;
-            }
-
-            .header {
-                padding: 15px;
-            }
-
-            .header h1 {
-                font-size: 1.5em;
-            }
-
-            .info-item {
-                min-width: 150px;
-            }
-
-            .questions-section {
-                padding: 15px;
-            }
-
-            .question-block {
-                padding: 15px;
-            }
+            body { padding-top: 65px; }
+            .exam-header { padding: 10px 15px; }
+            .exam-header .title h1 { font-size: 1em; }
+            .container { margin: 10px; border-radius: 8px; }
+            .student-info, .questions-section { padding: 20px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
+    <div class="exam-header">
+        <div class="title">
             <h1>{{response.viva_name}}</h1>
             <p>{{response.subject_name}} • {{response.network_name}}</p>
         </div>
+    </div>
 
-        <!-- Student Information -->
+    <div class="container">
         <div class="student-info">
             <h3>Student Details</h3>
-            <div class="info-row">
+            <div class="info-grid">
                 <div class="info-item">
-                    <label>Name:</label>
+                    <label>Name</label>
                     <span>{{student.name}}</span>
                 </div>
                 <div class="info-item">
-                    <label>Roll Number:</label>
+                    <label>Roll Number</label>
                     <span>{{student.roll}}</span>
                 </div>
                 <div class="info-item">
-                    <label>Register Number:</label>
+                    <label>Register Number</label>
                     <span>{{student.register}}</span>
                 </div>
-            </div>
-            <div class="info-row">
                 <div class="info-item">
-                    <label>Class:</label>
+                    <label>Class</label>
                     <span>{{student.className}}</span>
                 </div>
-                <div class="info-item">
-                    <label>Duration:</label>
+                 <div class="info-item">
+                    <label>Duration</label>
                     <span>{{student.duration}} minutes</span>
                 </div>
                 <div class="info-item">
-                    <label>PC IP:</label>
+                    <label>PC IP</label>
                     <span>{{student.pcIP}}</span>
                 </div>
             </div>
         </div>
 
-        <!-- Questions Form -->
         <form method="POST" action="/Admin/attend/{{student.viva_uid}}" id="examForm">
-            <!-- Hidden fields for student info -->
             <input type="hidden" name="name" value="{{student.name}}">
             <input type="hidden" name="roll" value="{{student.roll}}">
             <input type="hidden" name="register" value="{{student.register}}">
             <input type="hidden" name="className" value="{{student.className}}">
             <input type="hidden" name="duration" value="{{student.duration}}">
             <input type="hidden" name="pcIP" value="{{student.pcIP}}">
-            
-            <!-- Hidden fields for viva details -->
             <input type="hidden" name="vivaName" value="{{response.viva_name}}">
             <input type="hidden" name="teacherName" value="{{response.teacher_name}}">
             <input type="hidden" name="subject" value="{{response.subject_name}}">
 
             <div class="questions-section">
-                <div class="questions-header">
-                    <h3>Questions</h3>
-                    <div class="question-count">
-                        {{response.totalQuestions}} Questions
+                <div class="progress-section">
+                    <div class="progress-text">
+                        <span id="progressText">0 of {{response.totalQuestions}} answered</span>
                     </div>
-                </div>
-
-                <div class="progress-text">
-                    <span id="progressText">0 of {{response.totalQuestions}} questions answered</span>
-                </div>
-                
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
                 </div>
 
                 {{#each questions}}
@@ -338,84 +439,90 @@
                 </div>
                 {{/each}}
             </div>
-
-            <div class="submit-section">
-                <button type="submit" class="submit-btn" id="submitBtn">Submit Answers</button>
-            </div>
         </form>
     </div>
 
+    <div class="submit-footer">
+        <button type="button" class="submit-btn" id="submitBtn">Submit Answers</button>
+    </div>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-dialog">
+            <h3>Final Check</h3>
+            <p>Are you sure you want to submit your answers? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" id="cancelSubmit">Cancel</button>
+                <button class="modal-btn confirm" id="confirmSubmitBtn">Yes, Submit</button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
-        // Get total questions from template
-        const totalQuestions = parseInt('{{response.totalQuestions}}') || 0;
-        
-        // Progress tracking
-        function updateProgress() {
-            const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
-            const progress = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
-            
-            // Update progress bar
-            const progressFill = document.getElementById('progressFill');
-            if (progressFill) {
-                progressFill.style.width = progress + '%';
-            }
-            
-            // Update progress text
-            const progressText = document.getElementById('progressText');
-            if (progressText) {
-                progressText.textContent = answeredQuestions + ' of ' + totalQuestions + ' questions answered';
-            }
-            
-            // Enable/disable submit button
-            const submitBtn = document.getElementById('submitBtn');
-            if (submitBtn) {
-                submitBtn.disabled = (answeredQuestions !== totalQuestions);
-            }
-        }
-
-        // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            // Add event listeners to radio buttons
-            const radioButtons = document.querySelectorAll('input[type="radio"]');
-            radioButtons.forEach(function(radio) {
-                radio.addEventListener('change', updateProgress);
-            });
-
-            // Form submission confirmation
             const examForm = document.getElementById('examForm');
-            if (examForm) {
-                examForm.addEventListener('submit', function(e) {
-                    const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
-                    
-                    if (answeredQuestions < totalQuestions) {
-                        e.preventDefault();
-                        alert('Please answer all questions. You have answered ' + answeredQuestions + ' out of ' + totalQuestions + ' questions.');
-                        return false;
-                    }
-                    
-                    const confirmSubmit = confirm('Are you sure you want to submit your answers? This action cannot be undone.');
-                    if (!confirmSubmit) {
-                        e.preventDefault();
-                        return false;
-                    }
-                    
-                    // Disable submit button to prevent double submission
-                    const submitBtn = document.getElementById('submitBtn');
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.textContent = 'Submitting...';
-                    }
-                });
+            const totalQuestions = parseInt('{{response.totalQuestions}}') || 0;
+            
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const submitBtn = document.getElementById('submitBtn');
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+
+            // --- Progress Tracking ---
+            function updateProgress() {
+                const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
+                const progress = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
+                
+                if (progressFill) progressFill.style.width = progress + '%';
+                if (progressText) progressText.textContent = `${answeredQuestions} of ${totalQuestions} answered`;
+                
+                // Enable submit button only when all questions are answered
+                if (submitBtn) submitBtn.disabled = (answeredQuestions !== totalQuestions);
             }
 
-            // Initialize progress
+            // --- Form Submission and Modal Logic ---
+            const confirmModal = document.getElementById('confirmModal');
+            const cancelSubmitBtn = document.getElementById('cancelSubmit');
+            const confirmSubmitBtn = document.getElementById('confirmSubmitBtn');
+
+            function showModal() {
+                if (confirmModal) confirmModal.classList.add('show');
+            }
+
+            function hideModal() {
+                if (confirmModal) confirmModal.classList.remove('show');
+            }
+
+            function submitForm() {
+                const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
+                if (answeredQuestions < totalQuestions) {
+                    alert(`Please answer all questions. You have answered ${answeredQuestions} out of ${totalQuestions}.`);
+                    return;
+                }
+
+                // Disable button and show submitting text
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+                if(confirmSubmitBtn) confirmSubmitBtn.disabled = true;
+                
+                examForm.submit();
+            }
+
+            // Event Listeners
+            radioButtons.forEach(radio => radio.addEventListener('change', updateProgress));
+            
+            submitBtn.addEventListener('click', showModal);
+            cancelSubmitBtn.addEventListener('click', hideModal);
+            confirmSubmitBtn.addEventListener('click', () => submitForm());
+
+            // Prevent form resubmission on page refresh
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, null, window.location.href);
+            }
+
+            // Initial setup
             updateProgress();
         });
-
-        // Prevent form resubmission on page refresh
-        if (window.history && window.history.replaceState) {
-            window.history.replaceState(null, null, window.location.href);
-        }
     </script>
 </body>
 </html>

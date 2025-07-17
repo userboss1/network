@@ -3,207 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Congratulations - Viva Submitted Successfully</title>
+    <title>Success - Viva Submitted</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* Global Styles */
+        /* NEW: Google-inspired color palette */
+        :root {
+            --google-blue: #1a73e8;
+            --google-green: #34a853;
+            --background-color: #f8f9fa; /* Light gray background */
+            --surface-color: #ffffff; /* White for cards/surfaces */
+            --text-primary: #202124; /* Dark gray for headings */
+            --text-secondary: #5f6368; /* Lighter gray for body text */
+            --border-color: #dadce0;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Roboto', 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--background-color);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            overflow: hidden;
         }
 
         .container {
-            background-color: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px; /* Material Design uses specific border radiuses */
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 2px 6px 2px rgba(60,64,67,.15);
             width: 100%;
-            max-width: 600px;
+            max-width: 500px;
             text-align: center;
-            position: relative;
+            /* Animation for the card itself */
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInSlideUp 0.6s ease-out 0.2s forwards;
         }
 
-        /* Header Section */
-        .header {
-            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
-            padding: 30px 20px;
-            color: white;
-            position: relative;
+        @keyframes fadeInSlideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        /* Content Section */
         .content {
-            padding: 40px 30px;
+            padding: 40px;
         }
 
+        /* --- Animated Checkmark (Updated colors) --- */
         .success-icon {
-            width: 100px;
-            height: 100px;
-            background-color: #43cea2;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto 30px;
-            box-shadow: 0 10px 20px rgba(67, 206, 162, 0.3);
+            display: inline-block;
+            margin-bottom: 24px;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 3;
+            stroke: var(--google-green);
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
         }
 
         .checkmark {
-            width: 50px;
-            height: 50px;
-            fill: white;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 3;
+            stroke: #fff;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px var(--google-green);
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
         }
 
-        .message {
-            margin-bottom: 30px;
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 1.2s forwards;
         }
 
-        .message h2 {
-            font-size: 1.8rem;
-            color: #333;
-            margin-bottom: 15px;
-        }
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+        @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
+        @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 40px var(--google-green); } }
 
-        .message p {
-            color: #666;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-
-        /* Button */
-        .btn {
-            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Confetti Animation */
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f2f2f2;
+        .message h1 {
+            font-size: 1.75rem; /* 28px */
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            animation: text-fade-in 0.5s ease-out 1.6s forwards;
             opacity: 0;
         }
 
-        @keyframes confetti-fall {
+        .message p {
+            font-size: 1rem; /* 16px */
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0 auto 32px;
+            max-width: 400px;
+            animation: text-fade-in 0.5s ease-out 1.8s forwards;
+            opacity: 0;
+        }
+
+        @keyframes text-fade-in {
+            to { opacity: 1; }
+        }
+
+        .btn {
+            background-color: var(--google-blue);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px; /* Standard button radius */
+            font-size: 0.9rem; /* 14px */
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: box-shadow 0.2s cubic-bezier(.4,0,.2,1), background-color 0.2s cubic-bezier(.4,0,.2,1);
+            opacity: 0;
+            animation: text-fade-in 0.5s ease-out 2s forwards;
+        }
+
+        .btn:hover {
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+            background-color: #1b66c9; /* Slightly darker blue on hover */
+        }
+        
+        /* NEW: Subtle floating dot animation instead of confetti */
+        .dot {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            opacity: 0;
+            bottom: 30%; /* Start from behind the card */
+            left: 50%;
+        }
+
+        @keyframes float-up {
             0% {
-                transform: translateY(-100px) rotate(0deg);
-                opacity: 1;
+                transform: translateY(0) scale(0.5);
+                opacity: 0.8;
             }
             100% {
-                transform: translateY(100vh) rotate(360deg);
+                transform: translateY(-400px) scale(1.2);
                 opacity: 0;
             }
         }
 
-        /* Responsive Design */
         @media (max-width: 600px) {
-            .header h1 {
-                font-size: 2rem;
-            }
-            .message h2 {
-                font-size: 1.5rem;
-            }
-            .content {
-                padding: 30px 20px;
-            }
+            .content { padding: 30px 24px; }
+            .message h1 { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Congratulations!</h1>
-            <p>Your achievement has been recorded</p>
-        </div>
         <div class="content">
             <div class="success-icon">
                 <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                    <circle class="checkmark__circle" cx="26" cy="26" r="25"/>
                     <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                    <path fill="white" d="M14.1 27.2l7.1 7.2 16.7-16.8" stroke="white" stroke-width="3" stroke-linecap="round"/>
                 </svg>
             </div>
             <div class="message">
-                <h2>Viva Submitted Successfully!</h2>
-                <p>Your viva presentation has been successfully submitted. </p>
+                <h1>Submission successful</h1>
+                <p>Your Test has been recorded. You can now safely close this window.</p>
             </div>
-
+         
         </div>
     </div>
 
     <script>
-        // Create confetti animation
-        function createConfetti() {
-            const colors = ['#43cea2', '#185a9d', '#f5f7fa', '#c3cfe2', '#ffeb3b'];
-            const confettiCount = 100;
-            
-            for (let i = 0; i < confettiCount; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.width = (Math.random() * 10 + 5) + 'px';
-                confetti.style.height = (Math.random() * 10 + 5) + 'px';
-                confetti.style.opacity = Math.random();
-                confetti.style.animation = 'confetti-fall ' + (Math.random() * 3 + 2) + 's linear forwards';
-                confetti.style.animationDelay = Math.random() * 3 + 's';
-                document.body.appendChild(confetti);
+        // NEW: Subtle animation function
+        function createFloatingDots() {
+            const container = document.body;
+            const dotCount = 30;
+            const colors = ['#1a73e8', '#34a853', '#fbbc05', '#ea4335']; // Google's colors
+
+            for (let i = 0; i < dotCount; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                 
+                const animationDuration = Math.random() * 3 + 2; // 2 to 5 seconds
+                const animationDelay = Math.random() * 2;
+                
+                // Random horizontal spread
+                const horizontalSpread = (Math.random() - 0.5) * 300;
+                dot.style.transform = `translateX(${horizontalSpread}px)`;
+                
+                dot.style.animation = `float-up ${animationDuration}s ease-out ${animationDelay}s forwards`;
+                
+                container.appendChild(dot);
+
                 setTimeout(() => {
-                    confetti.remove();
-                }, 5000);
+                    dot.remove();
+                }, (animationDuration + animationDelay) * 1000);
             }
         }
 
-        // Run confetti animation on page load
-        window.addEventListener('load', createConfetti);
-        
-        // Pulse animation for the success icon
-        const successIcon = document.querySelector('.success-icon');
-        setInterval(() => {
-            successIcon.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                successIcon.style.transform = 'scale(1)';
-            }, 300);
-        }, 2000);
+        window.addEventListener('load', createFloatingDots);
     </script>
 </body>
 </html>

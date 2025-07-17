@@ -2,199 +2,461 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Viva Scoring</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viva Scoring - {{vivaUid}}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        .hidden {
-            display: none;
+        /* --- Google Material Design Inspired Styles --- */
+        :root {
+            --google-blue: #1a73e8;
+            --google-blue-hover: #185abc;
+            --google-green: #34a853;
+            --google-red: #ea4335;
+            --background-color: #f8f9fa;
+            --surface-color: #ffffff;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --border-color: #dadce0;
         }
-        .rotate-180 {
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            background-color: var(--surface-color);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 2px rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+        }
+        
+        .main-header {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .main-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .main-header p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .content-body {
+            padding: 1.5rem;
+        }
+
+        .class-section {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.2s ease;
+        }
+        .class-section:hover {
+            box-shadow: 0 1px 3px rgba(60,64,67,.3);
+        }
+
+        .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+        }
+        .class-header .class-name {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--google-blue);
+        }
+        .class-header .toggle-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--text-secondary);
+            transition: transform 0.3s ease;
+        }
+        .class-header.is-open .toggle-icon {
             transform: rotate(180deg);
         }
+
+        .students-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+            padding: 0 0.5rem;
+        }
+        .students-list.is-open {
+            max-height: 2000px; /* Large value to allow expansion */
+            padding: 0 0.5rem 0.5rem 0.5rem;
+        }
+
+        .student-section {
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+        }
+
+        .student-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+        }
+        .student-header:hover {
+            background-color: #f1f3f4;
+        }
+        .student-header .student-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .student-header .student-roll {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+        }
+        .student-header .student-total-score {
+            font-weight: 700;
+            color: var(--google-green);
+        }
+
+        .student-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+            background-color: var(--surface-color);
+            border-top: 1px solid var(--border-color);
+        }
+        .student-details.is-open {
+            max-height: 3000px; /* Large value to allow expansion */
+        }
+
+        .scoring-form {
+            padding: 1.5rem;
+        }
+        
+        .answer-container {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .answer-container p {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--google-blue);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+        .score-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .score-input-wrapper input {
+            width: 70px;
+            text-align: center;
+        }
+
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .form-footer .total-score-display {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: var(--google-blue);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn:hover:not(:disabled) {
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+            background-color: var(--google-blue-hover);
+        }
+        .btn:disabled {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translate(-50%, 200%);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-weight: 500;
+            transition: transform 0.4s ease-in-out;
+            z-index: 1000;
+        }
+        .toast.show {
+            transform: translate(-50%, 0);
+        }
+        .toast.success { background-color: var(--google-green); }
+        .toast.error { background-color: var(--google-red); }
+
     </style>
 </head>
-<body class="bg-gray-100 p-8">
-    <div class="container mx-auto bg-white shadow-lg rounded-lg p-6">
-        <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">
-            Viva Scoring for {{vivaUid}} - {{networkName}}
-        </h1>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <h1>Viva Scoring</h1>
+            <p>For {{vivaName}} ({{vivaUid}})</p>
+        </header>
 
-        {{#if message}}
-            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-4" role="alert">
-                {{message}}
-            </div>
-        {{/if}}
-
-        <div class="space-y-4">
-            <h2 class="text-2xl font-semibold text-gray-700">Classes</h2>
-            {{#each classes}}
-                <div class="class-section bg-gray-50 border rounded p-4">
-                    <div class="class-header flex justify-between items-center cursor-pointer" data-classname="{{this.className}}">
-                        <span class="text-xl font-medium text-blue-700">{{this.className}}</span>
-                        <svg class="w-6 h-6 text-blue-500 toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
+        <main class="content-body">
+            {{#if classes.length}}
+                {{#each classes}}
+                <div class="class-section">
+                    <div class="class-header" role="button" aria-expanded="false">
+                        <span class="class-name">{{this.className}}</span>
+                        <svg class="toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
-                    <div class="students-list hidden mt-3">
+                    <div class="students-list">
                         {{#each this.students}}
-                            <div class="student-section bg-white border border-gray-200 rounded mb-2 p-3 hover:bg-blue-50 cursor-pointer">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <span class="font-semibold text-gray-700">{{name}}</span>
-                                        <span class="text-sm text-gray-500 ml-2">Roll: {{roll}}</span>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <span class="mr-2 student-total-score font-bold">Total: 0</span>
-                                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
+                        <div class="student-section">
+                            <div class="student-header" role="button" aria-expanded="false">
+                                <div>
+                                    <span class="student-name">{{this.name}}</span>
+                                    <span class="student-roll">Roll: {{this.roll}}</span>
                                 </div>
-                                <div class="student-details hidden mt-3 bg-gray-50 rounded p-3">
-                                    <form class="scoring-form" data-student-id="{{roll}}">
-                                        <input type="hidden" name="vivaUid" value="{{../../../vivaUid}}">
-                                        <input type="hidden" name="networkName" value="{{../../../networkName}}">
-                                        <input type="hidden" name="className" value="{{../className}}">
-                                        <input type="hidden" name="studentName" value="{{name}}">
-                                        <input type="hidden" name="studentRoll" value="{{roll}}">
-                                        <input type="hidden" name="studentRegister" value="{{register}}">
-                                        <input type="hidden" name="subjectName" value="{{subjectName}}">
-                                        <input type="hidden" name="vivaName" value="{{vivaName}}">
-                                        
-                                        <div class="grid grid-cols-2 gap-4 mb-3">
-                                            <div>
-                                                <p><strong>Subject:</strong> {{subjectName}}</p>
-                                                <p><strong>Viva Name:</strong> {{vivaName}}</p>
-                                            </div>
-                                            <div>
-                                                <p><strong>Submitted At:</strong> {{formatDate submittedAt}}</p>
-                                                <p><strong>Duration:</strong> {{duration}} minutes</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <h3 class="text-lg font-semibold mt-4 mb-2 text-gray-700">Answers & Scoring</h3>
-                                        <div class="space-y-4">
-                                            {{#each answers}}
-                                                <div class="bg-blue-50 p-4 rounded answer-container">
-                                                    <div class="mb-2">
-                                                        <p><strong>Question ID:</strong> {{this.questionId}}</p>
-                                                        <p><strong>Answer:</strong> {{this.text}}</p>
-                                                    </div>
-                                                    <div class="flex items-center mt-3 bg-white p-2 rounded">
-                                                        <label class="block text-gray-700 mr-3">Score:</label>
-                                                        <input type="number" name="scores[{{@index}}][questionId]" value="{{this.questionId}}" hidden>
-                                                        <input type="number" name="scores[{{@index}}][score]" min="0" max="10" value="0" 
-                                                            class="score-input w-16 border rounded p-1 text-center" 
-                                                            data-question-id="{{this.questionId}}">
-                                                        <span class="ml-3 text-sm text-gray-500">(0-10)</span>
-                                                    </div>
-                                                    <div class="mt-2">
-                                                        <label class="block text-gray-700 mb-1">Teacher Comment:</label>
-                                                        <textarea name="scores[{{@index}}][comment]" class="w-full border rounded p-2" rows="2"></textarea>
-                                                    </div>
-                                                </div>
-                                            {{else}}
-                                                <p class="text-gray-500">No answers available for this student.</p>
-                                            {{/each}}
-                                        </div>
-                                        
-                                        <div class="flex justify-between mt-6 items-center">
-                                            <div class="text-lg font-bold">
-                                                Total Score: <span class="total-score">0</span>
-                                            </div>
-                                            <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 submit-scores">
-                                                Submit Scores
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
+                                <span class="student-total-score">Total: 0</span>
                             </div>
+                            <div class="student-details">
+                                <form class="scoring-form" data-student-roll="{{this.roll}}">
+                                    <!-- Hidden fields for form submission -->
+                                    <input type="hidden" name="vivaUid" value="{{../../../vivaUid}}">
+                                    <input type="hidden" name="networkName" value="{{../../../networkName}}">
+                                    <input type="hidden" name="className" value="{{../this.className}}">
+                                    <input type="hidden" name="studentName" value="{{this.name}}">
+                                    <input type="hidden" name="studentRoll" value="{{this.roll}}">
+                                    <input type="hidden" name="studentRegister" value="{{this.register}}">
+
+                                    <h3 class="text-lg font-semibold mb-4 text-gray-700">Answers & Scoring</h3>
+                                    {{#each this.answers}}
+                                    <div class="answer-container">
+                                        <p><strong>Question ID:</strong> {{this.questionId}}</p>
+                                        <p><strong>Answer:</strong> {{this.text}}</p>
+                                        <div class="form-group score-input-wrapper">
+                                            <input type="number" name="scores[{{@index}}][questionId]" value="{{this.questionId}}" hidden>
+                                            <input type="number" name="scores[{{@index}}][score]" min="0" max="10" value="0" class="score-input" required>
+                                            <label class="text-sm text-gray-500">(Max: 10)</label>
+                                            <!-- Hidden input to send an empty comment -->
+                                            <input type="hidden" name="scores[{{@index}}][comment]" value="">
+                                        </div>
+                                    </div>
+                                    {{else}}
+                                    <p>No answers submitted by this student.</p>
+                                    {{/each}}
+
+                                    <div class="form-footer">
+                                        <div class="total-score-display">Total Score: <span class="total-score-value">0</span></div>
+                                        <button type="submit" class="btn submit-scores">
+                                            <span>Submit Scores</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                         {{/each}}
                     </div>
                 </div>
+                {{/each}}
             {{else}}
-                <div class="bg-gray-50 border rounded p-4 text-center text-gray-500">
-                    No classes found.
-                </div>
-            {{/each}}
-        </div>
+                <p class="text-center">No classes found for this viva.</p>
+            {{/if}}
+        </main>
     </div>
 
-    <script>
-        $(document).ready(function() {
-            // Toggle class students visibility
-            $('.class-header').on('click', function() {
-                $(this).next('.students-list').toggleClass('hidden');
-                $(this).find('.toggle-icon').toggleClass('rotate-180');
-            });
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
 
-            // Toggle student details visibility
-            $('.student-section').on('click', function(e) {
-                if(!$(e.target).hasClass('score-input') && 
-                   !$(e.target).hasClass('submit-scores') && 
-                   !$(e.target).is('textarea') &&
-                   !$(e.target).is('button')) {
-                    $(this).find('.student-details').toggleClass('hidden');
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- Accordion Logic ---
+        function setupAccordion(headerSelector, contentSelector) {
+            document.querySelectorAll(headerSelector).forEach(header => {
+                header.addEventListener('click', (event) => {
+                    // Prevent nested accordions from closing parents
+                    if (event.target.closest(contentSelector)) {
+                        return;
+                    }
+                    
+                    const content = header.nextElementSibling;
+                    const isOpen = header.classList.contains('is-open');
+
+                    header.classList.toggle('is-open', !isOpen);
+                    header.setAttribute('aria-expanded', !isOpen);
+                    
+                    if (content) {
+                        content.classList.toggle('is-open', !isOpen);
+                    }
+                });
+            });
+        }
+
+        setupAccordion('.class-header', '.students-list');
+        setupAccordion('.student-header', '.student-details');
+
+        // --- Score Calculation Logic ---
+        document.querySelectorAll('.scoring-form').forEach(form => {
+            form.addEventListener('input', event => {
+                if (event.target.classList.contains('score-input')) {
+                    let total = 0;
+                    const scoreInputs = form.querySelectorAll('.score-input');
+                    
+                    scoreInputs.forEach(input => {
+                        total += parseInt(input.value, 10) || 0;
+                    });
+
+                    // Update score within the form and in the student header
+                    form.querySelector('.total-score-value').textContent = total;
+                    form.closest('.student-section').querySelector('.student-total-score').textContent = 'Total: ' + total;
                 }
             });
-            
-            // Recalculate total score when any score input changes
-            $('.score-input').on('input', function() {
-                let form = $(this).closest('form');
-                let total = 0;
+        });
+
+        // --- Form Submission Logic ---
+        document.querySelectorAll('.scoring-form').forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const submitButton = form.querySelector('.submit-scores');
+                const buttonText = submitButton.querySelector('span');
                 
-                form.find('.score-input').each(function() {
-                    let score = parseInt($(this).val()) || 0;
-                    total += score;
-                });
-                
-                form.find('.total-score').text(total);
-                form.closest('.student-section').find('.student-total-score').text('Total: ' + total);
-            });
-            
-            // Handle form submission
-          // Handle form submission
-$('.scoring-form').on('submit', function(e) {
-    e.preventDefault();
-    const form = $(this);
-    const formData = $(this).serialize();
-    const studentName = $(this).find('input[name="studentName"]').val();
-    
-    console.log('Form data being submitted:', formData);
-    
-    // Submit scores to server
-    $.ajax({
-        url: '/Admin/submit-scores',
-        type: 'POST',
-        data: formData,
-        success: function(response) {
-            console.log('Success response:', response);
-            alert(`Scores for ${studentName} submitted successfully!`);
-        },
-        error: function(xhr, status, error) {
-            console.error('Error details:', {
-                status: xhr.status,
-                statusText: xhr.statusText,
-                responseText: xhr.responseText,
-                error: error
-            });
-            alert('Error submitting scores. Please check console for details.');
-        }
-    });
-});
-            // Format date function
-            function formatDate(dateString) {
-                const date = new Date(dateString);
-                return date.toLocaleString();
-            }
-            
-            // Format any dates on the page
-            $('.date-format').each(function() {
-                const dateString = $(this).text();
-                $(this).text(formatDate(dateString));
+                // Show loading state
+                submitButton.disabled = true;
+                buttonText.style.display = 'none';
+                const spinner = document.createElement('div');
+                spinner.className = 'spinner';
+                submitButton.prepend(spinner);
+
+                const formData = new URLSearchParams(new FormData(form)).toString();
+                const studentName = form.querySelector('input[name="studentName"]').value;
+
+                try {
+                    const response = await fetch('/Admin/submit-scores', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: formData,
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('Success response:', result);
+                        showToast(`Scores for ${studentName} submitted successfully!`, 'success');
+                    } else {
+                        throw new Error(`Server responded with status: ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('Error submitting scores:', error);
+                    showToast('Error submitting scores. Please check console.', 'error');
+                } finally {
+                    // Restore button state
+                    submitButton.disabled = false;
+                    spinner.remove();
+                    buttonText.style.display = 'inline';
+                }
             });
         });
+
+        // --- Toast Notification Logic ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container') || document.body;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            container.appendChild(toast);
+
+            // Trigger the animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // Hide and remove the toast after a delay
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 4000);
+        }
+    });
     </script>
 </body>
 </html>

@@ -21,7 +21,8 @@ function isLoggedIn(req, res, next) {
 /* GET login page */
 router.get('/',async function(req, res, next) { 
     try { 
-        // Get client IP address 
+        // Get client IP address
+
         const clientIP = req.headers['x-forwarded-for'] ||  
             req.connection.remoteAddress ||  
             req.socket.remoteAddress; 

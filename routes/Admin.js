@@ -1871,17 +1871,6 @@ router.post('/attend/:viva_uid', async (req, res) => {
     }
     
     // Check for duplicate submission
-    const existingResult = await db.get().collection('stateresults').findOne({
-      viva_uid: viva_uid,
-      'studentInfo.roll': roll.trim(),
-      'studentInfo.register': register.trim()
-    });
-    
-    if (existingResult) {
-      return res.status(400).json({
-        error: 'Student has already submitted answers for this viva'
-      });
-    }
     
     // Validate that all questions are answered
     const unansweredQuestions = [];
@@ -1902,7 +1891,7 @@ router.post('/attend/:viva_uid', async (req, res) => {
     // Calculate score and collect answers
     let score = 0;
     const answers = [];
-    let maxScore = 0;
+    let totalMarks = 0; // Use totalMarks instead of maxScore
     
     questions.forEach((q, i) => {
       const answerKey = `answer${i}`;
@@ -1914,33 +1903,27 @@ router.post('/attend/:viva_uid', async (req, res) => {
       // Find the matching option
       const matchedOption = options.find(opt => opt && opt.text === selectedText);
       const optionScore = matchedOption && typeof matchedOption.score === 'number' ? matchedOption.score : 0;
-      const isCorrect = matchedOption && matchedOption.isCorrect === true;
       
-      // Calculate max possible score for this question
-      const questionMaxScore = options.reduce((max, opt) => {
+      // Use totalScore from question if available, otherwise calculate from options
+      const questionTotalScore = q.totalScore || options.reduce((sum, opt) => {
         const optScore = opt && typeof opt.score === 'number' ? opt.score : 0;
-        return Math.max(max, optScore);
+        return sum + optScore;
       }, 0);
       
       score += optionScore;
-      maxScore += questionMaxScore;
-      
-      // Find correct answer
-      const correctOption = options.find(opt => opt && opt.isCorrect === true);
-      const correctAnswer = correctOption ? correctOption.text : null;
+      totalMarks += questionTotalScore;
       
       answers.push({
         questionIndex: i,
         question: q.question || '',
         selectedOption: selectedText,
         score: optionScore,
-        isCorrect: isCorrect,
-        correctAnswer: correctAnswer
+        totalScore: questionTotalScore
       });
     });
     
     // Calculate percentage
-    const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+    const percentage = totalMarks > 0 ? Math.round((score / totalMarks) * 100) : 0;
     
     // Prepare result document
     const resultDoc = {
@@ -1961,13 +1944,13 @@ router.post('/attend/:viva_uid', async (req, res) => {
       },
       vivaDetails: {
         vivaName: req.body.vivaName || vivaDoc.viva_name || null,
-        teacherName: req.body.teacherName || null,
+        teacherName: vivaDoc.network_name || null, // Use network_name as teacher name
         subject: req.body.subject || vivaDoc.subject_name || null
       },
       answers,
       totalQuestions: questions.length,
       score,
-      maxScore,
+      totalMarks, // Changed from maxScore to totalMarks
       percentage,
       submittedAt: new Date(),
       ipAddress: req.ip || req.connection.remoteAddress || null
@@ -1986,7 +1969,7 @@ router.post('/attend/:viva_uid', async (req, res) => {
     res.render('admin/vivasuccess', { 
       result: {
         score,
-        maxScore,
+        totalMarks, // Changed from maxScore to totalMarks
         percentage,
         totalQuestions: questions.length
       }
@@ -2006,7 +1989,7 @@ router.get('/stateresult', async (req, res) => {
    const { vivaUid, networkName } = req.query; 
 
   const results = await db.get().collection('stateresults')
-    .find({ viva_uid:vivaUid,  })
+    .find({ viva_uid:parseInt(vivaUid),  })
     .toArray();
   console.log("res", results);
 
