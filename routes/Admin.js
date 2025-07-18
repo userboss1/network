@@ -8,6 +8,7 @@ const { log } = require("console");
 const { Admin } = require("mongodb");
 const { route } = require("./superadmin");
 const { ObjectId } = require('mongodb');
+const session = require("express-session");
 // Ensure express-session is set up in your main file
 // Example: app.use(session({ secret: 'your-secret', resave: false, saveUninitialized: true }));
 
@@ -344,7 +345,7 @@ router.post("/result", async (req, res) => {
     // Compare answers (assuming AdminHelper.compare exists)
 
     const result = await AdminHelper.compare(userAnswers, user.viva_uid);
-
+req.session.studentDetails = null
     // Final object to store in database
     const final = {
       viva_uid: parseInt(user.viva_uid),
@@ -353,7 +354,9 @@ router.post("/result", async (req, res) => {
       department: user.department,
       vivaname: user.vivaname,
       networkName: user.networkName, // Storing Teacher Name
-      result: result
+      result: result,
+       sessionId :new Date().toISOString() // or a UUID
+
     };
 
     // Store the final result
@@ -428,6 +431,7 @@ router.get('/assign', (req, res) => {
 
       // Render the view, passing both viva_uid, classData, and labData
       res.render('admin/select', {
+        examId:1111,
         classData: classResponse,
         viva_uid,
         labData
@@ -444,73 +448,14 @@ router.get('/assign', (req, res) => {
 });
 
 
-
-
-//ake sure this points to your MongoDB connection
-
-// router.post('/logIn', async (req, res) => {
-//   console.log("Session Viva Details:", req.session.vivaDetails);
-
-//   try {
-//       const { viva_uid,className, rollStart, rollEnd,uniqueId } = req.body;
-//       const userName = req.session.user?.name;
-//       const vivaName = req.session.vivaSpecificname?.viva_name; // Retrieve viva name from session
-
-//       if (!vivaName) {
-//           return res.status(400).json({ success: false, message: "Viva name is missing in session" });
-//       }
-
-//       if (!className || !userName || !rollStart || !rollEnd) {
-//           return res.status(400).json({ success: false, message: "Missing required fields" });
-//       }
-
-//       const minRoll = parseInt(rollStart, 10);
-//       const maxRoll = parseInt(rollEnd, 10);
-
-//       if (isNaN(minRoll) || isNaN(maxRoll) || minRoll > maxRoll || minRoll < 1) {
-//           return res.status(400).json({ success: false, message: "Invalid roll number range" });
-//       }
-
-//       const studentData = await db.get().collection('students').findOne({ className });
-
-//       if (!studentData || !studentData.students) {
-//           return res.status(404).json({ success: false, message: "Class not found or no students available" });
-//       }
-
-//       const selectedStudents = studentData.students.filter(student => {
-//           return student.roll >= minRoll && student.roll <= maxRoll;
-//       });
-
-//       if (selectedStudents.length === 0) {
-//           return res.status(400).json({ success: false, message: "No students found in the selected range" });
-//       }
-
-//       const logEntry = {
-//         uniqueId:Number(uniqueId),
-//           vivaname: vivaName,  // Store viva name from session
-//           className: studentData.className,
-//           networkName: userName,
-//           students: selectedStudents,
-//           loginTime: new Date(),
-//       };
-
-//       await db.get().collection('logIn').insertOne(logEntry);
-
-//       res.redirect('/admin/home');
-
-//   } catch (error) {
-//       console.error("Error during login:", error);
-//       res.status(500).json({ success: false, message: "Internal Server Error" });
-//   }
-// });
-
 router.post('/logIn', async (req, res) => {
   try {
-    const { viva_uid, className, rollStart, rollEnd, uniqueId, duration, labName } = req.body;
+    const { examId,viva_uid, className, rollStart, rollEnd, uniqueId, duration, labName } = req.body;
     const userName = req.session.user?.name;
+console.log(examId+"examid");
 
     // Validate basic inputs
-    if (!className || !userName || !rollStart || !rollEnd || !viva_uid || !labName) {
+    if (!className || !userName || !rollStart || !rollEnd || !viva_uid || !labName || !uniqueId ) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
@@ -595,6 +540,7 @@ router.post('/logIn', async (req, res) => {
 
     // Create log entry
     const logEntry = {
+      examId:parseInt(examId),
       uniqueId: Number(uniqueId),
       vivaname: vivaName,
       viva_uid: Number(viva_uid),
@@ -1163,7 +1109,8 @@ router.post('/disubmit', async (req, res) => {
       duration: parseInt(duration) || 0,
       answers,  // Directly store the array of answers
       submittedAt: new Date(),
-      status: 'submitted'
+      status: 'submitted',
+      sessionId: new Date().toISOString() // or a UUID
     };
 
     // Insert into MongoDB
@@ -1175,6 +1122,7 @@ router.post('/disubmit', async (req, res) => {
       req.session.studentDetails = null;
 
       res.render('admin/vivasuccess');
+      req.session.studentDetails = null; // Clear session data after successful submission
     } else {
       throw new Error('Failed to insert document');
     }
@@ -1454,8 +1402,10 @@ router.post('/submit-scores', async (req, res) => {
       vivaName,
       scores,
       totalScore,
+
       validatedAt: new Date(),
-      validatedBy: req.session.user ? req.session.user.name : 'Unknown'
+      validatedBy: req.session.user ? req.session.user.name : 'Unknown',
+      sessionId: new Date().toISOString() // or a UUID
     };
 
     console.log('Score document to be saved:', scoreDocument);
@@ -1927,6 +1877,7 @@ router.post('/attend/:viva_uid', async (req, res) => {
     
     // Prepare result document
     const resultDoc = {
+      sessionId: new Date().toISOString(), // or a UUID
       viva_uid,
       vivaInfo: {
         viva_name: vivaDoc.viva_name || null,
@@ -1995,8 +1946,57 @@ router.get('/stateresult', async (req, res) => {
 
   res.render('admin/stateresult', { vivaUid, results });
 });
+router.get('/getVivaDetails', async (req, res) => {
+  try {
+    const qbankData = await db.get().collection('qbank').find({}, {
+      projection: { viva_uid: 1, subject_name: 1, viva_name: 1, type: 1, _id: 0 }
+    }).toArray();
+
+    const dqbankData = await db.get().collection('dqbank').find({}, {
+      projection: { viva_uid: 1, subject_name: 1, viva_name: 1, type: 1, _id: 0 }
+    }).toArray();
+
+    const qstatemcqData = await db.get().collection('qstatemcq').find({}, {
+      projection: { viva_uid: 1, subject_name: 1, viva_name: 1, type: 1, _id: 0 }
+    }).toArray();
+
+    const allVivas = [...qbankData, ...dqbankData, ...qstatemcqData];
+
+    res.render('admin/vivaSummary', { allVivas });
+
+  } catch (err) {
+    console.error("Error fetching viva data:", err);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 
 // Get all vivas for viewing/management
+// Add this to your router or a new file
+router.get('/viva-details', async (req, res) => {
+  const { viva_uid, subject_name, viva_name, type } = req.query;
+
+  console.log(`Fetching details for viva UID: ${viva_uid}, ${type} Subject: ${subject_name}, Viva Name: ${viva_name}`);
+
+  try {
+    const dbConn = db.get();
+
+    const result = await dbConn.collection('Test').insertOne({
+      viva_uid: Number(viva_uid),
+      subject_name,
+      viva_name,
+      type,
+      savedAt: new Date()
+    });
+
+    console.log("Saved to Test collection:", result.insertedId);
+
+  
+  } catch (err) {
+    console.error("Error saving to Test DB:", err);
+    res.status(500).send("Error saving viva details.");
+  }
+});
+/////
 
 module.exports = router;

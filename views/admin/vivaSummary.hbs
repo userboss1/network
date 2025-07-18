@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viva Details</title>
+    <style>
+        :root {
+            --google-blue: #1a73e8;
+            --background-color: #f8f9fa;
+            --surface-color: #ffffff;
+            --border-color: #dadce0;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            margin: 2rem;
+        }
+
+        .table-container {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+            overflow: hidden; /* Ensures child elements respect the border radius */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        thead th {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f3f4;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--google-blue);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+             box-shadow: 0 1px 2px 0 rgba(26, 115, 232, .45), 0 1px 3px 1px rgba(26, 115, 232, .3);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>All Viva Details</h1>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Viva UID</th>
+                    <th>Subject Name</th>
+                    <th>Viva Name</th>
+                    <th>Type</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each allVivas}}
+                <tr>
+                    <td>{{this.viva_uid}}</td>
+                    <td>{{this.subject_name}}</td>
+                    <td>{{this.viva_name}}</td>
+                    <td>{{this.type}}</td>
+                    <td>
+                        <a href="/admin/viva-details?viva_uid={{this.viva_uid}}&subject_name={{this.subject_name}}&viva_name={{this.viva_name}}&type={{this.type}}" class="btn">
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Viva Results - Dashboard</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        /* --- All previous styles are the same, with the additions below --- */
-        
-        /* Basic Reset & Font */
         * {
             margin: 0;
             padding: 0;
@@ -16,331 +14,459 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #f4f7f6;
-            color: #333;
+            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #202124;
             min-height: 100vh;
-            padding: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
             line-height: 1.6;
         }
 
         .container {
             max-width: 1200px;
-            width: 100%;
-            background: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            transform: translateY(0);
-            animation: fadeInSlideIn 0.6s ease-out forwards;
+            margin: 0 auto;
+            padding: 24px;
         }
 
+        /* Header Section */
         .header {
-            background: linear-gradient(135deg, #4a90e2 0%, #5d6edc 100%);
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
             color: white;
-            padding: 40px 30px;
-            text-align: center;
+            padding: 48px 32px;
+            border-radius: 16px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 24px rgba(66, 133, 244, 0.15);
             position: relative;
-            z-index: 1;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
         }
 
         .header h1 {
-            font-size: 2.8em;
-            margin-bottom: 15px;
-            font-weight: 700;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.15);
+            font-size: 2.5rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 400;
         }
 
         .viva-info {
-            background: rgba(255, 255, 255, 0.18);
-            padding: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
-            margin-top: 25px;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            padding: 24px;
+            margin-top: 32px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .viva-info:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
         }
 
         .viva-info h2 {
-            font-size: 1.6em;
-            margin-bottom: 18px;
-            font-weight: 600;
-            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-top: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
         }
 
         .info-item {
             background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: background 0.2s ease;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.2s ease;
         }
 
         .info-item:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .info-label {
-            font-size: 0.9em;
-            opacity: 0.9;
-            margin-bottom: 6px;
-            color: #e0e0e0;
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .info-value {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 500;
         }
 
+        /* Stats Section */
         .stats-section {
-            padding: 30px;
-            background: #ffffff;
-            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 32px;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
         }
 
         .stat-card {
-            background: #fdfdfd;
-            padding: 25px;
+            background: white;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e8eaed;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: center;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border: 1px solid #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4285f4, #34a853, #fbbc05, #ea4335);
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         }
 
         .stat-number {
-            font-size: 2.8em;
-            font-weight: 700;
-            color: #007bff;
-            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #4285f4;
+            margin-bottom: 8px;
         }
 
         .stat-label {
-            font-size: 1.1em;
-            color: #6c757d;
+            font-size: 1rem;
+            color: #5f6368;
             font-weight: 500;
         }
 
+        /* Results Section */
         .results-section {
-            padding: 30px;
-            background: #ffffff;
-            border-radius: 0 0 15px 15px;
+            margin-bottom: 32px;
         }
 
         .section-title {
-            font-size: 2em;
-            color: #333;
-            margin-bottom: 30px;
-            text-align: center;
-            font-weight: 700;
-            position: relative;
-            padding-bottom: 10px;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            bottom: 0;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 3px;
-            background: #007bff;
-            border-radius: 2px;
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: #202124;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .results-grid {
             display: grid;
-            grid-template-columns: 1fr; /* Changed to single column for better accordion flow */
-            gap: 20px; /* Adjusted gap */
+            gap: 16px;
         }
 
         .result-card {
-            background: #fdfdfd;
+            background: white;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e8eaed;
             overflow: hidden;
-            transition: box-shadow 0.2s ease; /* Simplified transition */
-            border: 1px solid #e9ecef;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* MODIFICATION: Add hover effect to the header now that it's clickable */
+        .result-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+
         .result-header {
-            background: #28a745;
-            color: white;
-            padding: 20px;
+            padding: 20px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            cursor: pointer; /* Make it look clickable */
-            transition: background-color 0.2s ease;
-        }
-        .result-header:hover {
-            background: #218838; /* Darker green on hover */
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            border-bottom: 1px solid #e8eaed;
         }
 
-        .student-info-container h3 { /* Changed from .student-info h3 to avoid conflicts */
-            font-size: 1.4em;
-            margin-bottom: 6px;
-            font-weight: 600;
+        .result-header:hover {
+            background: #f8f9fa;
+        }
+
+        .student-info-container {
+            flex-grow: 1;
+        }
+
+        .student-info-container h3 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #202124;
+            margin-bottom: 4px;
         }
 
         .student-details {
-            font-size: 0.85em;
-            opacity: 0.9;
+            font-size: 0.875rem;
+            color: #5f6368;
             line-height: 1.4;
         }
 
         .score-badge {
-            background: rgba(255,255,255,0.25);
-            padding: 15px 20px;
-            border-radius: 10px;
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 24px;
             text-align: center;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.3);
-            flex-shrink: 0; /* Prevent score badge from shrinking */
-            margin-left: 15px; /* Add space between info and score */
+            margin-left: 20px;
+            min-width: 100px;
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.2);
         }
+
         .score-number {
-            font-size: 2.2em;
-            font-weight: 700;
-            margin-bottom: 5px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 2px;
         }
+
         .score-label {
-            font-size: 0.9em;
+            font-size: 0.875rem;
             opacity: 0.9;
         }
 
-        /* NEW: Styles for the toggle button icon */
         .toggle-icon {
-            font-size: 1.4em;
-            margin-left: 20px;
-            transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1); /* Smooth rotation */
+            margin-left: 16px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #5f6368;
         }
-        
-        /* NEW: Rotate icon when the card is open */
+
         .result-card.is-open .toggle-icon {
             transform: rotate(180deg);
         }
 
-        /* MODIFICATION: Make the result body collapsible */
         .result-body {
-            /* Hide by default using max-height for smooth transition */
             max-height: 0;
             overflow: hidden;
-            padding: 0 25px; /* Remove vertical padding when closed */
-            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
-            background-color: #ffffff; /* Explicit background */
+            padding: 0 24px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fafbfc;
         }
-        
-        /* NEW: Styles for when the card is open */
+
         .result-card.is-open .result-body {
-            max-height: 1500px; /* A large value to allow for expansion */
-            padding: 25px; /* Restore padding when open */
-            border-top: 1px solid #e9ecef;
+            max-height: 2000px;
+            padding: 24px;
         }
 
         .answer-list {
             display: grid;
-            gap: 15px;
+            gap: 16px;
         }
+
         .answer-item {
-            background: #f8f9fa;
-            padding: 15px;
+            background: white;
             border-radius: 8px;
-            border-left: 4px solid #007bff;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.03);
+            padding: 20px;
+            border: 1px solid #e8eaed;
+            transition: all 0.2s ease;
         }
+
+        .answer-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
         .question-text {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 1em;
+            font-weight: 500;
+            color: #202124;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
         }
-        .answer-text {
-            color: #555;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-        }
-        .answer-score {
-            display: inline-block;
-            background: #6c757d;
+
+        .question-number {
+            background: #4285f4;
             color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            min-width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .answer-text {
+            color: #5f6368;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .answer-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #e8f0fe;
+            color: #1967d2;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.875rem;
             font-weight: 500;
         }
-        
-        /* --- Other styles remain the same --- */
-        .no-results, .no-results i, .no-results h2, .no-results p, @keyframes fadeInSlideIn { /* Unchanged styles condensed */
-            text-align: center; padding: 80px 30px; color: #6c757d; background: #ffffff; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-top: 20px;
-        }
-        .no-results i { font-size: 5em; margin-bottom: 25px; opacity: 0.4; color: #adb5bd; }
-        .no-results h2 { font-size: 2em; color: #333; margin-bottom: 10px; }
-        .no-results p { font-size: 1.1em; color: #6c757d; }
-        @keyframes fadeInSlideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            body { padding: 15px; }
-            .container { border-radius: 10px; }
-            .header { padding: 30px 20px; }
-            .header h1 { font-size: 2.2em; }
-            .viva-info { padding: 18px; margin-top: 18px; }
-            .viva-info h2 { font-size: 1.3em; }
-            .info-grid, .stats-grid, .results-grid { grid-template-columns: 1fr; }
-            .stats-section, .results-section { padding: 20px; }
-            .section-title { font-size: 1.6em; }
-            /* MODIFICATION: Adjust result header for mobile */
-            .result-header {
-                padding: 15px;
-                align-items: center; /* Vertically center items */
+        .submission-info {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e8eaed;
+            text-align: center;
+            color: #5f6368;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 64px 32px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e8eaed;
+        }
+
+        .no-results .material-icons {
+            font-size: 64px;
+            color: #9aa0a6;
+            margin-bottom: 16px;
+        }
+
+        .no-results h2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #202124;
+            margin-bottom: 8px;
+        }
+
+        .no-results p {
+            color: #5f6368;
+            font-size: 1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-            .student-info-container h3 { font-size: 1.2em; }
-            .score-badge { padding: 10px 12px; }
-            .score-number { font-size: 1.6em; }
-            .result-card.is-open .result-body { padding: 20px; }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-card {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .result-card:nth-child(1) { animation-delay: 0.1s; }
+        .result-card:nth-child(2) { animation-delay: 0.2s; }
+        .result-card:nth-child(3) { animation-delay: 0.3s; }
+        .result-card:nth-child(4) { animation-delay: 0.4s; }
+        .result-card:nth-child(5) { animation-delay: 0.5s; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .header {
+                padding: 32px 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .result-header {
+                padding: 16px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .score-badge {
+                margin-left: 0;
+                align-self: flex-start;
+            }
+
+            .toggle-icon {
+                position: absolute;
+                top: 16px;
+                right: 20px;
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 Viva Results Dashboard</h1>
+            <h1>
+                <span class="material-icons" style="font-size: 2.5rem;">assessment</span>
+                Viva Results Dashboard
+            </h1>
+            <p class="header-subtitle">Comprehensive examination results and analytics</p>
+            
             {{#if results.length}}
             <div class="viva-info">
-                <h2>{{results.0.vivaInfo.viva_name}}</h2>
+                <h2>
+                    <span class="material-icons">school</span>
+                    {{results.0.vivaInfo.viva_name}}
+                </h2>
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label">Subject</div>
@@ -366,20 +492,35 @@
         {{#if results.length}}
         <div class="stats-section">
             <div class="stats-grid">
-                <div class="stat-card"><div class="stat-number">{{results.length}}</div><div class="stat-label">Total Students</div></div>
-                <div class="stat-card"><div class="stat-number">{{results.0.totalQuestions}}</div><div class="stat-label">Total Questions</div></div>
-                <div class="stat-card"><div class="stat-number">{{results.0.totalMarks}}</div><div class="stat-label">Total Marks</div></div>
-                <div class="stat-card"><div class="stat-number">{{#each results}}{{#if @first}}{{percentage}}%{{/if}}{{/each}}</div><div class="stat-label">First Student %</div></div>
+                <div class="stat-card">
+                    <div class="stat-number">{{results.length}}</div>
+                    <div class="stat-label">Total Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{results.0.totalQuestions}}</div>
+                    <div class="stat-label">Total Questions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{results.0.totalMarks}}</div>
+                    <div class="stat-label">Total Marks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{#each results}}{{#if @first}}{{percentage}}%{{/if}}{{/each}}</div>
+                    <div class="stat-label">Top Score</div>
+                </div>
             </div>
         </div>
 
         <div class="results-section">
-            <h2 class="section-title">📋 Individual Results</h2>
+            <h2 class="section-title">
+                <span class="material-icons">assignment</span>
+                Individual Results
+            </h2>
             <div class="results-grid">
                 {{#each results}}
                 <div class="result-card">
                     <div class="result-header">
-                        <div class="student-info-container" style="flex-grow: 1;">
+                        <div class="student-info-container">
                             <h3>{{studentInfo.name}}</h3>
                             <div class="student-details">
                                 <div>Roll: {{studentInfo.roll}} | Register: {{studentInfo.register}}</div>
@@ -390,20 +531,27 @@
                             <div class="score-number">{{score}}/{{totalMarks}}</div>
                             <div class="score-label">{{percentage}}%</div>
                         </div>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
+                        <span class="material-icons toggle-icon">expand_more</span>
                     </div>
                     <div class="result-body">
                         <div class="answer-list">
                             {{#each answers}}
                             <div class="answer-item">
-                                <div class="question-text">Q{{add @index 1}}: {{question}}</div>
+                                <div class="question-text">
+                                    <span class="question-number">{{add @index 1}}</span>
+                                    <span>{{question}}</span>
+                                </div>
                                 <div class="answer-text"><strong>Answer:</strong> {{selectedOption}}</div>
-                                <div class="answer-score">{{score}}/{{totalScore}} marks</div>
+                                <div class="answer-score">
+                                    <span class="material-icons" style="font-size: 16px;">{{#if score}}check_circle{{else}}error{{/if}}</span>
+                                    {{score}}/{{totalScore}} marks
+                                </div>
                             </div>
                             {{/each}}
                         </div>
-                        <div style="margin-top: 20px; text-align: center; font-size: 0.9em; color: #64748b;">
-                            Submitted: {{submittedAt}}
+                        <div class="submission-info">
+                            <span class="material-icons">schedule</span>
+                            <span>Submitted: {{submittedAt}}</span>
                         </div>
                     </div>
                 </div>
@@ -412,7 +560,7 @@
         </div>
         {{else}}
         <div class="no-results">
-            <div style="font-size: 4em; margin-bottom: 20px; opacity: 0.5;">📋</div>
+            <span class="material-icons">assignment</span>
             <h2>No Results Found</h2>
             <p>No students have submitted results for Viva ID: {{vivaUid}}</p>
         </div>
@@ -421,27 +569,47 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Find all the result card headers
             const resultHeaders = document.querySelectorAll('.result-header');
 
             resultHeaders.forEach(header => {
                 header.addEventListener('click', () => {
-                    // Find the parent .result-card of the clicked header
                     const resultCard = header.closest('.result-card');
+                    const isCurrentlyOpen = resultCard.classList.contains('is-open');
                     
-                    // Toggle the .is-open class on the card
+                    // Close all other cards
+                    document.querySelectorAll('.result-card.is-open').forEach(card => {
+                        if (card !== resultCard) {
+                            card.classList.remove('is-open');
+                        }
+                    });
+                    
+                    // Toggle current card
                     resultCard.classList.toggle('is-open');
+                    
+                    // Add subtle animation feedback
+                    if (!isCurrentlyOpen) {
+                        resultCard.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'nearest' 
+                        });
+                    }
                 });
+            });
+
+            // Add keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.result-card.is-open').forEach(card => {
+                        card.classList.remove('is-open');
+                    });
+                }
             });
         });
 
-        // A simple Handlebars helper to add 1 to the index for question numbers
-        // This should be registered in your backend/Node.js server where you render the template
-        /*
-        Handlebars.registerHelper('add', function(a, b) {
-            return a + b;
-        });
-        */
+        // Handlebars helper for adding numbers (should be registered server-side)
+        // Handlebars.registerHelper('add', function(a, b) {
+        //     return a + b;
+        // });
     </script>
 </body>
 </html>
